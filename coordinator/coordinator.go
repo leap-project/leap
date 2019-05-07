@@ -1,27 +1,31 @@
-package main
+package coordinator
 
 import (
 	"fmt"
+	"github.com/golang/protobuf/proto"
 	"net"
+	pb "leap/protoBuf"
 )
 
 // TODO: Take host and ports as parameters?
 const (
-	CONN_HOST = "127.0.0.1"
-	CONN_PORT_SITE = "8000"
+	CONN_HOST       = "127.0.0.1"
+	CONN_PORT_SITE  = "8000"
 	CONN_PORT_CLOUD = "8001"
-	CONN_TYPE = "tcp"
+	SITE_HOST_PORT  = CONN_HOST + ":" + CONN_PORT_SITE
+	CLOUD_HOST_PORT = CONN_HOST + ":" + CONN_PORT_CLOUD
+	CONN_TYPE       = "tcp"
 )
 
 type Message struct {
 	msg string
 }
 
-func listenSiteConnections() {
-	listener, err := net.Listen(CONN_TYPE, CONN_HOST + ":" + CONN_PORT_SITE)
+func ListenSiteConnections() {
+	listener, err := net.Listen(CONN_TYPE, SITE_HOST_PORT)
 	defer listener.Close()
 	checkSiteListenerErr(err)
-	fmt.Println("Listening for site connections at " + CONN_HOST + ":" + CONN_PORT_SITE)
+	fmt.Println("Listening for site connections at " + SITE_HOST_PORT)
 	for {
 		conn, err := listener.Accept()
 		checkSiteAcceptErr(err)
@@ -34,17 +38,23 @@ func handleSiteConnection(conn net.Conn) {
 	buf := make([]byte, 1024)
 	n, err := conn.Read(buf)
 	checkReadSiteConnErr(err)
-	msg := string(buf[:n])
-	fmt.Println("Received following message from site: ", msg)
+
+	patient := pb.Patient{}
+	err = proto.Unmarshal(buf[:n], &patient)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("Received following message from site: ", patient)
 	conn.Write([]byte("Test Site Received"))
 	// TODO: Call goroutine for site alg
 }
 
-func listenCloudConnections() {
-	listener, err := net.Listen(CONN_TYPE, CONN_HOST + ":" + CONN_PORT_CLOUD)
+func ListenCloudConnections() {
+	listener, err := net.Listen(CONN_TYPE, CLOUD_HOST_PORT)
 	defer listener.Close()
 	checkCloudListenerErr(err)
-	fmt.Println("Listening for cloud connections at " + CONN_HOST + ":" + CONN_PORT_CLOUD)
+	fmt.Println("Listening for cloud connections at " + CLOUD_HOST_PORT)
 	for {
 		conn, err := listener.Accept()
 		checkCloudAcceptErr(err)
@@ -57,16 +67,14 @@ func handleCloudConnection(conn net.Conn) {
 	buf := make([]byte, 1024)
 	n, err := conn.Read(buf)
 	checkReadCloudConnErr(err)
-	msg := string(buf[:n])
-	fmt.Println("Received following message from cloud: ", msg)
+
+	patient := pb.Patient{}
+	err = proto.Unmarshal(buf[:n], &patient)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println("Received following message from cloud: ", patient)
 	conn.Write([]byte("Test Cloud Received"))
 	// TODO: Call goroutine for cloud alg
-}
-
-func main () {
-	fmt.Println("Starting coordinator")
-	go listenSiteConnections()
-	go listenCloudConnections()
-	// Sleep main goroutine forever
-	select{}
 }

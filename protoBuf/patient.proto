@@ -1,0 +1,19 @@
+syntax = "proto3";
+package protoBuf;
+
+message Patient {
+    string fname = 1;
+    string lname = 2;
+    string email = 3;
+    int32 age = 4;
+
+    enum Gender {
+        MALE = 0;
+        FEMALE = 1;
+        OTHER = 2;
+    }
+
+    Gender gender = 5;
+    float weight = 6;  // Weight in kilograms
+    int32 height = 7;  // Height in centimeters
+}

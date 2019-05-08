@@ -24,11 +24,11 @@ type Message struct {
 func ListenSiteConnections() {
 	listener, err := net.Listen(CONN_TYPE, SITE_HOST_PORT)
 	defer listener.Close()
-	checkSiteListenerErr(err)
+	checkSiteErr(err)
 	fmt.Println("Listening for site connections at " + SITE_HOST_PORT)
 	for {
 		conn, err := listener.Accept()
-		checkSiteAcceptErr(err)
+		checkSiteErr(err)
 		go handleSiteConnection(conn)
 	}
 }
@@ -37,7 +37,7 @@ func handleSiteConnection(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 1024)
 	n, err := conn.Read(buf)
-	checkReadSiteConnErr(err)
+	checkSiteErr(err)
 
 	patient := pb.Patient{}
 	err = proto.Unmarshal(buf[:n], &patient)
@@ -53,11 +53,11 @@ func handleSiteConnection(conn net.Conn) {
 func ListenCloudConnections() {
 	listener, err := net.Listen(CONN_TYPE, CLOUD_HOST_PORT)
 	defer listener.Close()
-	checkCloudListenerErr(err)
+	checkCloudErr(err)
 	fmt.Println("Listening for cloud connections at " + CLOUD_HOST_PORT)
 	for {
 		conn, err := listener.Accept()
-		checkCloudAcceptErr(err)
+		checkCloudErr(err)
 		go handleCloudConnection(conn)
 	}
 }
@@ -66,7 +66,7 @@ func handleCloudConnection(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 1024)
 	n, err := conn.Read(buf)
-	checkReadCloudConnErr(err)
+	checkCloudErr(err)
 
 	patient := pb.Patient{}
 	err = proto.Unmarshal(buf[:n], &patient)

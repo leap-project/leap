@@ -14,3 +14,7 @@ sudo make install
 sudo ldconfig # refresh shared library cache
 Get Go protocol buffer plugin
 go get -u github.com/golang/protobuf/protoc-gen-go
+
+# Cloud Algo
+# Install python protobuf
+pip install protobuf

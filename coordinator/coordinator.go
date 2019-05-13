@@ -3,8 +3,8 @@ package coordinator
 import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
-	"net"
 	pb "leap/protoBuf"
+	"net"
 )
 
 // TODO: Take host and ports as parameters?
@@ -24,57 +24,64 @@ type Message struct {
 func ListenSiteConnections() {
 	listener, err := net.Listen(CONN_TYPE, SITE_HOST_PORT)
 	defer listener.Close()
-	checkSiteErr(err)
+	checkErr(err)
 	fmt.Println("Listening for site connections at " + SITE_HOST_PORT)
 	for {
 		conn, err := listener.Accept()
-		checkSiteErr(err)
+		checkErr(err)
 		go handleSiteConnection(conn)
+	}
+}
+
+func ListenCloudConnections() {
+	listener, err := net.Listen(CONN_TYPE, CLOUD_HOST_PORT)
+	defer listener.Close()
+	checkErr(err)
+	fmt.Println("Listening for cloud connections at " + CLOUD_HOST_PORT)
+	for {
+		conn, err := listener.Accept()
+		checkErr(err)
+		go handleCloudConnection(conn)
 	}
 }
 
 func handleSiteConnection(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	checkSiteErr(err)
-
-	patient := pb.Patient{}
-	err = proto.Unmarshal(buf[:n], &patient)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println("Received following message from site: ", patient)
-	conn.Write([]byte("Test Site Received"))
+	_, err := conn.Read(buf)
+	checkErr(err)
+	conn.Write(buf)
 	// TODO: Call goroutine for site alg
-}
-
-func ListenCloudConnections() {
-	listener, err := net.Listen(CONN_TYPE, CLOUD_HOST_PORT)
-	defer listener.Close()
-	checkCloudErr(err)
-	fmt.Println("Listening for cloud connections at " + CLOUD_HOST_PORT)
-	for {
-		conn, err := listener.Accept()
-		checkCloudErr(err)
-		go handleCloudConnection(conn)
-	}
 }
 
 func handleCloudConnection(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 1024)
 	n, err := conn.Read(buf)
-	checkCloudErr(err)
+	checkErr(err)
 
-	patient := pb.Patient{}
-	err = proto.Unmarshal(buf[:n], &patient)
+	query := pb.Query{}
+	err = proto.Unmarshal(buf[:n], &query)
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Println("Received following message from cloud: ", query)
+	response := getResultFromSite("127.0.0.1:9000", query)
+	conn.Write(response)
+}
 
-	fmt.Println("Received following message from cloud: ", patient)
-	conn.Write([]byte("Test Cloud Received"))
-	// TODO: Call goroutine for cloud alg
+func getResultFromSite(ipPort string, query pb.Query) []byte {
+	conn, err := net.Dial("tcp", ipPort)
+	checkErr(err)
+	out, err := proto.Marshal(&query)
+	conn.Write(out)
+	buf := make([]byte, 1024)
+	conn.Read(buf)
+	return buf
+}
+
+func checkErr(err error) {
+	if err != nil {
+		fmt.Println("Coordinator: ", err.Error())
+	}
 }

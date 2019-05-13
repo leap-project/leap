@@ -17,3 +17,14 @@ message Patient {
     float weight = 6;  // Weight in kilograms
     int32 height = 7;  // Height in centimeters
 }
+
+message Query {
+    string comparator = 1;
+    string field = 2;
+    string stringValue = 3;
+    int32 numericValue = 4;
+}
+
+message Result {
+    int32 count = 1;
+}

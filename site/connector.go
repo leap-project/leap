@@ -63,16 +63,16 @@ func count(query pb.Query) int32 {
 
 func checkErr(err error) {
 	if err != nil {
-		fmt.Println("Connector: ", err.Error())
+		fmt.Println("Site Connector: ", err.Error())
 		os.Exit(1)
 	}
 }
 
 func ListenConnections() {
 	listener, err := net.Listen(CONN_TYPE, SITE_HOST_PORT)
-	defer listener.Close()
 	checkErr(err)
-	fmt.Println("Listening for site connections at " + SITE_HOST_PORT)
+	defer listener.Close()
+	fmt.Println("Site Connector: Listening for site connections at " + SITE_HOST_PORT)
 	for {
 		conn, err := listener.Accept()
 		checkErr(err)
@@ -89,7 +89,7 @@ func handleConnection(conn net.Conn) {
 	query := pb.Query{}
 	err = proto.Unmarshal(buf[:n], &query)
 	checkErr(err)
-	fmt.Println("Received following query from coordinator: ", query)
+	fmt.Println("Site Connector: Received following query from coordinator", query)
 	result := pb.Result{Count: count(query)}
 	out, err := proto.Marshal(&result)
 	conn.Write(out)

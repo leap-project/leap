@@ -3,6 +3,7 @@ package coordinator
 import (
 	"fmt"
 	"github.com/golang/protobuf/proto"
+	"io/ioutil"
 	pb "leap/protoBuf"
 	"net"
 )
@@ -23,51 +24,49 @@ type Message struct {
 
 func ListenSiteConnections() {
 	listener, err := net.Listen(CONN_TYPE, SITE_HOST_PORT)
-	defer listener.Close()
 	checkErr(err)
-	fmt.Println("Listening for site connections at " + SITE_HOST_PORT)
+	defer listener.Close()
+	fmt.Println("Coordinator: Listening for site connections at " + SITE_HOST_PORT)
 	for {
 		conn, err := listener.Accept()
 		checkErr(err)
+		fmt.Println("Coordinator: Accepted connection from site algorithm")
 		go handleSiteConnection(conn)
 	}
 }
 
 func ListenCloudConnections() {
 	listener, err := net.Listen(CONN_TYPE, CLOUD_HOST_PORT)
-	defer listener.Close()
 	checkErr(err)
-	fmt.Println("Listening for cloud connections at " + CLOUD_HOST_PORT)
+	defer listener.Close()
+	fmt.Println("Coordinator: Listening for cloud connections at " + CLOUD_HOST_PORT)
 	for {
 		conn, err := listener.Accept()
 		checkErr(err)
+		fmt.Println("Coordinator: Accepted connection from cloud algorithm")
 		go handleCloudConnection(conn)
 	}
 }
 
 func handleSiteConnection(conn net.Conn) {
 	defer conn.Close()
-	buf := make([]byte, 1024)
-	_, err := conn.Read(buf)
+	buf, err := ioutil.ReadAll(conn)
 	checkErr(err)
-	conn.Write(buf)
-	// TODO: Call goroutine for site alg
+	_, err = conn.Write(buf)
+	checkErr(err)
 }
 
 func handleCloudConnection(conn net.Conn) {
 	defer conn.Close()
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
+	buf, err := ioutil.ReadAll(conn)
 	checkErr(err)
-
 	query := pb.Query{}
-	err = proto.Unmarshal(buf[:n], &query)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Received following message from cloud: ", query)
+	err = proto.Unmarshal(buf, &query)
+	checkErr(err)
+	fmt.Println("Coordinator: Received following message from cloud", query)
 	response := getResultFromSite("127.0.0.1:9000", query)
-	conn.Write(response)
+	_, err = conn.Write(response)
+	checkErr(err)
 }
 
 func getResultFromSite(ipPort string, query pb.Query) []byte {
@@ -75,8 +74,7 @@ func getResultFromSite(ipPort string, query pb.Query) []byte {
 	checkErr(err)
 	out, err := proto.Marshal(&query)
 	conn.Write(out)
-	buf := make([]byte, 1024)
-	conn.Read(buf)
+	buf, err := ioutil.ReadAll(conn)
 	return buf
 }
 

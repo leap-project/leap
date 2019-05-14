@@ -45,7 +45,7 @@ def countQuery(comparator, field, value):
 
 if __name__ == "__main__":
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('localhost', 8001))
+    s.connect(('localhost', 8000))
     query = countQuery("GT", "age", 81)
     s.sendall(query.SerializeToString())
     s.shutdown(socket.SHUT_WR)

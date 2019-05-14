@@ -22,6 +22,13 @@ type Message struct {
 	msg string
 }
 
+/*
+Listens to connections from sites. When a connection is accep-
+ted, a goroutine is spawned to handle the newly accepted
+connection.
+
+No args
+ */
 func ListenSiteConnections() {
 	listener, err := net.Listen(CONN_TYPE, SITE_HOST_PORT)
 	checkErr(err)
@@ -35,6 +42,13 @@ func ListenSiteConnections() {
 	}
 }
 
+/*
+Listens to connections from algorithms residing in our cloud
+infrastructure. When a connection is accepted, a goroutine is
+spawned to handle the newly accepted connection.
+
+No args
+ */
 func ListenCloudConnections() {
 	listener, err := net.Listen(CONN_TYPE, CLOUD_HOST_PORT)
 	checkErr(err)
@@ -48,6 +62,16 @@ func ListenCloudConnections() {
 	}
 }
 
+
+// TODO: Do something useful with this function
+/*
+Reads all the data from the connection between the coordinator
+and a site. This data is added to a buffer and written back to
+the site.
+
+conn: A connection established between the coordinator and a
+      site.
+ */
 func handleSiteConnection(conn net.Conn) {
 	defer conn.Close()
 	buf, err := ioutil.ReadAll(conn)
@@ -56,6 +80,17 @@ func handleSiteConnection(conn net.Conn) {
 	checkErr(err)
 }
 
+/*
+Reads all the data from the connection between the coordinator
+and an algorithm in our cloud infrastructure. The data is then
+unmarshalled into a query, that is sent to a site that per-
+forms the query. The query result is returned to the coor-
+dinator, and relayed to the cloud algorithm that issued the
+request.
+
+con: A connection established between the coordinator and an
+     algorithm in the cloud.
+ */
 func handleCloudConnection(conn net.Conn) {
 	defer conn.Close()
 	buf, err := ioutil.ReadAll(conn)
@@ -69,6 +104,15 @@ func handleCloudConnection(conn net.Conn) {
 	checkErr(err)
 }
 
+/*
+Issues a query to one specific site and gets the result of
+performing the query on that site's local data.
+
+ipPort: The ip + port of the site to connect to in the format
+        ip:port. E.g "127.0.0.1:8000"
+query:  The query issued by the cloud algorithm that should
+        be performed by a site algorithm
+ */
 func getResultFromSite(ipPort string, query pb.Query) []byte {
 	conn, err := net.Dial("tcp", ipPort)
 	checkErr(err)
@@ -78,6 +122,12 @@ func getResultFromSite(ipPort string, query pb.Query) []byte {
 	return buf
 }
 
+/*
+Helper to log errors in the coordinator
+
+err: Error returned by a function that should be checked
+     if nil or not.
+ */
 func checkErr(err error) {
 	if err != nil {
 		fmt.Println("Coordinator: ", err.Error())

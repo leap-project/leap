@@ -61,6 +61,12 @@ func count(query pb.Query) int32 {
 	return int32(count)
 }
 
+/*
+Helper to log errors in a site connector
+
+err: Error returned by a function that should be checked
+     if nil or not.
+ */
 func checkErr(err error) {
 	if err != nil {
 		fmt.Println("Site Connector: ", err.Error())
@@ -68,6 +74,13 @@ func checkErr(err error) {
 	}
 }
 
+/*
+Listens to connections from coordinator. When a connection
+is accepted, a goroutine is spawned to handle the newly
+accepted connection.
+
+No args
+ */
 func ListenConnections() {
 	listener, err := net.Listen(CONN_TYPE, SITE_HOST_PORT)
 	checkErr(err)
@@ -80,6 +93,15 @@ func ListenConnections() {
 	}
 }
 
+/*
+Reads all the data from the connection between a site and a
+coordinator. The site connector gets this data, calls the
+appropriate algorithm to perform the query, and returns the
+result to the coordinator
+
+conn: A connection established between the site connector and
+      a coordinator.
+ */
 func handleConnection(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 1024)

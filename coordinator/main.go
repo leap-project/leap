@@ -17,8 +17,8 @@ e.g go run *.go -cip=127.0.0.1:8000 -sip=127.0.0.1:8001
 func main() {
 	fmt.Println("Starting coordinator")
 	InitializeConfig()
-	go ListenSiteConnections()
-	go ListenCloudConnections()
+	go ListenSites()
+	go ListenCloud()
 	// Sleep main goroutine forever
 	select {}
 }

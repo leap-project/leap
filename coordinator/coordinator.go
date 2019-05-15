@@ -56,7 +56,7 @@ connection.
 
 No args
 */
-func ListenSiteConnections() {
+func ListenSites() {
 	listener, err := net.Listen("tcp", config.SiteIpPort)
 	checkErr(err)
 	defer listener.Close()
@@ -76,7 +76,7 @@ spawned to handle the newly accepted connection.
 
 No args
 */
-func ListenCloudConnections() {
+func ListenCloud() {
 	listener, err := net.Listen("tcp", config.CloudIpPort)
 	checkErr(err)
 	defer listener.Close()

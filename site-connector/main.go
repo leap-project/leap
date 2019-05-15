@@ -11,5 +11,8 @@ e.g go run *.go -ip=127.0.0.1:9000
 
 func main() {
 	InitializeConfig()
-	ListenConnections()
+	go ListenCoordinator()
+	go ListenAlgos()
+	// Sleep main goroutine forever
+	select {}
 }

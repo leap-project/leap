@@ -17,6 +17,7 @@ var (
 
 type Config struct {
 	CoordinatorIpPort string
+	AlgosIpPort       string
 }
 
 var patients = []pb.Patient{{Fname: "Han", Lname: "Solo", Email: "hsolo@gmail.com", Age: 29, Gender: pb.Patient_MALE, Weight: 80, Height: 180},
@@ -29,29 +30,6 @@ var patients = []pb.Patient{{Fname: "Han", Lname: "Solo", Email: "hsolo@gmail.co
 	{Fname: "Clarissa", Lname: "Vikander", Email: "cikander@gmail.com", Age: 41, Gender: pb.Patient_FEMALE, Weight: 61, Height: 155},
 	{Fname: "Bruna", Lname: "Lorius", Email: "blorius@gmail.com", Age: 55, Gender: pb.Patient_FEMALE, Weight: 60, Height: 172},
 	{Fname: "Anna", Lname: "Tu", Email: "atu@gmail.com", Age: 101, Gender: pb.Patient_FEMALE, Weight: 65, Height: 150}}
-
-/*
-Parses user flags and creates config using the given flags.
-If a flag is absent, use the default flag given in the
-config.json file.
-
-No args
- */
-func InitializeConfig() {
-	jsonFile, err := os.Open("config.json")
-	checkErr(err)
-	defer jsonFile.Close()
-	jsonBytes, err := ioutil.ReadAll(jsonFile)
-	checkErr(err)
-
-	err = json.Unmarshal(jsonBytes, &config)
-	checkErr(err)
-
-	coordinatorIpPortPtr := flag.String("ip", config.CoordinatorIpPort, "The ip and port to listen for coordinators")
-	flag.Parse()
-
-	config.CoordinatorIpPort = *coordinatorIpPortPtr
-}
 
 func compare(patientVal float32, queryVal int32, comparator string) bool {
 	switch comparator {
@@ -100,13 +78,38 @@ func checkErr(err error) {
 }
 
 /*
-Listens to connections from coordinator. When a connection
+Parses user flags and creates config using the given flags.
+If a flag is absent, use the default flag given in the
+config.json file.
+
+No args
+ */
+func InitializeConfig() {
+	jsonFile, err := os.Open("config.json")
+	checkErr(err)
+	defer jsonFile.Close()
+	jsonBytes, err := ioutil.ReadAll(jsonFile)
+	checkErr(err)
+
+	err = json.Unmarshal(jsonBytes, &config)
+	checkErr(err)
+
+	coordinatorIpPortPtr := flag.String("cip", config.CoordinatorIpPort, "The ip and port to listen for coordinators")
+	algosIpPortPtr := flag.String("aip", config.CoordinatorIpPort, "The ip and port to listen for algorithms in this site")
+	flag.Parse()
+
+	config.CoordinatorIpPort = *coordinatorIpPortPtr
+	config.AlgosIpPort = *algosIpPortPtr
+}
+
+/*
+Listens to connections from site algos. When a connection
 is accepted, a goroutine is spawned to handle the newly
 accepted connection.
 
 No args
 */
-func ListenConnections() {
+func ListenAlgos() {
 	listener, err := net.Listen("tcp", config.CoordinatorIpPort)
 	checkErr(err)
 	defer listener.Close()
@@ -114,7 +117,26 @@ func ListenConnections() {
 	for {
 		conn, err := listener.Accept()
 		checkErr(err)
-		go handleConnection(conn)
+		go handleCoordConnection(conn)
+	}
+}
+
+/*
+Listens to connections from coordinator. When a connection
+is accepted, a goroutine is spawned to handle the newly
+accepted connection.
+
+No args
+*/
+func ListenCoordinator() {
+	listener, err := net.Listen("tcp", config.CoordinatorIpPort)
+	checkErr(err)
+	defer listener.Close()
+	fmt.Println("Site Connector: Listening for site connections at " + config.CoordinatorIpPort)
+	for {
+		conn, err := listener.Accept()
+		checkErr(err)
+		go handleCoordConnection(conn)
 	}
 }
 
@@ -127,7 +149,28 @@ result to the coordinator
 conn: A connection established between the site connector and
       a coordinator.
 */
-func handleConnection(conn net.Conn) {
+func handleCoordConnection(conn net.Conn) {
+	defer conn.Close()
+	buf := make([]byte, 1024)
+	n, err := conn.Read(buf)
+	checkErr(err)
+
+	query := pb.Query{}
+	err = proto.Unmarshal(buf[:n], &query)
+	checkErr(err)
+	fmt.Println("Site Connector: Received following query from coordinator", query)
+	result := pb.Result{Count: count(query)}
+	out, err := proto.Marshal(&result)
+	conn.Write(out)
+}
+
+/*
+Reads all the data from the connection between an algorithm
+
+conn: A connection established between the site connector and
+      a coordinator.
+*/
+func handleAlgoConnection(conn net.Conn) {
 	defer conn.Close()
 	buf := make([]byte, 1024)
 	n, err := conn.Read(buf)

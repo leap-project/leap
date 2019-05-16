@@ -4,8 +4,12 @@
 package protoBuf
 
 import (
+	context "context"
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
+	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 	math "math"
 )
 
@@ -45,101 +49,326 @@ func (x Patient_Gender) String() string {
 }
 
 func (Patient_Gender) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_33c57e4bae7b9afd, []int{0, 0}
+	return fileDescriptor_33c57e4bae7b9afd, []int{8, 0}
 }
 
-type Patient struct {
-	Fname                string         `protobuf:"bytes,1,opt,name=fname,proto3" json:"fname,omitempty"`
-	Lname                string         `protobuf:"bytes,2,opt,name=lname,proto3" json:"lname,omitempty"`
-	Email                string         `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
-	Age                  int32          `protobuf:"varint,4,opt,name=age,proto3" json:"age,omitempty"`
-	Gender               Patient_Gender `protobuf:"varint,5,opt,name=gender,proto3,enum=protoBuf.Patient_Gender" json:"gender,omitempty"`
-	Weight               float32        `protobuf:"fixed32,6,opt,name=weight,proto3" json:"weight,omitempty"`
-	Height               int32          `protobuf:"varint,7,opt,name=height,proto3" json:"height,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
-	XXX_unrecognized     []byte         `json:"-"`
-	XXX_sizecache        int32          `json:"-"`
+// Message sent by a site connector to a coordinator with the intent of registering the site and its available algos
+type SiteRegReq struct {
+	Id                   int32             `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name                 string            `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Algos                []*SiteAlgoRegReq `protobuf:"bytes,4,rep,name=algos,proto3" json:"algos,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}          `json:"-"`
+	XXX_unrecognized     []byte            `json:"-"`
+	XXX_sizecache        int32             `json:"-"`
 }
 
-func (m *Patient) Reset()         { *m = Patient{} }
-func (m *Patient) String() string { return proto.CompactTextString(m) }
-func (*Patient) ProtoMessage()    {}
-func (*Patient) Descriptor() ([]byte, []int) {
+func (m *SiteRegReq) Reset()         { *m = SiteRegReq{} }
+func (m *SiteRegReq) String() string { return proto.CompactTextString(m) }
+func (*SiteRegReq) ProtoMessage()    {}
+func (*SiteRegReq) Descriptor() ([]byte, []int) {
 	return fileDescriptor_33c57e4bae7b9afd, []int{0}
 }
 
-func (m *Patient) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Patient.Unmarshal(m, b)
+func (m *SiteRegReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SiteRegReq.Unmarshal(m, b)
 }
-func (m *Patient) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Patient.Marshal(b, m, deterministic)
+func (m *SiteRegReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SiteRegReq.Marshal(b, m, deterministic)
 }
-func (m *Patient) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Patient.Merge(m, src)
+func (m *SiteRegReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SiteRegReq.Merge(m, src)
 }
-func (m *Patient) XXX_Size() int {
-	return xxx_messageInfo_Patient.Size(m)
+func (m *SiteRegReq) XXX_Size() int {
+	return xxx_messageInfo_SiteRegReq.Size(m)
 }
-func (m *Patient) XXX_DiscardUnknown() {
-	xxx_messageInfo_Patient.DiscardUnknown(m)
+func (m *SiteRegReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_SiteRegReq.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Patient proto.InternalMessageInfo
+var xxx_messageInfo_SiteRegReq proto.InternalMessageInfo
 
-func (m *Patient) GetFname() string {
+func (m *SiteRegReq) GetId() int32 {
 	if m != nil {
-		return m.Fname
-	}
-	return ""
-}
-
-func (m *Patient) GetLname() string {
-	if m != nil {
-		return m.Lname
-	}
-	return ""
-}
-
-func (m *Patient) GetEmail() string {
-	if m != nil {
-		return m.Email
-	}
-	return ""
-}
-
-func (m *Patient) GetAge() int32 {
-	if m != nil {
-		return m.Age
+		return m.Id
 	}
 	return 0
 }
 
-func (m *Patient) GetGender() Patient_Gender {
+func (m *SiteRegReq) GetName() string {
 	if m != nil {
-		return m.Gender
+		return m.Name
 	}
-	return Patient_MALE
+	return ""
 }
 
-func (m *Patient) GetWeight() float32 {
+func (m *SiteRegReq) GetAlgos() []*SiteAlgoRegReq {
 	if m != nil {
-		return m.Weight
+		return m.Algos
+	}
+	return nil
+}
+
+// Message sent by a site connector to a coordinator indicating an algorithm it wants to register
+type SiteAlgoRegReq struct {
+	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Description          string   `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	ProtoVersion         string   `protobuf:"bytes,3,opt,name=protoVersion,proto3" json:"protoVersion,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SiteAlgoRegReq) Reset()         { *m = SiteAlgoRegReq{} }
+func (m *SiteAlgoRegReq) String() string { return proto.CompactTextString(m) }
+func (*SiteAlgoRegReq) ProtoMessage()    {}
+func (*SiteAlgoRegReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{1}
+}
+
+func (m *SiteAlgoRegReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SiteAlgoRegReq.Unmarshal(m, b)
+}
+func (m *SiteAlgoRegReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SiteAlgoRegReq.Marshal(b, m, deterministic)
+}
+func (m *SiteAlgoRegReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SiteAlgoRegReq.Merge(m, src)
+}
+func (m *SiteAlgoRegReq) XXX_Size() int {
+	return xxx_messageInfo_SiteAlgoRegReq.Size(m)
+}
+func (m *SiteAlgoRegReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_SiteAlgoRegReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SiteAlgoRegReq proto.InternalMessageInfo
+
+func (m *SiteAlgoRegReq) GetId() int32 {
+	if m != nil {
+		return m.Id
 	}
 	return 0
 }
 
-func (m *Patient) GetHeight() int32 {
+func (m *SiteAlgoRegReq) GetDescription() string {
 	if m != nil {
-		return m.Height
+		return m.Description
+	}
+	return ""
+}
+
+func (m *SiteAlgoRegReq) GetProtoVersion() string {
+	if m != nil {
+		return m.ProtoVersion
+	}
+	return ""
+}
+
+type SiteRegRes struct {
+	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg                  string   `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SiteRegRes) Reset()         { *m = SiteRegRes{} }
+func (m *SiteRegRes) String() string { return proto.CompactTextString(m) }
+func (*SiteRegRes) ProtoMessage()    {}
+func (*SiteRegRes) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{2}
+}
+
+func (m *SiteRegRes) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SiteRegRes.Unmarshal(m, b)
+}
+func (m *SiteRegRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SiteRegRes.Marshal(b, m, deterministic)
+}
+func (m *SiteRegRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SiteRegRes.Merge(m, src)
+}
+func (m *SiteRegRes) XXX_Size() int {
+	return xxx_messageInfo_SiteRegRes.Size(m)
+}
+func (m *SiteRegRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_SiteRegRes.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SiteRegRes proto.InternalMessageInfo
+
+func (m *SiteRegRes) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+func (m *SiteRegRes) GetMsg() string {
+	if m != nil {
+		return m.Msg
+	}
+	return ""
+}
+
+// Message sent by a coordinator to a site connector indicating whether the algorithm registration was successful
+type SiteAlgoRegRes struct {
+	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg                  string   `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SiteAlgoRegRes) Reset()         { *m = SiteAlgoRegRes{} }
+func (m *SiteAlgoRegRes) String() string { return proto.CompactTextString(m) }
+func (*SiteAlgoRegRes) ProtoMessage()    {}
+func (*SiteAlgoRegRes) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{3}
+}
+
+func (m *SiteAlgoRegRes) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SiteAlgoRegRes.Unmarshal(m, b)
+}
+func (m *SiteAlgoRegRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SiteAlgoRegRes.Marshal(b, m, deterministic)
+}
+func (m *SiteAlgoRegRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SiteAlgoRegRes.Merge(m, src)
+}
+func (m *SiteAlgoRegRes) XXX_Size() int {
+	return xxx_messageInfo_SiteAlgoRegRes.Size(m)
+}
+func (m *SiteAlgoRegRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_SiteAlgoRegRes.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SiteAlgoRegRes proto.InternalMessageInfo
+
+func (m *SiteAlgoRegRes) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+func (m *SiteAlgoRegRes) GetMsg() string {
+	if m != nil {
+		return m.Msg
+	}
+	return ""
+}
+
+// Message sent by a cloud algorithm to a coordinator indicating this algorithm should be registered
+type CloudAlgoRegReq struct {
+	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Description          string   `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
+	ProtoVersion         string   `protobuf:"bytes,3,opt,name=proto_version,json=protoVersion,proto3" json:"proto_version,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CloudAlgoRegReq) Reset()         { *m = CloudAlgoRegReq{} }
+func (m *CloudAlgoRegReq) String() string { return proto.CompactTextString(m) }
+func (*CloudAlgoRegReq) ProtoMessage()    {}
+func (*CloudAlgoRegReq) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{4}
+}
+
+func (m *CloudAlgoRegReq) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CloudAlgoRegReq.Unmarshal(m, b)
+}
+func (m *CloudAlgoRegReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CloudAlgoRegReq.Marshal(b, m, deterministic)
+}
+func (m *CloudAlgoRegReq) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CloudAlgoRegReq.Merge(m, src)
+}
+func (m *CloudAlgoRegReq) XXX_Size() int {
+	return xxx_messageInfo_CloudAlgoRegReq.Size(m)
+}
+func (m *CloudAlgoRegReq) XXX_DiscardUnknown() {
+	xxx_messageInfo_CloudAlgoRegReq.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CloudAlgoRegReq proto.InternalMessageInfo
+
+func (m *CloudAlgoRegReq) GetId() int32 {
+	if m != nil {
+		return m.Id
 	}
 	return 0
 }
 
+func (m *CloudAlgoRegReq) GetDescription() string {
+	if m != nil {
+		return m.Description
+	}
+	return ""
+}
+
+func (m *CloudAlgoRegReq) GetProtoVersion() string {
+	if m != nil {
+		return m.ProtoVersion
+	}
+	return ""
+}
+
+// Message sent by a coordinator to a cloud algorithm indicating whether the algorithm registration was successful
+type CloudAlgoRegRes struct {
+	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Msg                  string   `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CloudAlgoRegRes) Reset()         { *m = CloudAlgoRegRes{} }
+func (m *CloudAlgoRegRes) String() string { return proto.CompactTextString(m) }
+func (*CloudAlgoRegRes) ProtoMessage()    {}
+func (*CloudAlgoRegRes) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{5}
+}
+
+func (m *CloudAlgoRegRes) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CloudAlgoRegRes.Unmarshal(m, b)
+}
+func (m *CloudAlgoRegRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CloudAlgoRegRes.Marshal(b, m, deterministic)
+}
+func (m *CloudAlgoRegRes) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CloudAlgoRegRes.Merge(m, src)
+}
+func (m *CloudAlgoRegRes) XXX_Size() int {
+	return xxx_messageInfo_CloudAlgoRegRes.Size(m)
+}
+func (m *CloudAlgoRegRes) XXX_DiscardUnknown() {
+	xxx_messageInfo_CloudAlgoRegRes.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CloudAlgoRegRes proto.InternalMessageInfo
+
+func (m *CloudAlgoRegRes) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
+}
+
+func (m *CloudAlgoRegRes) GetMsg() string {
+	if m != nil {
+		return m.Msg
+	}
+	return ""
+}
+
+// Simple example query
 type Query struct {
 	Comparator           string   `protobuf:"bytes,1,opt,name=comparator,proto3" json:"comparator,omitempty"`
 	Field                string   `protobuf:"bytes,2,opt,name=field,proto3" json:"field,omitempty"`
-	StringValue          string   `protobuf:"bytes,3,opt,name=stringValue,proto3" json:"stringValue,omitempty"`
-	NumericValue         int32    `protobuf:"varint,4,opt,name=numericValue,proto3" json:"numericValue,omitempty"`
+	StringValue          string   `protobuf:"bytes,3,opt,name=string_value,json=stringValue,proto3" json:"string_value,omitempty"`
+	NumericValue         int32    `protobuf:"varint,4,opt,name=numeric_value,json=numericValue,proto3" json:"numeric_value,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -149,7 +378,7 @@ func (m *Query) Reset()         { *m = Query{} }
 func (m *Query) String() string { return proto.CompactTextString(m) }
 func (*Query) ProtoMessage()    {}
 func (*Query) Descriptor() ([]byte, []int) {
-	return fileDescriptor_33c57e4bae7b9afd, []int{1}
+	return fileDescriptor_33c57e4bae7b9afd, []int{6}
 }
 
 func (m *Query) XXX_Unmarshal(b []byte) error {
@@ -198,73 +427,515 @@ func (m *Query) GetNumericValue() int32 {
 	return 0
 }
 
-type Result struct {
+// Simple example query result
+type QueryResponse struct {
 	Count                int32    `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Result) Reset()         { *m = Result{} }
-func (m *Result) String() string { return proto.CompactTextString(m) }
-func (*Result) ProtoMessage()    {}
-func (*Result) Descriptor() ([]byte, []int) {
-	return fileDescriptor_33c57e4bae7b9afd, []int{2}
+func (m *QueryResponse) Reset()         { *m = QueryResponse{} }
+func (m *QueryResponse) String() string { return proto.CompactTextString(m) }
+func (*QueryResponse) ProtoMessage()    {}
+func (*QueryResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{7}
 }
 
-func (m *Result) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Result.Unmarshal(m, b)
+func (m *QueryResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_QueryResponse.Unmarshal(m, b)
 }
-func (m *Result) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Result.Marshal(b, m, deterministic)
+func (m *QueryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_QueryResponse.Marshal(b, m, deterministic)
 }
-func (m *Result) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Result.Merge(m, src)
+func (m *QueryResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_QueryResponse.Merge(m, src)
 }
-func (m *Result) XXX_Size() int {
-	return xxx_messageInfo_Result.Size(m)
+func (m *QueryResponse) XXX_Size() int {
+	return xxx_messageInfo_QueryResponse.Size(m)
 }
-func (m *Result) XXX_DiscardUnknown() {
-	xxx_messageInfo_Result.DiscardUnknown(m)
+func (m *QueryResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_QueryResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Result proto.InternalMessageInfo
+var xxx_messageInfo_QueryResponse proto.InternalMessageInfo
 
-func (m *Result) GetCount() int32 {
+func (m *QueryResponse) GetCount() int32 {
 	if m != nil {
 		return m.Count
 	}
 	return 0
 }
 
+type Patient struct {
+	FirstName            string         `protobuf:"bytes,1,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	LastName             string         `protobuf:"bytes,2,opt,name=last_name,json=lastName,proto3" json:"last_name,omitempty"`
+	Email                string         `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
+	Age                  int32          `protobuf:"varint,4,opt,name=age,proto3" json:"age,omitempty"`
+	Gender               Patient_Gender `protobuf:"varint,5,opt,name=gender,proto3,enum=protoBuf.Patient_Gender" json:"gender,omitempty"`
+	Weight               float32        `protobuf:"fixed32,6,opt,name=weight,proto3" json:"weight,omitempty"`
+	Height               int32          `protobuf:"varint,7,opt,name=height,proto3" json:"height,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *Patient) Reset()         { *m = Patient{} }
+func (m *Patient) String() string { return proto.CompactTextString(m) }
+func (*Patient) ProtoMessage()    {}
+func (*Patient) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{8}
+}
+
+func (m *Patient) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Patient.Unmarshal(m, b)
+}
+func (m *Patient) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Patient.Marshal(b, m, deterministic)
+}
+func (m *Patient) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Patient.Merge(m, src)
+}
+func (m *Patient) XXX_Size() int {
+	return xxx_messageInfo_Patient.Size(m)
+}
+func (m *Patient) XXX_DiscardUnknown() {
+	xxx_messageInfo_Patient.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Patient proto.InternalMessageInfo
+
+func (m *Patient) GetFirstName() string {
+	if m != nil {
+		return m.FirstName
+	}
+	return ""
+}
+
+func (m *Patient) GetLastName() string {
+	if m != nil {
+		return m.LastName
+	}
+	return ""
+}
+
+func (m *Patient) GetEmail() string {
+	if m != nil {
+		return m.Email
+	}
+	return ""
+}
+
+func (m *Patient) GetAge() int32 {
+	if m != nil {
+		return m.Age
+	}
+	return 0
+}
+
+func (m *Patient) GetGender() Patient_Gender {
+	if m != nil {
+		return m.Gender
+	}
+	return Patient_MALE
+}
+
+func (m *Patient) GetWeight() float32 {
+	if m != nil {
+		return m.Weight
+	}
+	return 0
+}
+
+func (m *Patient) GetHeight() int32 {
+	if m != nil {
+		return m.Height
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterEnum("protoBuf.Patient_Gender", Patient_Gender_name, Patient_Gender_value)
-	proto.RegisterType((*Patient)(nil), "protoBuf.Patient")
+	proto.RegisterType((*SiteRegReq)(nil), "protoBuf.SiteRegReq")
+	proto.RegisterType((*SiteAlgoRegReq)(nil), "protoBuf.SiteAlgoRegReq")
+	proto.RegisterType((*SiteRegRes)(nil), "protoBuf.SiteRegRes")
+	proto.RegisterType((*SiteAlgoRegRes)(nil), "protoBuf.SiteAlgoRegRes")
+	proto.RegisterType((*CloudAlgoRegReq)(nil), "protoBuf.CloudAlgoRegReq")
+	proto.RegisterType((*CloudAlgoRegRes)(nil), "protoBuf.CloudAlgoRegRes")
 	proto.RegisterType((*Query)(nil), "protoBuf.Query")
-	proto.RegisterType((*Result)(nil), "protoBuf.Result")
+	proto.RegisterType((*QueryResponse)(nil), "protoBuf.QueryResponse")
+	proto.RegisterType((*Patient)(nil), "protoBuf.Patient")
 }
 
 func init() { proto.RegisterFile("message.proto", fileDescriptor_33c57e4bae7b9afd) }
 
 var fileDescriptor_33c57e4bae7b9afd = []byte{
-	// 289 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0x90, 0xcf, 0x4a, 0x03, 0x31,
-	0x10, 0x87, 0x4d, 0xdb, 0xa4, 0xed, 0xf8, 0x87, 0x12, 0x44, 0x72, 0x2a, 0xcb, 0x9e, 0xd6, 0xcb,
-	0x22, 0xfa, 0x04, 0x0a, 0x55, 0x0f, 0x8a, 0x1a, 0xc4, 0x7b, 0x6c, 0xa7, 0xdb, 0x40, 0x36, 0x5b,
-	0xb2, 0x09, 0xe2, 0xd9, 0xb7, 0xf5, 0x29, 0xa4, 0x49, 0x0a, 0xf5, 0xb4, 0xf3, 0x7d, 0x3b, 0xcc,
-	0x64, 0x7e, 0x70, 0xda, 0x62, 0xdf, 0xab, 0x06, 0xeb, 0xad, 0xeb, 0x7c, 0xc7, 0x27, 0xf1, 0x73,
-	0x17, 0xd6, 0xe5, 0x2f, 0x81, 0xf1, 0xab, 0xf2, 0x1a, 0xad, 0xe7, 0xe7, 0x40, 0xd7, 0x56, 0xb5,
-	0x28, 0x48, 0x41, 0xaa, 0xa9, 0x4c, 0xb0, 0xb3, 0x26, 0xda, 0x41, 0xb2, 0x66, 0x6f, 0xb1, 0x55,
-	0xda, 0x88, 0x61, 0xb2, 0x11, 0xf8, 0x0c, 0x86, 0xaa, 0x41, 0x31, 0x2a, 0x48, 0x45, 0xe5, 0xae,
-	0xe4, 0x57, 0xc0, 0x1a, 0xb4, 0x2b, 0x74, 0x82, 0x16, 0xa4, 0x3a, 0xbb, 0x16, 0xf5, 0x7e, 0x75,
-	0x9d, 0xd7, 0xd6, 0x0f, 0xf1, 0xbf, 0xcc, 0x7d, 0xfc, 0x02, 0xd8, 0x17, 0xea, 0x66, 0xe3, 0x05,
-	0x2b, 0x48, 0x35, 0x90, 0x99, 0x76, 0x7e, 0x93, 0xfc, 0x38, 0x8e, 0xcf, 0x54, 0x5e, 0x02, 0x4b,
-	0x13, 0xf8, 0x04, 0x46, 0xcf, 0xb7, 0x4f, 0x8b, 0xd9, 0x11, 0x07, 0x60, 0xf7, 0x8b, 0x58, 0x13,
-	0x3e, 0x05, 0xfa, 0xf2, 0xfe, 0xb8, 0x90, 0xb3, 0x41, 0xf9, 0x43, 0x80, 0xbe, 0x05, 0x74, 0xdf,
-	0x7c, 0x0e, 0xb0, 0xec, 0xda, 0xad, 0x72, 0xca, 0x77, 0x2e, 0xdf, 0x7b, 0x60, 0x62, 0x14, 0x1a,
-	0xcd, 0x6a, 0x7f, 0x74, 0x04, 0x5e, 0xc0, 0x71, 0xef, 0x9d, 0xb6, 0xcd, 0x87, 0x32, 0x01, 0xf3,
-	0xe9, 0x87, 0x8a, 0x97, 0x70, 0x62, 0x43, 0x8b, 0x4e, 0x2f, 0x53, 0x4b, 0x4a, 0xe2, 0x9f, 0x2b,
-	0xe7, 0xc0, 0x24, 0xf6, 0xc1, 0xc4, 0xc0, 0x97, 0x5d, 0xb0, 0x3e, 0x3e, 0x80, 0xca, 0x04, 0x9f,
-	0x2c, 0x26, 0x74, 0xf3, 0x17, 0x00, 0x00, 0xff, 0xff, 0xfd, 0x6a, 0x36, 0xf9, 0xb4, 0x01, 0x00,
-	0x00,
+	// 585 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x53, 0x4d, 0x8f, 0xd3, 0x30,
+	0x10, 0x6d, 0xda, 0x26, 0x6d, 0xa7, 0x9f, 0x58, 0x15, 0x84, 0x22, 0x50, 0x08, 0x42, 0x2a, 0x97,
+	0x0a, 0x75, 0x2f, 0x1c, 0x96, 0xc3, 0x52, 0x15, 0x56, 0x5a, 0x3e, 0x0d, 0xda, 0x6b, 0x09, 0x89,
+	0x9b, 0x5a, 0x4a, 0xe2, 0x62, 0x3b, 0x8b, 0xf8, 0x01, 0xfc, 0x03, 0x2e, 0xfc, 0x55, 0x4e, 0xc8,
+	0x8e, 0xb3, 0x9b, 0x16, 0x8a, 0xb4, 0x70, 0x8a, 0xe7, 0xcd, 0xcc, 0x9b, 0x37, 0xce, 0x33, 0xf4,
+	0x53, 0x22, 0x44, 0x10, 0x93, 0xd9, 0x96, 0x33, 0xc9, 0x50, 0x5b, 0x7f, 0x9e, 0xe5, 0x6b, 0xff,
+	0x23, 0xc0, 0x7b, 0x2a, 0x09, 0x26, 0x31, 0x26, 0x9f, 0xd1, 0x00, 0xea, 0x34, 0x72, 0x2d, 0xcf,
+	0x9a, 0xda, 0xb8, 0x4e, 0x23, 0x84, 0xa0, 0x99, 0x05, 0x29, 0x71, 0xeb, 0x9e, 0x35, 0xed, 0x60,
+	0x7d, 0x46, 0x33, 0xb0, 0x83, 0x24, 0x66, 0xc2, 0x6d, 0x7a, 0x8d, 0x69, 0x77, 0xee, 0xce, 0x4a,
+	0xae, 0x99, 0x22, 0x3a, 0x49, 0x62, 0x56, 0x90, 0xe1, 0xa2, 0xcc, 0x5f, 0xc3, 0x60, 0x37, 0xf1,
+	0xdb, 0x14, 0x0f, 0xba, 0x11, 0x11, 0x21, 0xa7, 0x5b, 0x49, 0x59, 0x66, 0x86, 0x55, 0x21, 0xe4,
+	0x43, 0x4f, 0x4f, 0x39, 0x27, 0x5c, 0xa8, 0x92, 0x86, 0x2e, 0xd9, 0xc1, 0xfc, 0x27, 0x95, 0x4d,
+	0x04, 0x72, 0xa1, 0x25, 0xf2, 0x30, 0x24, 0x42, 0xe8, 0x41, 0x6d, 0x5c, 0x86, 0x68, 0x04, 0x8d,
+	0x54, 0xc4, 0x66, 0x8a, 0x3a, 0xfa, 0xc7, 0x7b, 0x0a, 0xaf, 0xd7, 0xbd, 0x81, 0xe1, 0x22, 0x61,
+	0x79, 0xf4, 0x5f, 0x0b, 0x3e, 0x80, 0xbe, 0x5e, 0x66, 0x75, 0xf1, 0x97, 0x0d, 0x9f, 0xee, 0x4f,
+	0xba, 0x9e, 0xd0, 0x6f, 0x16, 0xd8, 0xef, 0x72, 0xc2, 0xbf, 0xa2, 0x7b, 0x00, 0x21, 0x4b, 0xb7,
+	0x01, 0x0f, 0x24, 0xe3, 0xba, 0xb1, 0x83, 0x2b, 0x08, 0x1a, 0x83, 0xbd, 0xa6, 0x24, 0x89, 0x4c,
+	0x77, 0x11, 0xa0, 0xfb, 0xd0, 0x13, 0x92, 0xd3, 0x2c, 0x5e, 0x5d, 0x04, 0x49, 0x4e, 0x8c, 0xc4,
+	0x6e, 0x81, 0x9d, 0x2b, 0x48, 0xad, 0x91, 0xe5, 0x29, 0xe1, 0x34, 0x34, 0x35, 0x4d, 0x7d, 0x07,
+	0x3d, 0x03, 0xea, 0x22, 0xff, 0x21, 0xf4, 0xb5, 0x0c, 0x4c, 0xc4, 0x96, 0x65, 0x82, 0xa8, 0x71,
+	0x21, 0xcb, 0x33, 0x69, 0x6e, 0xac, 0x08, 0xfc, 0x9f, 0x16, 0xb4, 0xde, 0x06, 0x92, 0x92, 0x4c,
+	0xa2, 0xbb, 0x00, 0x6b, 0xca, 0x85, 0x5c, 0x69, 0x37, 0x16, 0x82, 0x3b, 0x1a, 0x79, 0xad, 0x2c,
+	0x79, 0x07, 0x3a, 0x49, 0x50, 0x66, 0x0b, 0xcd, 0x6d, 0x05, 0xe8, 0xe4, 0x18, 0x6c, 0x92, 0x06,
+	0x34, 0x31, 0x7a, 0x8b, 0x40, 0x5d, 0x4f, 0x10, 0x97, 0xfa, 0xd4, 0x11, 0x3d, 0x06, 0x27, 0x26,
+	0x59, 0x44, 0xb8, 0x6b, 0x7b, 0xd6, 0x74, 0x50, 0x35, 0xb6, 0x91, 0x31, 0x7b, 0xa1, 0xf3, 0xd8,
+	0xd4, 0xa1, 0x9b, 0xe0, 0x7c, 0x21, 0x34, 0xde, 0x48, 0xd7, 0xf1, 0xac, 0x69, 0x1d, 0x9b, 0x48,
+	0xe1, 0x9b, 0x02, 0x6f, 0x69, 0x7a, 0x13, 0xf9, 0x8f, 0xc0, 0x29, 0x18, 0x50, 0x1b, 0x9a, 0xaf,
+	0x4e, 0x5e, 0x2e, 0x47, 0x35, 0x04, 0xe0, 0x3c, 0x5f, 0xea, 0xb3, 0x85, 0x3a, 0x60, 0xbf, 0xf9,
+	0x70, 0xba, 0xc4, 0xa3, 0xfa, 0xfc, 0x87, 0x05, 0x43, 0xe5, 0xc9, 0x05, 0x63, 0x3c, 0xa2, 0x99,
+	0xfe, 0x2b, 0xc7, 0xd0, 0xc3, 0x24, 0xa6, 0x42, 0x12, 0xae, 0x52, 0x68, 0xbc, 0xfb, 0xf2, 0x0a,
+	0xef, 0x4d, 0xfe, 0x84, 0x0a, 0xbf, 0x86, 0x4e, 0x61, 0x54, 0xed, 0x56, 0x1e, 0x42, 0x07, 0xdf,
+	0xee, 0xe4, 0x50, 0x46, 0xf8, 0xb5, 0xf9, 0x77, 0x0b, 0x46, 0xda, 0x87, 0x55, 0x71, 0x67, 0x70,
+	0xa3, 0xa4, 0xbf, 0xf4, 0x28, 0xba, 0x7d, 0xc5, 0xb2, 0xf7, 0x44, 0x26, 0x07, 0x53, 0x4a, 0xeb,
+	0x11, 0xd8, 0x0b, 0xe5, 0x01, 0x34, 0xbc, 0xaa, 0xd2, 0x96, 0x99, 0xdc, 0xda, 0x03, 0x4a, 0x0f,
+	0xf9, 0xb5, 0xf9, 0x10, 0xfa, 0x8a, 0x64, 0xc1, 0xb2, 0x8c, 0x84, 0x92, 0xf1, 0xf9, 0x19, 0x8c,
+	0x2b, 0x0a, 0x2f, 0xf1, 0x7f, 0x62, 0xff, 0xe4, 0xe8, 0xcc, 0xd1, 0xaf, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0xec, 0x23, 0xd9, 0x59, 0x49, 0x05, 0x00, 0x00,
+}
+
+// Reference imports to suppress errors if they are not otherwise used.
+var _ context.Context
+var _ grpc.ClientConn
+
+// This is a compile-time assertion to ensure that this generated file
+// is compatible with the grpc package it is being compiled against.
+const _ = grpc.SupportPackageIsVersion4
+
+// SiteCoordinatorClient is the client API for SiteCoordinator service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type SiteCoordinatorClient interface {
+	RegisterSite(ctx context.Context, in *SiteRegReq, opts ...grpc.CallOption) (*SiteRegRes, error)
+	RegisterSiteAlgo(ctx context.Context, in *SiteAlgoRegReq, opts ...grpc.CallOption) (*SiteAlgoRegRes, error)
+}
+
+type siteCoordinatorClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewSiteCoordinatorClient(cc *grpc.ClientConn) SiteCoordinatorClient {
+	return &siteCoordinatorClient{cc}
+}
+
+func (c *siteCoordinatorClient) RegisterSite(ctx context.Context, in *SiteRegReq, opts ...grpc.CallOption) (*SiteRegRes, error) {
+	out := new(SiteRegRes)
+	err := c.cc.Invoke(ctx, "/protoBuf.SiteCoordinator/RegisterSite", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *siteCoordinatorClient) RegisterSiteAlgo(ctx context.Context, in *SiteAlgoRegReq, opts ...grpc.CallOption) (*SiteAlgoRegRes, error) {
+	out := new(SiteAlgoRegRes)
+	err := c.cc.Invoke(ctx, "/protoBuf.SiteCoordinator/RegisterSiteAlgo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// SiteCoordinatorServer is the server API for SiteCoordinator service.
+type SiteCoordinatorServer interface {
+	RegisterSite(context.Context, *SiteRegReq) (*SiteRegRes, error)
+	RegisterSiteAlgo(context.Context, *SiteAlgoRegReq) (*SiteAlgoRegRes, error)
+}
+
+// UnimplementedSiteCoordinatorServer can be embedded to have forward compatible implementations.
+type UnimplementedSiteCoordinatorServer struct {
+}
+
+func (*UnimplementedSiteCoordinatorServer) RegisterSite(ctx context.Context, req *SiteRegReq) (*SiteRegRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterSite not implemented")
+}
+func (*UnimplementedSiteCoordinatorServer) RegisterSiteAlgo(ctx context.Context, req *SiteAlgoRegReq) (*SiteAlgoRegRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterSiteAlgo not implemented")
+}
+
+func RegisterSiteCoordinatorServer(s *grpc.Server, srv SiteCoordinatorServer) {
+	s.RegisterService(&_SiteCoordinator_serviceDesc, srv)
+}
+
+func _SiteCoordinator_RegisterSite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SiteRegReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SiteCoordinatorServer).RegisterSite(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protoBuf.SiteCoordinator/RegisterSite",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SiteCoordinatorServer).RegisterSite(ctx, req.(*SiteRegReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _SiteCoordinator_RegisterSiteAlgo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SiteAlgoRegReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SiteCoordinatorServer).RegisterSiteAlgo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protoBuf.SiteCoordinator/RegisterSiteAlgo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SiteCoordinatorServer).RegisterSiteAlgo(ctx, req.(*SiteAlgoRegReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _SiteCoordinator_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "protoBuf.SiteCoordinator",
+	HandlerType: (*SiteCoordinatorServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterSite",
+			Handler:    _SiteCoordinator_RegisterSite_Handler,
+		},
+		{
+			MethodName: "RegisterSiteAlgo",
+			Handler:    _SiteCoordinator_RegisterSiteAlgo_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "message.proto",
+}
+
+// CloudCoordinatorClient is the client API for CloudCoordinator service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type CloudCoordinatorClient interface {
+	RegisterCloudAlgo(ctx context.Context, in *CloudAlgoRegReq, opts ...grpc.CallOption) (*CloudAlgoRegRes, error)
+	Count(ctx context.Context, in *Query, opts ...grpc.CallOption) (*QueryResponse, error)
+}
+
+type cloudCoordinatorClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewCloudCoordinatorClient(cc *grpc.ClientConn) CloudCoordinatorClient {
+	return &cloudCoordinatorClient{cc}
+}
+
+func (c *cloudCoordinatorClient) RegisterCloudAlgo(ctx context.Context, in *CloudAlgoRegReq, opts ...grpc.CallOption) (*CloudAlgoRegRes, error) {
+	out := new(CloudAlgoRegRes)
+	err := c.cc.Invoke(ctx, "/protoBuf.CloudCoordinator/RegisterCloudAlgo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *cloudCoordinatorClient) Count(ctx context.Context, in *Query, opts ...grpc.CallOption) (*QueryResponse, error) {
+	out := new(QueryResponse)
+	err := c.cc.Invoke(ctx, "/protoBuf.CloudCoordinator/Count", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CloudCoordinatorServer is the server API for CloudCoordinator service.
+type CloudCoordinatorServer interface {
+	RegisterCloudAlgo(context.Context, *CloudAlgoRegReq) (*CloudAlgoRegRes, error)
+	Count(context.Context, *Query) (*QueryResponse, error)
+}
+
+// UnimplementedCloudCoordinatorServer can be embedded to have forward compatible implementations.
+type UnimplementedCloudCoordinatorServer struct {
+}
+
+func (*UnimplementedCloudCoordinatorServer) RegisterCloudAlgo(ctx context.Context, req *CloudAlgoRegReq) (*CloudAlgoRegRes, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterCloudAlgo not implemented")
+}
+func (*UnimplementedCloudCoordinatorServer) Count(ctx context.Context, req *Query) (*QueryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Count not implemented")
+}
+
+func RegisterCloudCoordinatorServer(s *grpc.Server, srv CloudCoordinatorServer) {
+	s.RegisterService(&_CloudCoordinator_serviceDesc, srv)
+}
+
+func _CloudCoordinator_RegisterCloudAlgo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CloudAlgoRegReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CloudCoordinatorServer).RegisterCloudAlgo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protoBuf.CloudCoordinator/RegisterCloudAlgo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CloudCoordinatorServer).RegisterCloudAlgo(ctx, req.(*CloudAlgoRegReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CloudCoordinator_Count_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Query)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CloudCoordinatorServer).Count(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protoBuf.CloudCoordinator/Count",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CloudCoordinatorServer).Count(ctx, req.(*Query))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _CloudCoordinator_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "protoBuf.CloudCoordinator",
+	HandlerType: (*CloudCoordinatorServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RegisterCloudAlgo",
+			Handler:    _CloudCoordinator_RegisterCloudAlgo_Handler,
+		},
+		{
+			MethodName: "Count",
+			Handler:    _CloudCoordinator_Count_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "message.proto",
+}
+
+// AlgoConnectorClient is the client API for AlgoConnector service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type AlgoConnectorClient interface {
+}
+
+type algoConnectorClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewAlgoConnectorClient(cc *grpc.ClientConn) AlgoConnectorClient {
+	return &algoConnectorClient{cc}
+}
+
+// AlgoConnectorServer is the server API for AlgoConnector service.
+type AlgoConnectorServer interface {
+}
+
+// UnimplementedAlgoConnectorServer can be embedded to have forward compatible implementations.
+type UnimplementedAlgoConnectorServer struct {
+}
+
+func RegisterAlgoConnectorServer(s *grpc.Server, srv AlgoConnectorServer) {
+	s.RegisterService(&_AlgoConnector_serviceDesc, srv)
+}
+
+var _AlgoConnector_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "protoBuf.AlgoConnector",
+	HandlerType: (*AlgoConnectorServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams:     []grpc.StreamDesc{},
+	Metadata:    "message.proto",
+}
+
+// CoordinatorConnectorClient is the client API for CoordinatorConnector service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
+type CoordinatorConnectorClient interface {
+	Count(ctx context.Context, in *Query, opts ...grpc.CallOption) (*QueryResponse, error)
+}
+
+type coordinatorConnectorClient struct {
+	cc *grpc.ClientConn
+}
+
+func NewCoordinatorConnectorClient(cc *grpc.ClientConn) CoordinatorConnectorClient {
+	return &coordinatorConnectorClient{cc}
+}
+
+func (c *coordinatorConnectorClient) Count(ctx context.Context, in *Query, opts ...grpc.CallOption) (*QueryResponse, error) {
+	out := new(QueryResponse)
+	err := c.cc.Invoke(ctx, "/protoBuf.CoordinatorConnector/Count", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// CoordinatorConnectorServer is the server API for CoordinatorConnector service.
+type CoordinatorConnectorServer interface {
+	Count(context.Context, *Query) (*QueryResponse, error)
+}
+
+// UnimplementedCoordinatorConnectorServer can be embedded to have forward compatible implementations.
+type UnimplementedCoordinatorConnectorServer struct {
+}
+
+func (*UnimplementedCoordinatorConnectorServer) Count(ctx context.Context, req *Query) (*QueryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Count not implemented")
+}
+
+func RegisterCoordinatorConnectorServer(s *grpc.Server, srv CoordinatorConnectorServer) {
+	s.RegisterService(&_CoordinatorConnector_serviceDesc, srv)
+}
+
+func _CoordinatorConnector_Count_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Query)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinatorConnectorServer).Count(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/protoBuf.CoordinatorConnector/Count",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinatorConnectorServer).Count(ctx, req.(*Query))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+var _CoordinatorConnector_serviceDesc = grpc.ServiceDesc{
+	ServiceName: "protoBuf.CoordinatorConnector",
+	HandlerType: (*CoordinatorConnectorServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Count",
+			Handler:    _CoordinatorConnector_Count_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "message.proto",
 }

@@ -1,14 +1,16 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/grpc"
 	"io/ioutil"
 	pb "leap/protoBuf"
 	"net"
 	"os"
+	"time"
 )
 
 var (
@@ -20,8 +22,69 @@ type Message struct {
 }
 
 type Config struct {
-	CloudIpPort string
-	SiteIpPort  string
+	IpPort string
+}
+
+type CloudCoordinatorService struct{}
+type SiteCoordinatorService struct{}
+
+
+func (s *SiteCoordinatorService) RegisterSite(ctx context.Context, req *pb.SiteRegReq) (*pb.SiteRegRes, error) {
+ return nil, nil
+}
+
+func (s *SiteCoordinatorService) RegisterSiteAlgo(ctx context.Context, req *pb.SiteAlgoRegReq) (*pb.SiteAlgoRegRes, error) {
+	return nil, nil
+}
+
+func (s *CloudCoordinatorService) RegisterCloudAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
+	return nil, nil
+}
+
+/*
+Makes a remote procedure call to a site connector with a
+query and returns the result of computing the query on a
+site algorithm
+
+ctx: Carries value and cancellation signals across API
+     boundaries
+req: Query created by algorithm in the cloud
+ */
+func (s *CloudCoordinatorService) Count(ctx context.Context, req *pb.Query) (*pb.QueryResponse, error) {
+	conn, err := grpc.Dial("127.0.0.1:9000", grpc.WithInsecure())
+	checkErr(err)
+	defer conn.Close()
+	c := pb.NewCoordinatorConnectorClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	res, err := c.Count(ctx, req)
+	checkErr(err)
+	return res, nil
+}
+
+
+/*
+Serves RPC calls from sites
+
+listener: A network listener at the ip and port specified by the config
+*/
+func ListenSites(listener net.Listener) {
+	s := grpc.NewServer()
+	pb.RegisterSiteCoordinatorServer(s, &SiteCoordinatorService{})
+	err := s.Serve(listener)
+	checkErr(err)
+}
+
+/*
+Serves RPC calls from cloud algorithms
+
+listener: A network listener at the ip and port specified by the config
+*/
+func ListenCloud(listener net.Listener) {
+	s := grpc.NewServer()
+	pb.RegisterCloudCoordinatorServer(s, &CloudCoordinatorService{})
+	err := s.Serve(listener)
+	checkErr(err)
 }
 
 /*
@@ -41,112 +104,12 @@ func InitializeConfig() {
 	err = json.Unmarshal(jsonBytes, &config)
 	checkErr(err)
 
-	cloudIpPortPtr := flag.String("cip", config.CloudIpPort, "The ip and port to listen for cloud algos")
-	siteIpPortPtr := flag.String("sip", config.SiteIpPort, "The ip and port to listen for site connectors")
+	IpPortPtr := flag.String("ip", config.IpPort, "The ip and port the coordinator is listening on")
 	flag.Parse()
 
-	config.CloudIpPort = *cloudIpPortPtr
-	config.SiteIpPort = *siteIpPortPtr
+	config.IpPort = *IpPortPtr
 }
 
-/*
-Listens to connections from sites. When a connection is accep-
-ted, a goroutine is spawned to handle the newly accepted
-connection.
-
-No args
-*/
-func ListenSites() {
-	listener, err := net.Listen("tcp", config.SiteIpPort)
-	checkErr(err)
-	defer listener.Close()
-	fmt.Println("Coordinator: Listening for site connections at " + config.SiteIpPort)
-	for {
-		conn, err := listener.Accept()
-		checkErr(err)
-		fmt.Println("Coordinator: Accepted connection from site algorithm")
-		go handleSiteConnection(conn)
-	}
-}
-
-/*
-Listens to connections from algorithms residing in our cloud
-infrastructure. When a connection is accepted, a goroutine is
-spawned to handle the newly accepted connection.
-
-No args
-*/
-func ListenCloud() {
-	listener, err := net.Listen("tcp", config.CloudIpPort)
-	checkErr(err)
-	defer listener.Close()
-	fmt.Println("Coordinator: Listening for cloud connections at " + config.CloudIpPort)
-	for {
-		conn, err := listener.Accept()
-		checkErr(err)
-		fmt.Println("Coordinator: Accepted connection from cloud algorithm")
-		go handleCloudConnection(conn)
-	}
-}
-
-// TODO: Do something useful with this function
-/*
-Reads all the data from the connection between the coordinator
-and a site. This data is added to a buffer and written back to
-the site.
-
-conn: A connection established between the coordinator and a
-      site.
-*/
-func handleSiteConnection(conn net.Conn) {
-	defer conn.Close()
-	buf, err := ioutil.ReadAll(conn)
-	checkErr(err)
-	_, err = conn.Write(buf)
-	checkErr(err)
-}
-
-/*
-Reads all the data from the connection between the coordinator
-and an algorithm in our cloud infrastructure. The data is then
-unmarshalled into a query, that is sent to a site that per-
-forms the query. The query result is returned to the coor-
-dinator, and relayed to the cloud algorithm that issued the
-request.
-
-con: A connection established between the coordinator and an
-     algorithm in the cloud.
-*/
-func handleCloudConnection(conn net.Conn) {
-	defer conn.Close()
-	buf, err := ioutil.ReadAll(conn)
-	checkErr(err)
-	query := pb.Query{}
-	err = proto.Unmarshal(buf, &query)
-	checkErr(err)
-	fmt.Println("Coordinator: Received following message from cloud", query)
-	response := getResultFromSite("127.0.0.1:9000", query)
-	_, err = conn.Write(response)
-	checkErr(err)
-}
-
-/*
-Issues a query to one specific site and gets the result of
-performing the query on that site's local data.
-
-ipPort: The ip + port of the site to connect to in the format
-        ip:port. E.g "127.0.0.1:8000"
-query:  The query issued by the cloud algorithm that should
-        be performed by a site algorithm
-*/
-func getResultFromSite(ipPort string, query pb.Query) []byte {
-	conn, err := net.Dial("tcp", ipPort)
-	checkErr(err)
-	out, err := proto.Marshal(&query)
-	conn.Write(out)
-	buf, err := ioutil.ReadAll(conn)
-	return buf
-}
 
 /*
 Helper to log errors in the coordinator

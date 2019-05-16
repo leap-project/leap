@@ -1,9 +1,86 @@
 syntax = "proto3";
 package protoBuf;
 
+// To compile the protobuf to Go run the following inside the protoBuf folder:
+// protoc -I=. --go_out=plugins=grpc:.  message.proto
+
+
+// RPC service at the coordinator that will handle requests from sites
+service SiteCoordinator {
+    rpc RegisterSite (SiteRegReq) returns (SiteRegRes) {}
+    rpc RegisterSiteAlgo (SiteAlgoRegReq) returns (SiteAlgoRegRes) {}
+}
+
+// RPC service at the coordinator that will handle requests from cloud algorithms
+service CloudCoordinator {
+    rpc RegisterCloudAlgo (CloudAlgoRegReq) returns (CloudAlgoRegRes) {}
+    rpc Count (Query) returns (QueryResponse) {}
+}
+
+// RPC service at a site connector that will handle requests from site algorithms
+service AlgoConnector {
+
+}
+
+// RPC service at a site connector that will handle requests from coordinator
+service CoordinatorConnector {
+    rpc Count(Query) returns (QueryResponse) {}
+}
+
+// Message sent by a site connector to a coordinator with the intent of registering the site and its available algos
+message SiteRegReq { // Site Registration Request
+    int32 id = 1;
+    string name = 2;
+    repeated SiteAlgoRegReq algos = 4;
+}
+
+// Message sent by a site connector to a coordinator indicating an algorithm it wants to register
+message SiteAlgoRegReq { // Site Algorithm Registration Request
+    int32 id = 1;
+    string description = 2;
+    string protoVersion = 3;
+}
+
+message SiteRegRes { // Site Registration Response
+    bool success = 1;
+    string msg = 2;
+}
+
+// Message sent by a coordinator to a site connector indicating whether the algorithm registration was successful
+message SiteAlgoRegRes { // Site Algorithm Registration Response
+    bool success = 1;
+    string msg = 2;
+}
+
+// Message sent by a cloud algorithm to a coordinator indicating this algorithm should be registered
+message CloudAlgoRegReq { // Cloud Algorithm Registration Request
+    int32 id = 1;
+    string description = 2;
+    string proto_version = 3;
+}
+
+// Message sent by a coordinator to a cloud algorithm indicating whether the algorithm registration was successful
+message CloudAlgoRegRes { // Cloud Algorithm Registration Response
+    bool success = 1;
+    string msg = 2;
+}
+
+// Simple example query
+message Query {
+    string comparator = 1;
+    string field = 2;
+    string string_value = 3;
+    int32  numeric_value = 4;
+}
+
+// Simple example query result
+message QueryResponse {
+    int32 count = 1;
+}
+
 message Patient {
-    string fname = 1;
-    string lname = 2;
+    string first_name = 1;
+    string last_name = 2;
     string email = 3;
     int32 age = 4;
 
@@ -16,15 +93,4 @@ message Patient {
     Gender gender = 5;
     float weight = 6;  // Weight in kilograms
     int32 height = 7;  // Height in centimeters
-}
-
-message Query {
-    string comparator = 1;
-    string field = 2;
-    string stringValue = 3;
-    int32 numericValue = 4;
-}
-
-message Result {
-    int32 count = 1;
 }

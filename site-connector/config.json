@@ -1,4 +1,3 @@
 {
-  "coordinatorIpPort": "127.0.0.1:9000",
-  "siteAlgosIpPort": "127.0.0.1:9001"
+  "IpPort": "127.0.0.1:9000"
 }

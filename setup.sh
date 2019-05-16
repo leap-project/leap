@@ -1,5 +1,3 @@
-# Coordinator
-
 # Install protoc compiler and runtime
 sudo apt-get install autoconf automake libtool curl make g++ unzip
 cd
@@ -13,8 +11,10 @@ make check
 sudo make install
 sudo ldconfig # refresh shared library cache
 Get Go protocol buffer plugin
-go get -u github.com/golang/protobuf/protoc-gen-go
 
-# Cloud Algo
-# Install python protobuf
+# Install protobuf for Go
+go get -u github.com/golang/protobuf/protoc-gen-go
+# Install protobuf for Python
 pip install protobuf
+# Install grpc for Go
+go get -u google.golang.org/grpc

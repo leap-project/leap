@@ -1,10 +1,11 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/golang/protobuf/proto"
+	"google.golang.org/grpc"
 	"io/ioutil"
 	pb "leap/protoBuf"
 	"net"
@@ -16,20 +17,98 @@ var (
 )
 
 type Config struct {
-	CoordinatorIpPort string
-	AlgosIpPort       string
+	IpPort string
 }
 
-var patients = []pb.Patient{{Fname: "Han", Lname: "Solo", Email: "hsolo@gmail.com", Age: 29, Gender: pb.Patient_MALE, Weight: 80, Height: 180},
-	{Fname: "Mark", Lname: "Atlas", Email: "matlas@gmail.com", Age: 92, Gender: pb.Patient_MALE, Weight: 61, Height: 180},
-	{Fname: "Joe", Lname: "Hum", Email: "jhum@gmail.com", Age: 85, Gender: pb.Patient_MALE, Weight: 72, Height: 184},
-	{Fname: "Bill", Lname: "Blase", Email: "blase@gmail.com", Age: 22, Gender: pb.Patient_MALE, Weight: 85, Height: 174},
-	{Fname: "Mary", Lname: "Swalino", Email: "mswalino@gmail.com", Age: 19, Gender: pb.Patient_FEMALE, Weight: 55, Height: 178},
-	{Fname: "Milton", Lname: "Bo", Email: "mbo@gmail.com", Age: 19, Gender: pb.Patient_MALE, Weight: 78, Height: 186},
-	{Fname: "Olivia", Lname: "Alos", Email: "oalos@gmail.com", Age: 30, Gender: pb.Patient_FEMALE, Weight: 50, Height: 160},
-	{Fname: "Clarissa", Lname: "Vikander", Email: "cikander@gmail.com", Age: 41, Gender: pb.Patient_FEMALE, Weight: 61, Height: 155},
-	{Fname: "Bruna", Lname: "Lorius", Email: "blorius@gmail.com", Age: 55, Gender: pb.Patient_FEMALE, Weight: 60, Height: 172},
-	{Fname: "Anna", Lname: "Tu", Email: "atu@gmail.com", Age: 101, Gender: pb.Patient_FEMALE, Weight: 65, Height: 150}}
+type AlgoConnectorService struct {}
+type CoordinatorConnectorService struct {}
+
+/*
+Parses user flags and creates config using the given flags.
+If a flag is absent, use the default flag given in the
+config.json file.
+
+No args
+ */
+func InitializeConfig() {
+	jsonFile, err := os.Open("config.json")
+	checkErr(err)
+	defer jsonFile.Close()
+	jsonBytes, err := ioutil.ReadAll(jsonFile)
+	checkErr(err)
+
+	err = json.Unmarshal(jsonBytes, &config)
+	checkErr(err)
+
+	IpPortPtr := flag.String("ip", config.IpPort, "The ip and port to listen for coordinators")
+	flag.Parse()
+
+	config.IpPort = *IpPortPtr
+}
+
+/*
+Invokes algorithm in site and returns the result of per-
+forming the algorithm on the given query to the coordinator
+
+ctx:   Carries value and cancellation signals across API
+       boundaries
+query: Query created by algorithm in the cloud and issued
+       by coordinator
+ */
+func (s *CoordinatorConnectorService) Count(ctx context.Context, query *pb.Query) (*pb.QueryResponse, error) {
+	result := count(*query)
+	res := pb.QueryResponse{Count: result}
+	return &res, nil
+}
+
+/*
+Serves RPC calls from site algorithms.
+
+listener: A network listener at the ip and port specified by the config
+*/
+func ListenAlgos(listener net.Listener) {
+	s := grpc.NewServer()
+	pb.RegisterAlgoConnectorServer(s, &AlgoConnectorService{})
+	err := s.Serve(listener)
+	checkErr(err)
+}
+
+/*
+Serves RPC calls from coordinator.
+
+listener: A network listener at the ip and port specified by the config
+*/
+func ListenCoordinator(listener net.Listener) {
+	s := grpc.NewServer()
+	pb.RegisterCoordinatorConnectorServer(s, &CoordinatorConnectorService{})
+	err := s.Serve(listener)
+	checkErr(err)
+}
+
+/*
+Helper to log errors in a site connector
+
+err: Error returned by a function that should be checked
+     if nil or not.
+*/
+func checkErr(err error) {
+	if err != nil {
+		fmt.Println("Site Connector:", err.Error())
+		os.Exit(1)
+	}
+}
+
+// TODO: Delete code below and setup redcap database
+var patients = []pb.Patient{{FirstName: "Han", LastName: "Solo", Email: "hsolo@gmail.com", Age: 29, Gender: pb.Patient_MALE, Weight: 80, Height: 180},
+	{FirstName: "Mark", LastName: "Atlas", Email: "matlas@gmail.com", Age: 92, Gender: pb.Patient_MALE, Weight: 61, Height: 180},
+	{FirstName: "Joe", LastName: "Hum", Email: "jhum@gmail.com", Age: 85, Gender: pb.Patient_MALE, Weight: 72, Height: 184},
+	{FirstName: "Bill", LastName: "Blase", Email: "blase@gmail.com", Age: 22, Gender: pb.Patient_MALE, Weight: 85, Height: 174},
+	{FirstName: "Mary", LastName: "Swalino", Email: "mswalino@gmail.com", Age: 19, Gender: pb.Patient_FEMALE, Weight: 55, Height: 178},
+	{FirstName: "Milton", LastName: "Bo", Email: "mbo@gmail.com", Age: 19, Gender: pb.Patient_MALE, Weight: 78, Height: 186},
+	{FirstName: "Olivia", LastName: "Alos", Email: "oalos@gmail.com", Age: 30, Gender: pb.Patient_FEMALE, Weight: 50, Height: 160},
+	{FirstName: "Clarissa", LastName: "Vikander", Email: "cikander@gmail.com", Age: 41, Gender: pb.Patient_FEMALE, Weight: 61, Height: 155},
+	{FirstName: "Bruna", LastName: "Lorius", Email: "blorius@gmail.com", Age: 55, Gender: pb.Patient_FEMALE, Weight: 60, Height: 172},
+	{FirstName: "Anna", LastName: "Tu", Email: "atu@gmail.com", Age: 101, Gender: pb.Patient_FEMALE, Weight: 65, Height: 150}}
 
 func compare(patientVal float32, queryVal int32, comparator string) bool {
 	switch comparator {
@@ -62,125 +141,4 @@ func count(query pb.Query) int32 {
 		}
 	}
 	return int32(count)
-}
-
-/*
-Helper to log errors in a site connector
-
-err: Error returned by a function that should be checked
-     if nil or not.
-*/
-func checkErr(err error) {
-	if err != nil {
-		fmt.Println("Site Connector:", err.Error())
-		os.Exit(1)
-	}
-}
-
-/*
-Parses user flags and creates config using the given flags.
-If a flag is absent, use the default flag given in the
-config.json file.
-
-No args
- */
-func InitializeConfig() {
-	jsonFile, err := os.Open("config.json")
-	checkErr(err)
-	defer jsonFile.Close()
-	jsonBytes, err := ioutil.ReadAll(jsonFile)
-	checkErr(err)
-
-	err = json.Unmarshal(jsonBytes, &config)
-	checkErr(err)
-
-	coordinatorIpPortPtr := flag.String("cip", config.CoordinatorIpPort, "The ip and port to listen for coordinators")
-	algosIpPortPtr := flag.String("aip", config.CoordinatorIpPort, "The ip and port to listen for algorithms in this site")
-	flag.Parse()
-
-	config.CoordinatorIpPort = *coordinatorIpPortPtr
-	config.AlgosIpPort = *algosIpPortPtr
-}
-
-/*
-Listens to connections from site algos. When a connection
-is accepted, a goroutine is spawned to handle the newly
-accepted connection.
-
-No args
-*/
-func ListenAlgos() {
-	listener, err := net.Listen("tcp", config.CoordinatorIpPort)
-	checkErr(err)
-	defer listener.Close()
-	fmt.Println("Site Connector: Listening for site connections at " + config.CoordinatorIpPort)
-	for {
-		conn, err := listener.Accept()
-		checkErr(err)
-		go handleCoordConnection(conn)
-	}
-}
-
-/*
-Listens to connections from coordinator. When a connection
-is accepted, a goroutine is spawned to handle the newly
-accepted connection.
-
-No args
-*/
-func ListenCoordinator() {
-	listener, err := net.Listen("tcp", config.CoordinatorIpPort)
-	checkErr(err)
-	defer listener.Close()
-	fmt.Println("Site Connector: Listening for site connections at " + config.CoordinatorIpPort)
-	for {
-		conn, err := listener.Accept()
-		checkErr(err)
-		go handleCoordConnection(conn)
-	}
-}
-
-/*
-Reads all the data from the connection between a site and a
-coordinator. The site connector gets this data, calls the
-appropriate algorithm to perform the query, and returns the
-result to the coordinator
-
-conn: A connection established between the site connector and
-      a coordinator.
-*/
-func handleCoordConnection(conn net.Conn) {
-	defer conn.Close()
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	checkErr(err)
-
-	query := pb.Query{}
-	err = proto.Unmarshal(buf[:n], &query)
-	checkErr(err)
-	fmt.Println("Site Connector: Received following query from coordinator", query)
-	result := pb.Result{Count: count(query)}
-	out, err := proto.Marshal(&result)
-	conn.Write(out)
-}
-
-/*
-Reads all the data from the connection between an algorithm
-
-conn: A connection established between the site connector and
-      a coordinator.
-*/
-func handleAlgoConnection(conn net.Conn) {
-	defer conn.Close()
-	buf := make([]byte, 1024)
-	n, err := conn.Read(buf)
-	checkErr(err)
-
-	query := pb.Query{}
-	err = proto.Unmarshal(buf[:n], &query)
-	checkErr(err)
-	fmt.Println("Site Connector: Received following query from coordinator", query)
-	result := pb.Result{Count: count(query)}
-	out, err := proto.Marshal(&result)
-	conn.Write(out)
 }

@@ -17,7 +17,8 @@ var (
 )
 
 type Config struct {
-	IpPort string
+	CoordinatorIpPort string
+	AlgosIpPort string
 }
 
 type AlgoConnectorService struct {}
@@ -40,10 +41,12 @@ func InitializeConfig() {
 	err = json.Unmarshal(jsonBytes, &config)
 	checkErr(err)
 
-	IpPortPtr := flag.String("ip", config.IpPort, "The ip and port to listen for coordinators")
+	CoordinatorIpPortPtr := flag.String("cip", config.CoordinatorIpPort, "The ip and port to listen for coordinators")
+	AlgosIpPortPtr := flag.String("aip", config.AlgosIpPort, "The ip and port to listen for site algorithms")
 	flag.Parse()
 
-	config.IpPort = *IpPortPtr
+	config.CoordinatorIpPort = *CoordinatorIpPortPtr
+	config.AlgosIpPort = *AlgosIpPortPtr
 }
 
 /*
@@ -56,6 +59,7 @@ query: Query created by algorithm in the cloud and issued
        by coordinator
  */
 func (s *CoordinatorConnectorService) Count(ctx context.Context, query *pb.Query) (*pb.QueryResponse, error) {
+	fmt.Println("Site-Connector: Request for count")
 	result := count(*query)
 	res := pb.QueryResponse{Count: result}
 	return &res, nil
@@ -64,24 +68,30 @@ func (s *CoordinatorConnectorService) Count(ctx context.Context, query *pb.Query
 /*
 Serves RPC calls from site algorithms.
 
-listener: A network listener at the ip and port specified by the config
+No args
 */
-func ListenAlgos(listener net.Listener) {
+func ListenAlgos() {
+	listener, err := net.Listen("tcp", config.AlgosIpPort)
+	fmt.Println("Site-Connector: Listening for site algos at", config.AlgosIpPort)
+	checkErr(err)
 	s := grpc.NewServer()
 	pb.RegisterAlgoConnectorServer(s, &AlgoConnectorService{})
-	err := s.Serve(listener)
+	err = s.Serve(listener)
 	checkErr(err)
 }
 
 /*
 Serves RPC calls from coordinator.
 
-listener: A network listener at the ip and port specified by the config
+No args
 */
-func ListenCoordinator(listener net.Listener) {
+func ListenCoordinator() {
+	listener, err := net.Listen("tcp", config.CoordinatorIpPort)
+	fmt.Println("Site-Connector: Listening for coordinator at", config.CoordinatorIpPort)
+	checkErr(err)
 	s := grpc.NewServer()
 	pb.RegisterCoordinatorConnectorServer(s, &CoordinatorConnectorService{})
-	err := s.Serve(listener)
+	err = s.Serve(listener)
 	checkErr(err)
 }
 
@@ -110,8 +120,8 @@ var patients = []pb.Patient{{FirstName: "Han", LastName: "Solo", Email: "hsolo@g
 	{FirstName: "Bruna", LastName: "Lorius", Email: "blorius@gmail.com", Age: 55, Gender: pb.Patient_FEMALE, Weight: 60, Height: 172},
 	{FirstName: "Anna", LastName: "Tu", Email: "atu@gmail.com", Age: 101, Gender: pb.Patient_FEMALE, Weight: 65, Height: 150}}
 
-func compare(patientVal float32, queryVal int32, comparator string) bool {
-	switch comparator {
+func compare(patientVal float32, queryVal int32, operator string) bool {
+	switch operator {
 	case "GT":
 		return patientVal > float32(queryVal)
 	case "LT":
@@ -127,15 +137,15 @@ func count(query pb.Query) int32 {
 	for _, patient := range patients {
 		switch query.Field {
 		case "age":
-			if compare(float32(patient.Age), query.NumericValue, query.Comparator) {
+			if compare(float32(patient.Age), query.NumericValue, query.Operator) {
 				count++
 			}
 		case "weight":
-			if compare(patient.Weight, query.NumericValue, query.Comparator) {
+			if compare(patient.Weight, query.NumericValue, query.Operator) {
 				count++
 			}
 		case "height":
-			if compare(float32(patient.Height), query.NumericValue, query.Comparator) {
+			if compare(float32(patient.Height), query.NumericValue, query.Operator) {
 				count++
 			}
 		}

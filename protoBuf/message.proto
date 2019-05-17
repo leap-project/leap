@@ -4,6 +4,8 @@ package protoBuf;
 // To compile the protobuf to Go run the following inside the protoBuf folder:
 // protoc -I=. --go_out=plugins=grpc:.  message.proto
 
+// To compile the protobuf to Python run the following inside the protoBuf folder:
+// python -m grpc_tools.protoc -I=. --python_out=../cloudAlgos/ --grpc_python_out=../cloudAlgos/ message.proto
 
 // RPC service at the coordinator that will handle requests from sites
 service SiteCoordinator {
@@ -24,7 +26,7 @@ service AlgoConnector {
 
 // RPC service at a site connector that will handle requests from coordinator
 service CoordinatorConnector {
-    rpc Count(Query) returns (QueryResponse) {}
+    rpc Count (Query) returns (QueryResponse) {}
 }
 
 // Message sent by a site connector to a coordinator with the intent of registering the site and its available algos
@@ -67,7 +69,7 @@ message CloudAlgoRegRes { // Cloud Algorithm Registration Response
 
 // Simple example query
 message Query {
-    string comparator = 1;
+    string operator = 1;
     string field = 2;
     string string_value = 3;
     int32  numeric_value = 4;

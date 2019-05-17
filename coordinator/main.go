@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net"
 )
 
 /*
@@ -16,13 +15,10 @@ e.g go run *.go -cip=127.0.0.1:8000 -sip=127.0.0.1:8001
 */
 
 func main() {
-	fmt.Println("Starting coordinator")
+	fmt.Println("Coordinator: Starting coordinator")
 	InitializeConfig()
-	listener, err := net.Listen("tcp", config.IpPort)
-	checkErr(err)
-	fmt.Println("Listening for connections at:", config.IpPort)
-	go ListenSites(listener)
-	go ListenCloud(listener)
+	go ListenSites()
+	go ListenCloud()
 	// Sleep main goroutine forever
 	select {}
 }

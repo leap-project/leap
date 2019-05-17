@@ -1,6 +1,8 @@
 package main
 
-import "net"
+import (
+	"fmt"
+)
 
 /*
 Run with go run *.go
@@ -12,11 +14,10 @@ e.g go run *.go -ip=127.0.0.1:9000
 */
 
 func main() {
+	fmt.Println("Site-Connector: Starting site-connector")
 	InitializeConfig()
-	listener, err := net.Listen("tcp", config.IpPort)
-	checkErr(err)
-	go ListenCoordinator(listener)
-	go ListenAlgos(listener)
+	go ListenCoordinator()
+	go ListenAlgos()
 	// Sleep main goroutine forever
 	select {}
 }

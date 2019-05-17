@@ -1,7 +1,10 @@
 import socket
-import message_pb2
+import grpc
 
-def createPatient():
+import message_pb2
+import message_pb2_grpc
+
+def create_patient():
     patient = message_pb2.Patient()
     patient.fname  = "Han"
     patient.lname  = "Solo"
@@ -12,45 +15,77 @@ def createPatient():
     patient.height = 180
     return patient
 
-def createNumericQuery(comparator, field, value):
+# Helper to create a query with a numeric value when given a
+# operator
+#
+# operator: String with GT, LT, or EQ values
+# field:    The field the comparison should be applied to.
+#           For example, age, weight or height.
+# value:    The value that should be used in the comparison.
+#           For example, in 'age GT 81', 81 is the value
+def create_numeric_query_helper(operator, field, value):
     query = message_pb2.Query()
-    query.comparator = comparator
+    query.operator = operator
     query.field = field
-    query.numericValue = value
+    query.numeric_value = value
     return query
 
-def createStringQuery(comparator, field, value):
+# Helper to create a query with a string value when given a
+# operator
+#
+# operator: String with EQ value
+# field:    The field the comparison should be applied to.
+#           In this case, gender.
+# value:    The value that should be used in the comparison.
+#           For example, in 'gender EQ male', male is the value
+def create_string_query_helper(operator, field, value):
     query = message_pb2.Query()
-    query.comparator = comparator
+    query.operator = operator
     query.field = field
     query.stringValue = value
     return query
 
-# COMPARATOR: GT, LT, EQ
-# FIELD: age (int) , weight (int), height (int), gender (string)
-def countQuery(comparator, field, value):
-    if type(value) == "string" and comparator != "EQ":
+# Creates a query using the protobuf definition. For example,
+# a query with operator="EQ", field="age", value=19 will re-
+# turn the number of patients that are 19.
+#
+# operator: The comparison to be performed on a value. This
+#           comparison may be EQ (equal to), LT (less than),
+#           or GT (greater than).
+# field:    The field that will be compared to a value. These
+#           fields may be age, weight, height, gender etc.
+# value:    The value that will be compared to the value of
+#           vield using the operator.
+def create_count_query(operator, field, value):
+    if type(value) == "string" and operator != "EQ":
         print("You can only perform a GT or LT query with a numeric value")
         return
 
     if field == "age":
-        return createNumericQuery(comparator, field, value)
+        return create_numeric_query_helper(operator, field, value)
     elif field == "weight":
-        return createNumericQuery(comparator, field, value)
+        return create_numeric_query_helper(operator, field, value)
     elif field == "height":
-        return createNumericQuery(comparator, field, value)
+        return create_numeric_query_helper(operator, field, value)
     elif field == "gender":
-        return createStringQuery(comparator, field, value)
+        return create_string_query_helper(operator, field, value)
+
+# Makes an RPC call to the coordinator with the given query.
+# stub:  Stub for the cloud coordinator
+# query: Query to be performed in local sites
+def count(stub, query):
+    result = stub.Count(query)
+    if not result.count:
+        print("Count failed")
+    return result
 
 
 if __name__ == "__main__":
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.connect(('localhost', 8000))
-    query = countQuery("GT", "age", 81)
-    s.sendall(query.SerializeToString())
-    s.shutdown(socket.SHUT_WR)
-    data = s.recv(1024)
-    res = message_pb2.Result()
-    res.ParseFromString(data)
-    print "This is the count: " + str(res.count)
-    s.close()
+    # Sets up the connection so that we can make RPC calls
+    with grpc.insecure_channel('127.0.0.1:50000') as channel:
+        stub = message_pb2_grpc.CloudCoordinatorStub(channel)
+        print("Counting number of patients with age above 81")
+        query = create_count_query("GT", "age", 81)
+        result = count(stub, query)
+        print(result)
+

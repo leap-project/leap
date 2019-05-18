@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='protoBuf',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\rmessage.proto\x12\x08protoBuf\"O\n\nSiteRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\'\n\x05\x61lgos\x18\x04 \x03(\x0b\x32\x18.protoBuf.SiteAlgoRegReq\"G\n\x0eSiteAlgoRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x14\n\x0cprotoVersion\x18\x03 \x01(\t\"*\n\nSiteRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\".\n\x0eSiteAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\"I\n\x0f\x43loudAlgoRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x15\n\rproto_version\x18\x03 \x01(\t\"/\n\x0f\x43loudAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\"U\n\x05Query\x12\x10\n\x08operator\x18\x01 \x01(\t\x12\r\n\x05\x66ield\x18\x02 \x01(\t\x12\x14\n\x0cstring_value\x18\x03 \x01(\t\x12\x15\n\rnumeric_value\x18\x04 \x01(\x05\"\x1e\n\rQueryResponse\x12\r\n\x05\x63ount\x18\x01 \x01(\x05\"\xc1\x01\n\x07Patient\x12\x12\n\nfirst_name\x18\x01 \x01(\t\x12\x11\n\tlast_name\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\x12\x0b\n\x03\x61ge\x18\x04 \x01(\x05\x12(\n\x06gender\x18\x05 \x01(\x0e\x32\x18.protoBuf.Patient.Gender\x12\x0e\n\x06weight\x18\x06 \x01(\x02\x12\x0e\n\x06height\x18\x07 \x01(\x05\")\n\x06Gender\x12\x08\n\x04MALE\x10\x00\x12\n\n\x06\x46\x45MALE\x10\x01\x12\t\n\x05OTHER\x10\x02\x32\x99\x01\n\x0fSiteCoordinator\x12<\n\x0cRegisterSite\x12\x14.protoBuf.SiteRegReq\x1a\x14.protoBuf.SiteRegRes\"\x00\x12H\n\x10RegisterSiteAlgo\x12\x18.protoBuf.SiteAlgoRegReq\x1a\x18.protoBuf.SiteAlgoRegRes\"\x00\x32\x94\x01\n\x10\x43loudCoordinator\x12K\n\x11RegisterCloudAlgo\x12\x19.protoBuf.CloudAlgoRegReq\x1a\x19.protoBuf.CloudAlgoRegRes\"\x00\x12\x33\n\x05\x43ount\x12\x0f.protoBuf.Query\x1a\x17.protoBuf.QueryResponse\"\x00\x32\x0f\n\rAlgoConnector2K\n\x14\x43oordinatorConnector\x12\x33\n\x05\x43ount\x12\x0f.protoBuf.Query\x1a\x17.protoBuf.QueryResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\rmessage.proto\x12\x08protoBuf\"O\n\nSiteRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\'\n\x05\x61lgos\x18\x04 \x03(\x0b\x32\x18.protoBuf.SiteAlgoRegReq\"G\n\x0eSiteAlgoRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x14\n\x0cprotoVersion\x18\x03 \x01(\t\"*\n\nSiteRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\".\n\x0eSiteAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\"I\n\x0f\x43loudAlgoRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x15\n\rproto_version\x18\x03 \x01(\t\"/\n\x0f\x43loudAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\"A\n\x0e\x43omputeRequest\x12\x0f\n\x07\x61lgo_id\x18\x01 \x01(\x05\x12\x1e\n\x05query\x18\x02 \x01(\x0b\x32\x0f.protoBuf.Query\"U\n\x05Query\x12\x10\n\x08operator\x18\x01 \x01(\t\x12\r\n\x05\x66ield\x18\x02 \x01(\t\x12\x14\n\x0cstring_value\x18\x03 \x01(\t\x12\x15\n\rnumeric_value\x18\x04 \x01(\x05\"#\n\x0f\x43omputeResponse\x12\x10\n\x08response\x18\x01 \x01(\x05\"@\n\x10\x43omputeResponses\x12,\n\tresponses\x18\x01 \x03(\x0b\x32\x19.protoBuf.ComputeResponse\"\xc1\x01\n\x07Patient\x12\x12\n\nfirst_name\x18\x01 \x01(\t\x12\x11\n\tlast_name\x18\x02 \x01(\t\x12\r\n\x05\x65mail\x18\x03 \x01(\t\x12\x0b\n\x03\x61ge\x18\x04 \x01(\x05\x12(\n\x06gender\x18\x05 \x01(\x0e\x32\x18.protoBuf.Patient.Gender\x12\x0e\n\x06weight\x18\x06 \x01(\x02\x12\x0e\n\x06height\x18\x07 \x01(\x05\")\n\x06Gender\x12\x08\n\x04MALE\x10\x00\x12\n\n\x06\x46\x45MALE\x10\x01\x12\t\n\x05OTHER\x10\x02\x32[\n\x0fSiteCoordinator\x12H\n\x10RegisterSiteAlgo\x12\x18.protoBuf.SiteAlgoRegReq\x1a\x18.protoBuf.SiteAlgoRegRes\"\x00\x32\xa6\x01\n\x10\x43loudCoordinator\x12K\n\x11RegisterCloudAlgo\x12\x19.protoBuf.CloudAlgoRegReq\x1a\x19.protoBuf.CloudAlgoRegRes\"\x00\x12\x45\n\x0b\x41lgoRequest\x12\x18.protoBuf.ComputeRequest\x1a\x1a.protoBuf.ComputeResponses\"\x00\x32\x0f\n\rAlgoConnector2\\\n\x14\x43oordinatorConnector\x12\x44\n\x0b\x41lgoRequest\x12\x18.protoBuf.ComputeRequest\x1a\x19.protoBuf.ComputeResponse\"\x00\x62\x06proto3')
 )
 
 
@@ -46,8 +46,8 @@ _PATIENT_GENDER = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=669,
-  serialized_end=710,
+  serialized_start=807,
+  serialized_end=848,
 )
 _sym_db.RegisterEnumDescriptor(_PATIENT_GENDER)
 
@@ -301,6 +301,44 @@ _CLOUDALGOREGRES = _descriptor.Descriptor(
 )
 
 
+_COMPUTEREQUEST = _descriptor.Descriptor(
+  name='ComputeRequest',
+  full_name='protoBuf.ComputeRequest',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='algo_id', full_name='protoBuf.ComputeRequest.algo_id', index=0,
+      number=1, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='query', full_name='protoBuf.ComputeRequest.query', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=397,
+  serialized_end=462,
+)
+
+
 _QUERY = _descriptor.Descriptor(
   name='Query',
   full_name='protoBuf.Query',
@@ -348,20 +386,20 @@ _QUERY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=397,
-  serialized_end=482,
+  serialized_start=464,
+  serialized_end=549,
 )
 
 
-_QUERYRESPONSE = _descriptor.Descriptor(
-  name='QueryResponse',
-  full_name='protoBuf.QueryResponse',
+_COMPUTERESPONSE = _descriptor.Descriptor(
+  name='ComputeResponse',
+  full_name='protoBuf.ComputeResponse',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='count', full_name='protoBuf.QueryResponse.count', index=0,
+      name='response', full_name='protoBuf.ComputeResponse.response', index=0,
       number=1, type=5, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -379,8 +417,39 @@ _QUERYRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=484,
-  serialized_end=514,
+  serialized_start=551,
+  serialized_end=586,
+)
+
+
+_COMPUTERESPONSES = _descriptor.Descriptor(
+  name='ComputeResponses',
+  full_name='protoBuf.ComputeResponses',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='responses', full_name='protoBuf.ComputeResponses.responses', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=588,
+  serialized_end=652,
 )
 
 
@@ -453,11 +522,13 @@ _PATIENT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=517,
-  serialized_end=710,
+  serialized_start=655,
+  serialized_end=848,
 )
 
 _SITEREGREQ.fields_by_name['algos'].message_type = _SITEALGOREGREQ
+_COMPUTEREQUEST.fields_by_name['query'].message_type = _QUERY
+_COMPUTERESPONSES.fields_by_name['responses'].message_type = _COMPUTERESPONSE
 _PATIENT.fields_by_name['gender'].enum_type = _PATIENT_GENDER
 _PATIENT_GENDER.containing_type = _PATIENT
 DESCRIPTOR.message_types_by_name['SiteRegReq'] = _SITEREGREQ
@@ -466,8 +537,10 @@ DESCRIPTOR.message_types_by_name['SiteRegRes'] = _SITEREGRES
 DESCRIPTOR.message_types_by_name['SiteAlgoRegRes'] = _SITEALGOREGRES
 DESCRIPTOR.message_types_by_name['CloudAlgoRegReq'] = _CLOUDALGOREGREQ
 DESCRIPTOR.message_types_by_name['CloudAlgoRegRes'] = _CLOUDALGOREGRES
+DESCRIPTOR.message_types_by_name['ComputeRequest'] = _COMPUTEREQUEST
 DESCRIPTOR.message_types_by_name['Query'] = _QUERY
-DESCRIPTOR.message_types_by_name['QueryResponse'] = _QUERYRESPONSE
+DESCRIPTOR.message_types_by_name['ComputeResponse'] = _COMPUTERESPONSE
+DESCRIPTOR.message_types_by_name['ComputeResponses'] = _COMPUTERESPONSES
 DESCRIPTOR.message_types_by_name['Patient'] = _PATIENT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -513,6 +586,13 @@ CloudAlgoRegRes = _reflection.GeneratedProtocolMessageType('CloudAlgoRegRes', (_
   ))
 _sym_db.RegisterMessage(CloudAlgoRegRes)
 
+ComputeRequest = _reflection.GeneratedProtocolMessageType('ComputeRequest', (_message.Message,), dict(
+  DESCRIPTOR = _COMPUTEREQUEST,
+  __module__ = 'message_pb2'
+  # @@protoc_insertion_point(class_scope:protoBuf.ComputeRequest)
+  ))
+_sym_db.RegisterMessage(ComputeRequest)
+
 Query = _reflection.GeneratedProtocolMessageType('Query', (_message.Message,), dict(
   DESCRIPTOR = _QUERY,
   __module__ = 'message_pb2'
@@ -520,12 +600,19 @@ Query = _reflection.GeneratedProtocolMessageType('Query', (_message.Message,), d
   ))
 _sym_db.RegisterMessage(Query)
 
-QueryResponse = _reflection.GeneratedProtocolMessageType('QueryResponse', (_message.Message,), dict(
-  DESCRIPTOR = _QUERYRESPONSE,
+ComputeResponse = _reflection.GeneratedProtocolMessageType('ComputeResponse', (_message.Message,), dict(
+  DESCRIPTOR = _COMPUTERESPONSE,
   __module__ = 'message_pb2'
-  # @@protoc_insertion_point(class_scope:protoBuf.QueryResponse)
+  # @@protoc_insertion_point(class_scope:protoBuf.ComputeResponse)
   ))
-_sym_db.RegisterMessage(QueryResponse)
+_sym_db.RegisterMessage(ComputeResponse)
+
+ComputeResponses = _reflection.GeneratedProtocolMessageType('ComputeResponses', (_message.Message,), dict(
+  DESCRIPTOR = _COMPUTERESPONSES,
+  __module__ = 'message_pb2'
+  # @@protoc_insertion_point(class_scope:protoBuf.ComputeResponses)
+  ))
+_sym_db.RegisterMessage(ComputeResponses)
 
 Patient = _reflection.GeneratedProtocolMessageType('Patient', (_message.Message,), dict(
   DESCRIPTOR = _PATIENT,
@@ -542,22 +629,13 @@ _SITECOORDINATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=713,
-  serialized_end=866,
+  serialized_start=850,
+  serialized_end=941,
   methods=[
-  _descriptor.MethodDescriptor(
-    name='RegisterSite',
-    full_name='protoBuf.SiteCoordinator.RegisterSite',
-    index=0,
-    containing_service=None,
-    input_type=_SITEREGREQ,
-    output_type=_SITEREGRES,
-    serialized_options=None,
-  ),
   _descriptor.MethodDescriptor(
     name='RegisterSiteAlgo',
     full_name='protoBuf.SiteCoordinator.RegisterSiteAlgo',
-    index=1,
+    index=0,
     containing_service=None,
     input_type=_SITEALGOREGREQ,
     output_type=_SITEALGOREGRES,
@@ -575,8 +653,8 @@ _CLOUDCOORDINATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=None,
-  serialized_start=869,
-  serialized_end=1017,
+  serialized_start=944,
+  serialized_end=1110,
   methods=[
   _descriptor.MethodDescriptor(
     name='RegisterCloudAlgo',
@@ -588,12 +666,12 @@ _CLOUDCOORDINATOR = _descriptor.ServiceDescriptor(
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
-    name='Count',
-    full_name='protoBuf.CloudCoordinator.Count',
+    name='AlgoRequest',
+    full_name='protoBuf.CloudCoordinator.AlgoRequest',
     index=1,
     containing_service=None,
-    input_type=_QUERY,
-    output_type=_QUERYRESPONSE,
+    input_type=_COMPUTEREQUEST,
+    output_type=_COMPUTERESPONSES,
     serialized_options=None,
   ),
 ])
@@ -608,8 +686,8 @@ _ALGOCONNECTOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=2,
   serialized_options=None,
-  serialized_start=1019,
-  serialized_end=1034,
+  serialized_start=1112,
+  serialized_end=1127,
   methods=[
 ])
 _sym_db.RegisterServiceDescriptor(_ALGOCONNECTOR)
@@ -623,16 +701,16 @@ _COORDINATORCONNECTOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=3,
   serialized_options=None,
-  serialized_start=1036,
-  serialized_end=1111,
+  serialized_start=1129,
+  serialized_end=1221,
   methods=[
   _descriptor.MethodDescriptor(
-    name='Count',
-    full_name='protoBuf.CoordinatorConnector.Count',
+    name='AlgoRequest',
+    full_name='protoBuf.CoordinatorConnector.AlgoRequest',
     index=0,
     containing_service=None,
-    input_type=_QUERY,
-    output_type=_QUERYRESPONSE,
+    input_type=_COMPUTEREQUEST,
+    output_type=_COMPUTERESPONSE,
     serialized_options=None,
   ),
 ])

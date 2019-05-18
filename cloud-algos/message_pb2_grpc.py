@@ -9,7 +9,7 @@ class SiteCoordinatorStub(object):
   protoc -I=. --go_out=plugins=grpc:.  message.proto
 
   To compile the protobuf to Python run the following inside the protoBuf folder:
-  python -m grpc_tools.protoc -I=. --python_out=../cloudAlgos/ --grpc_python_out=../cloudAlgos/ message.proto
+  python -m grpc_tools.protoc -I=. --python_out=../cloud-algos/ --grpc_python_out=../cloud-algos/ message.proto
 
   RPC service at the coordinator that will handle requests from sites
   """
@@ -20,11 +20,6 @@ class SiteCoordinatorStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.RegisterSite = channel.unary_unary(
-        '/protoBuf.SiteCoordinator/RegisterSite',
-        request_serializer=message__pb2.SiteRegReq.SerializeToString,
-        response_deserializer=message__pb2.SiteRegRes.FromString,
-        )
     self.RegisterSiteAlgo = channel.unary_unary(
         '/protoBuf.SiteCoordinator/RegisterSiteAlgo',
         request_serializer=message__pb2.SiteAlgoRegReq.SerializeToString,
@@ -37,17 +32,10 @@ class SiteCoordinatorServicer(object):
   protoc -I=. --go_out=plugins=grpc:.  message.proto
 
   To compile the protobuf to Python run the following inside the protoBuf folder:
-  python -m grpc_tools.protoc -I=. --python_out=../cloudAlgos/ --grpc_python_out=../cloudAlgos/ message.proto
+  python -m grpc_tools.protoc -I=. --python_out=../cloud-algos/ --grpc_python_out=../cloud-algos/ message.proto
 
   RPC service at the coordinator that will handle requests from sites
   """
-
-  def RegisterSite(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
 
   def RegisterSiteAlgo(self, request, context):
     # missing associated documentation comment in .proto file
@@ -59,11 +47,6 @@ class SiteCoordinatorServicer(object):
 
 def add_SiteCoordinatorServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'RegisterSite': grpc.unary_unary_rpc_method_handler(
-          servicer.RegisterSite,
-          request_deserializer=message__pb2.SiteRegReq.FromString,
-          response_serializer=message__pb2.SiteRegRes.SerializeToString,
-      ),
       'RegisterSiteAlgo': grpc.unary_unary_rpc_method_handler(
           servicer.RegisterSiteAlgo,
           request_deserializer=message__pb2.SiteAlgoRegReq.FromString,
@@ -90,10 +73,10 @@ class CloudCoordinatorStub(object):
         request_serializer=message__pb2.CloudAlgoRegReq.SerializeToString,
         response_deserializer=message__pb2.CloudAlgoRegRes.FromString,
         )
-    self.Count = channel.unary_unary(
-        '/protoBuf.CloudCoordinator/Count',
-        request_serializer=message__pb2.Query.SerializeToString,
-        response_deserializer=message__pb2.QueryResponse.FromString,
+    self.AlgoRequest = channel.unary_unary(
+        '/protoBuf.CloudCoordinator/AlgoRequest',
+        request_serializer=message__pb2.ComputeRequest.SerializeToString,
+        response_deserializer=message__pb2.ComputeResponses.FromString,
         )
 
 
@@ -108,7 +91,7 @@ class CloudCoordinatorServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def Count(self, request, context):
+  def AlgoRequest(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -123,10 +106,10 @@ def add_CloudCoordinatorServicer_to_server(servicer, server):
           request_deserializer=message__pb2.CloudAlgoRegReq.FromString,
           response_serializer=message__pb2.CloudAlgoRegRes.SerializeToString,
       ),
-      'Count': grpc.unary_unary_rpc_method_handler(
-          servicer.Count,
-          request_deserializer=message__pb2.Query.FromString,
-          response_serializer=message__pb2.QueryResponse.SerializeToString,
+      'AlgoRequest': grpc.unary_unary_rpc_method_handler(
+          servicer.AlgoRequest,
+          request_deserializer=message__pb2.ComputeRequest.FromString,
+          response_serializer=message__pb2.ComputeResponses.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
@@ -169,10 +152,10 @@ class CoordinatorConnectorStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.Count = channel.unary_unary(
-        '/protoBuf.CoordinatorConnector/Count',
-        request_serializer=message__pb2.Query.SerializeToString,
-        response_deserializer=message__pb2.QueryResponse.FromString,
+    self.AlgoRequest = channel.unary_unary(
+        '/protoBuf.CoordinatorConnector/AlgoRequest',
+        request_serializer=message__pb2.ComputeRequest.SerializeToString,
+        response_deserializer=message__pb2.ComputeResponse.FromString,
         )
 
 
@@ -180,7 +163,7 @@ class CoordinatorConnectorServicer(object):
   """RPC service at a site connector that will handle requests from coordinator
   """
 
-  def Count(self, request, context):
+  def AlgoRequest(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -190,10 +173,10 @@ class CoordinatorConnectorServicer(object):
 
 def add_CoordinatorConnectorServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'Count': grpc.unary_unary_rpc_method_handler(
-          servicer.Count,
-          request_deserializer=message__pb2.Query.FromString,
-          response_serializer=message__pb2.QueryResponse.SerializeToString,
+      'AlgoRequest': grpc.unary_unary_rpc_method_handler(
+          servicer.AlgoRequest,
+          request_deserializer=message__pb2.ComputeRequest.FromString,
+          response_serializer=message__pb2.ComputeResponse.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

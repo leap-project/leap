@@ -49,7 +49,7 @@ func (x Patient_Gender) String() string {
 }
 
 func (Patient_Gender) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_33c57e4bae7b9afd, []int{8, 0}
+	return fileDescriptor_33c57e4bae7b9afd, []int{10, 0}
 }
 
 // Message sent by a site connector to a coordinator with the intent of registering the site and its available algos
@@ -363,6 +363,54 @@ func (m *CloudAlgoRegRes) GetMsg() string {
 	return ""
 }
 
+// Message relayed by an algo to coordinator and site-connector that contains the query to be performed and algo id
+type ComputeRequest struct {
+	AlgoId               int32    `protobuf:"varint,1,opt,name=algo_id,json=algoId,proto3" json:"algo_id,omitempty"`
+	Query                *Query   `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *ComputeRequest) Reset()         { *m = ComputeRequest{} }
+func (m *ComputeRequest) String() string { return proto.CompactTextString(m) }
+func (*ComputeRequest) ProtoMessage()    {}
+func (*ComputeRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{6}
+}
+
+func (m *ComputeRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ComputeRequest.Unmarshal(m, b)
+}
+func (m *ComputeRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ComputeRequest.Marshal(b, m, deterministic)
+}
+func (m *ComputeRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ComputeRequest.Merge(m, src)
+}
+func (m *ComputeRequest) XXX_Size() int {
+	return xxx_messageInfo_ComputeRequest.Size(m)
+}
+func (m *ComputeRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_ComputeRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ComputeRequest proto.InternalMessageInfo
+
+func (m *ComputeRequest) GetAlgoId() int32 {
+	if m != nil {
+		return m.AlgoId
+	}
+	return 0
+}
+
+func (m *ComputeRequest) GetQuery() *Query {
+	if m != nil {
+		return m.Query
+	}
+	return nil
+}
+
 // Simple example query
 type Query struct {
 	Operator             string   `protobuf:"bytes,1,opt,name=operator,proto3" json:"operator,omitempty"`
@@ -378,7 +426,7 @@ func (m *Query) Reset()         { *m = Query{} }
 func (m *Query) String() string { return proto.CompactTextString(m) }
 func (*Query) ProtoMessage()    {}
 func (*Query) Descriptor() ([]byte, []int) {
-	return fileDescriptor_33c57e4bae7b9afd, []int{6}
+	return fileDescriptor_33c57e4bae7b9afd, []int{7}
 }
 
 func (m *Query) XXX_Unmarshal(b []byte) error {
@@ -427,44 +475,82 @@ func (m *Query) GetNumericValue() int32 {
 	return 0
 }
 
-// Simple example query result
-type QueryResponse struct {
-	Count                int32    `protobuf:"varint,1,opt,name=count,proto3" json:"count,omitempty"`
+type ComputeResponse struct {
+	Response             int32    `protobuf:"varint,1,opt,name=response,proto3" json:"response,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *QueryResponse) Reset()         { *m = QueryResponse{} }
-func (m *QueryResponse) String() string { return proto.CompactTextString(m) }
-func (*QueryResponse) ProtoMessage()    {}
-func (*QueryResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_33c57e4bae7b9afd, []int{7}
+func (m *ComputeResponse) Reset()         { *m = ComputeResponse{} }
+func (m *ComputeResponse) String() string { return proto.CompactTextString(m) }
+func (*ComputeResponse) ProtoMessage()    {}
+func (*ComputeResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{8}
 }
 
-func (m *QueryResponse) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_QueryResponse.Unmarshal(m, b)
+func (m *ComputeResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ComputeResponse.Unmarshal(m, b)
 }
-func (m *QueryResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_QueryResponse.Marshal(b, m, deterministic)
+func (m *ComputeResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ComputeResponse.Marshal(b, m, deterministic)
 }
-func (m *QueryResponse) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_QueryResponse.Merge(m, src)
+func (m *ComputeResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ComputeResponse.Merge(m, src)
 }
-func (m *QueryResponse) XXX_Size() int {
-	return xxx_messageInfo_QueryResponse.Size(m)
+func (m *ComputeResponse) XXX_Size() int {
+	return xxx_messageInfo_ComputeResponse.Size(m)
 }
-func (m *QueryResponse) XXX_DiscardUnknown() {
-	xxx_messageInfo_QueryResponse.DiscardUnknown(m)
+func (m *ComputeResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_ComputeResponse.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_QueryResponse proto.InternalMessageInfo
+var xxx_messageInfo_ComputeResponse proto.InternalMessageInfo
 
-func (m *QueryResponse) GetCount() int32 {
+func (m *ComputeResponse) GetResponse() int32 {
 	if m != nil {
-		return m.Count
+		return m.Response
 	}
 	return 0
+}
+
+type ComputeResponses struct {
+	Responses            []*ComputeResponse `protobuf:"bytes,1,rep,name=responses,proto3" json:"responses,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
+	XXX_unrecognized     []byte             `json:"-"`
+	XXX_sizecache        int32              `json:"-"`
+}
+
+func (m *ComputeResponses) Reset()         { *m = ComputeResponses{} }
+func (m *ComputeResponses) String() string { return proto.CompactTextString(m) }
+func (*ComputeResponses) ProtoMessage()    {}
+func (*ComputeResponses) Descriptor() ([]byte, []int) {
+	return fileDescriptor_33c57e4bae7b9afd, []int{9}
+}
+
+func (m *ComputeResponses) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ComputeResponses.Unmarshal(m, b)
+}
+func (m *ComputeResponses) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ComputeResponses.Marshal(b, m, deterministic)
+}
+func (m *ComputeResponses) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ComputeResponses.Merge(m, src)
+}
+func (m *ComputeResponses) XXX_Size() int {
+	return xxx_messageInfo_ComputeResponses.Size(m)
+}
+func (m *ComputeResponses) XXX_DiscardUnknown() {
+	xxx_messageInfo_ComputeResponses.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ComputeResponses proto.InternalMessageInfo
+
+func (m *ComputeResponses) GetResponses() []*ComputeResponse {
+	if m != nil {
+		return m.Responses
+	}
+	return nil
 }
 
 type Patient struct {
@@ -484,7 +570,7 @@ func (m *Patient) Reset()         { *m = Patient{} }
 func (m *Patient) String() string { return proto.CompactTextString(m) }
 func (*Patient) ProtoMessage()    {}
 func (*Patient) Descriptor() ([]byte, []int) {
-	return fileDescriptor_33c57e4bae7b9afd, []int{8}
+	return fileDescriptor_33c57e4bae7b9afd, []int{10}
 }
 
 func (m *Patient) XXX_Unmarshal(b []byte) error {
@@ -562,52 +648,57 @@ func init() {
 	proto.RegisterType((*SiteAlgoRegRes)(nil), "protoBuf.SiteAlgoRegRes")
 	proto.RegisterType((*CloudAlgoRegReq)(nil), "protoBuf.CloudAlgoRegReq")
 	proto.RegisterType((*CloudAlgoRegRes)(nil), "protoBuf.CloudAlgoRegRes")
+	proto.RegisterType((*ComputeRequest)(nil), "protoBuf.ComputeRequest")
 	proto.RegisterType((*Query)(nil), "protoBuf.Query")
-	proto.RegisterType((*QueryResponse)(nil), "protoBuf.QueryResponse")
+	proto.RegisterType((*ComputeResponse)(nil), "protoBuf.ComputeResponse")
+	proto.RegisterType((*ComputeResponses)(nil), "protoBuf.ComputeResponses")
 	proto.RegisterType((*Patient)(nil), "protoBuf.Patient")
 }
 
 func init() { proto.RegisterFile("message.proto", fileDescriptor_33c57e4bae7b9afd) }
 
 var fileDescriptor_33c57e4bae7b9afd = []byte{
-	// 585 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x53, 0x4f, 0x6f, 0xd3, 0x4e,
-	0x10, 0x8d, 0xd3, 0xd8, 0x4d, 0xa6, 0x49, 0x93, 0xdf, 0x2a, 0xfa, 0x61, 0x82, 0x90, 0x8c, 0x11,
-	0x52, 0xb8, 0x44, 0x28, 0xbd, 0x70, 0x28, 0x87, 0x12, 0x15, 0x2a, 0x95, 0xbf, 0x0b, 0xea, 0xb5,
-	0x18, 0x7b, 0xe2, 0xac, 0xe4, 0x78, 0xc3, 0xee, 0xba, 0x88, 0x23, 0xdf, 0x81, 0x0b, 0x5f, 0x95,
-	0x13, 0xda, 0xf5, 0x3a, 0x75, 0x02, 0x41, 0x2a, 0x9c, 0xb2, 0xf3, 0xde, 0xec, 0x9b, 0x37, 0xce,
-	0x5b, 0xe8, 0x2d, 0x51, 0xca, 0x28, 0xc5, 0xc9, 0x4a, 0x70, 0xc5, 0x49, 0xdb, 0xfc, 0x3c, 0x2d,
-	0xe6, 0xe1, 0x07, 0x80, 0x77, 0x4c, 0x21, 0xc5, 0x94, 0xe2, 0x27, 0x72, 0x08, 0x4d, 0x96, 0xf8,
-	0x4e, 0xe0, 0x8c, 0x5d, 0xda, 0x64, 0x09, 0x21, 0xd0, 0xca, 0xa3, 0x25, 0xfa, 0xcd, 0xc0, 0x19,
-	0x77, 0xa8, 0x39, 0x93, 0x09, 0xb8, 0x51, 0x96, 0x72, 0xe9, 0xb7, 0x82, 0xbd, 0xf1, 0xc1, 0xd4,
-	0x9f, 0x54, 0x5a, 0x13, 0x2d, 0x74, 0x92, 0xa5, 0xbc, 0x14, 0xa3, 0x65, 0x5b, 0x38, 0x87, 0xc3,
-	0x4d, 0xe2, 0x97, 0x29, 0x01, 0x1c, 0x24, 0x28, 0x63, 0xc1, 0x56, 0x8a, 0xf1, 0xdc, 0x0e, 0xab,
-	0x43, 0x24, 0x84, 0xae, 0x99, 0x72, 0x81, 0x42, 0xea, 0x96, 0x3d, 0xd3, 0xb2, 0x81, 0x85, 0x8f,
-	0x6b, 0x9b, 0x48, 0xe2, 0xc3, 0xbe, 0x2c, 0xe2, 0x18, 0xa5, 0x34, 0x83, 0xda, 0xb4, 0x2a, 0xc9,
-	0x00, 0xf6, 0x96, 0x32, 0xb5, 0x53, 0xf4, 0x31, 0x3c, 0xde, 0x72, 0x78, 0xb3, 0xdb, 0x0b, 0xe8,
-	0xcf, 0x32, 0x5e, 0x24, 0xff, 0xb4, 0xe0, 0x7d, 0xe8, 0x99, 0x65, 0x2e, 0xaf, 0xfe, 0xb0, 0xe1,
-	0x93, 0xed, 0x49, 0x37, 0x33, 0xfa, 0xd5, 0x01, 0xf7, 0x6d, 0x81, 0xe2, 0x0b, 0x19, 0x41, 0x9b,
-	0xaf, 0x50, 0x44, 0x8a, 0x0b, 0x73, 0xad, 0x43, 0xd7, 0x35, 0x19, 0x82, 0x3b, 0x67, 0x98, 0x25,
-	0xf6, 0x66, 0x59, 0x90, 0x7b, 0xd0, 0x95, 0x4a, 0xb0, 0x3c, 0xbd, 0xbc, 0x8a, 0xb2, 0x02, 0xad,
-	0xbd, 0x83, 0x12, 0xbb, 0xd0, 0x90, 0x5e, 0x21, 0x2f, 0x96, 0x28, 0x58, 0x6c, 0x7b, 0x5a, 0x66,
-	0xff, 0xae, 0x05, 0x4d, 0x53, 0xf8, 0x00, 0x7a, 0xc6, 0x02, 0x45, 0xb9, 0xe2, 0xb9, 0x44, 0x3d,
-	0x2e, 0xe6, 0x45, 0xae, 0xec, 0xd7, 0x2a, 0x8b, 0xf0, 0x87, 0x03, 0xfb, 0x6f, 0x22, 0xc5, 0x30,
-	0x57, 0xe4, 0x2e, 0xc0, 0x9c, 0x09, 0xa9, 0x2e, 0x4d, 0x12, 0x4b, 0xbb, 0x1d, 0x83, 0xbc, 0xd2,
-	0x71, 0xbc, 0x03, 0x9d, 0x2c, 0xaa, 0xd8, 0xd2, 0x73, 0x5b, 0x03, 0x86, 0x1c, 0x82, 0x8b, 0xcb,
-	0x88, 0x65, 0xd6, 0x6f, 0x59, 0xe8, 0x4f, 0x13, 0xa5, 0x95, 0x3f, 0x7d, 0x24, 0x8f, 0xc0, 0x4b,
-	0x31, 0x4f, 0x50, 0xf8, 0x6e, 0xe0, 0x8c, 0x0f, 0xeb, 0xa1, 0xb6, 0x36, 0x26, 0xcf, 0x0d, 0x4f,
-	0x6d, 0x1f, 0xf9, 0x1f, 0xbc, 0xcf, 0xc8, 0xd2, 0x85, 0xf2, 0xbd, 0xc0, 0x19, 0x37, 0xa9, 0xad,
-	0x34, 0xbe, 0x28, 0xf1, 0x7d, 0x23, 0x6f, 0xab, 0xf0, 0x21, 0x78, 0xa5, 0x02, 0x69, 0x43, 0xeb,
-	0xe5, 0xc9, 0x8b, 0xd3, 0x41, 0x83, 0x00, 0x78, 0xcf, 0x4e, 0xcd, 0xd9, 0x21, 0x1d, 0x70, 0x5f,
-	0xbf, 0x3f, 0x3b, 0xa5, 0x83, 0xe6, 0xf4, 0xbb, 0x03, 0x7d, 0x9d, 0xc7, 0x19, 0xe7, 0x22, 0x61,
-	0xb9, 0xf9, 0x57, 0x8e, 0xa1, 0x4b, 0x31, 0x65, 0x52, 0xa1, 0xd0, 0x14, 0x19, 0x6e, 0xbe, 0xba,
-	0x32, 0x77, 0xa3, 0xdf, 0xa1, 0x32, 0x6c, 0x90, 0x33, 0x18, 0xd4, 0x6f, 0xeb, 0xfc, 0x90, 0x9d,
-	0xef, 0x76, 0xb4, 0x8b, 0x91, 0x61, 0x63, 0xfa, 0xcd, 0x81, 0x81, 0xc9, 0x60, 0xdd, 0xdc, 0x39,
-	0xfc, 0x57, 0xc9, 0xaf, 0xf3, 0x49, 0x6e, 0x5f, 0xab, 0x6c, 0x3d, 0x8f, 0xd1, 0x4e, 0x4a, 0x7b,
-	0x3d, 0x02, 0x77, 0xa6, 0x33, 0x40, 0xfa, 0xd7, 0x5d, 0x26, 0x32, 0xa3, 0x5b, 0x5b, 0x40, 0x95,
-	0xa1, 0xb0, 0x31, 0xed, 0x43, 0x4f, 0x8b, 0xcc, 0x78, 0x9e, 0x63, 0xac, 0xb8, 0x98, 0x9e, 0xc3,
-	0xb0, 0xe6, 0x70, 0x8d, 0xff, 0x95, 0xfa, 0x47, 0xcf, 0x30, 0x47, 0x3f, 0x03, 0x00, 0x00, 0xff,
-	0xff, 0x83, 0x92, 0xd0, 0xd3, 0x45, 0x05, 0x00, 0x00,
+	// 634 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x54, 0xdf, 0x8f, 0xd2, 0x40,
+	0x10, 0xa6, 0x1c, 0x2d, 0x30, 0xdc, 0x01, 0x6e, 0x2e, 0x5a, 0x31, 0x26, 0xb8, 0xc6, 0x04, 0x1f,
+	0x24, 0x06, 0x1f, 0xf4, 0x41, 0x1f, 0x4e, 0x44, 0xcf, 0x9c, 0x3f, 0xce, 0xd5, 0xdc, 0x8b, 0x26,
+	0x58, 0xe9, 0xd0, 0xdb, 0xa4, 0x74, 0xb9, 0xdd, 0xf6, 0x8c, 0x8f, 0xfe, 0x33, 0xfe, 0x91, 0x3e,
+	0x99, 0xdd, 0x6d, 0xb9, 0x82, 0x62, 0xbc, 0xf8, 0xc4, 0xcc, 0xf7, 0x4d, 0x67, 0xe6, 0x9b, 0xd9,
+	0x01, 0xf6, 0x16, 0xa8, 0x54, 0x10, 0xe1, 0x70, 0x29, 0x45, 0x2a, 0x48, 0xc3, 0xfc, 0x3c, 0xcd,
+	0xe6, 0xf4, 0x33, 0xc0, 0x7b, 0x9e, 0x22, 0xc3, 0x88, 0xe1, 0x19, 0x69, 0x43, 0x95, 0x87, 0xbe,
+	0xd3, 0x77, 0x06, 0x2e, 0xab, 0xf2, 0x90, 0x10, 0xa8, 0x25, 0xc1, 0x02, 0xfd, 0x6a, 0xdf, 0x19,
+	0x34, 0x99, 0xb1, 0xc9, 0x10, 0xdc, 0x20, 0x8e, 0x84, 0xf2, 0x6b, 0xfd, 0x9d, 0x41, 0x6b, 0xe4,
+	0x0f, 0x8b, 0x5c, 0x43, 0x9d, 0xe8, 0x20, 0x8e, 0x84, 0x4d, 0xc6, 0x6c, 0x18, 0x9d, 0x43, 0x7b,
+	0x9d, 0xf8, 0xad, 0x4a, 0x1f, 0x5a, 0x21, 0xaa, 0x99, 0xe4, 0xcb, 0x94, 0x8b, 0x24, 0x2f, 0x56,
+	0x86, 0x08, 0x85, 0x5d, 0x53, 0xe5, 0x04, 0xa5, 0xd2, 0x21, 0x3b, 0x26, 0x64, 0x0d, 0xa3, 0x8f,
+	0x4a, 0x4a, 0x14, 0xf1, 0xa1, 0xae, 0xb2, 0xd9, 0x0c, 0x95, 0x32, 0x85, 0x1a, 0xac, 0x70, 0x49,
+	0x17, 0x76, 0x16, 0x2a, 0xca, 0xab, 0x68, 0x93, 0x3e, 0xde, 0xe8, 0xf0, 0x72, 0x5f, 0x9f, 0x42,
+	0x67, 0x1c, 0x8b, 0x2c, 0xfc, 0x2f, 0x81, 0xb7, 0x61, 0xcf, 0x88, 0x99, 0x9e, 0xff, 0x45, 0xe1,
+	0x93, 0xcd, 0x4a, 0x97, 0x6b, 0xf4, 0x18, 0xda, 0x63, 0xb1, 0x58, 0x66, 0x7a, 0x46, 0x67, 0x19,
+	0xaa, 0x94, 0x5c, 0x83, 0xba, 0xde, 0xd1, 0x74, 0xd5, 0xac, 0xa7, 0xdd, 0x97, 0x21, 0xb9, 0x03,
+	0xee, 0x59, 0x86, 0xf2, 0x9b, 0xf9, 0xbc, 0x35, 0xea, 0x5c, 0xec, 0xf8, 0x9d, 0x86, 0x99, 0x65,
+	0xe9, 0x77, 0x07, 0x5c, 0x03, 0x90, 0x1e, 0x34, 0xc4, 0x12, 0x65, 0x90, 0x0a, 0x69, 0x52, 0x35,
+	0xd9, 0xca, 0x27, 0xfb, 0xe0, 0xce, 0x39, 0xc6, 0x61, 0xde, 0x8b, 0x75, 0xc8, 0x2d, 0xd8, 0x55,
+	0xa9, 0xe4, 0x49, 0x34, 0x3d, 0x0f, 0xe2, 0x0c, 0x73, 0xc1, 0x2d, 0x8b, 0x9d, 0x68, 0x48, 0x0f,
+	0x25, 0xc9, 0x16, 0x28, 0xf9, 0x2c, 0x8f, 0xa9, 0x99, 0x26, 0x77, 0x73, 0xd0, 0x04, 0xd1, 0x7b,
+	0xd0, 0x59, 0xa9, 0x52, 0x4b, 0x91, 0x28, 0xd4, 0xcd, 0xc8, 0xdc, 0xce, 0x75, 0xad, 0x7c, 0x7a,
+	0x04, 0xdd, 0x8d, 0x70, 0x45, 0x1e, 0x42, 0xb3, 0xe0, 0xf5, 0x18, 0xf5, 0xab, 0xbe, 0x7e, 0xa1,
+	0x78, 0x23, 0x9c, 0x5d, 0xc4, 0xd2, 0x9f, 0x0e, 0xd4, 0x8f, 0x83, 0x94, 0x63, 0x92, 0x92, 0x9b,
+	0x00, 0x73, 0x2e, 0x55, 0x3a, 0x35, 0x07, 0x63, 0x67, 0xd0, 0x34, 0xc8, 0x1b, 0x7d, 0x35, 0x37,
+	0xa0, 0x19, 0x07, 0x05, 0x6b, 0x07, 0xd1, 0xd0, 0x80, 0x21, 0xf7, 0xc1, 0xc5, 0x45, 0xc0, 0xe3,
+	0x7c, 0x08, 0xd6, 0xd1, 0x1b, 0x0c, 0xa2, 0x42, 0xb4, 0x36, 0xc9, 0x7d, 0xf0, 0x22, 0x4c, 0x42,
+	0x94, 0xbe, 0xdb, 0x77, 0x06, 0xed, 0xf2, 0xed, 0xe5, 0x6d, 0x0c, 0x5f, 0x18, 0x9e, 0xe5, 0x71,
+	0xe4, 0x2a, 0x78, 0x5f, 0x91, 0x47, 0xa7, 0xa9, 0xef, 0xf5, 0x9d, 0x41, 0x95, 0xe5, 0x9e, 0xc6,
+	0x4f, 0x2d, 0x5e, 0xb7, 0x8b, 0xb7, 0x1e, 0xbd, 0x0b, 0x9e, 0xcd, 0x40, 0x1a, 0x50, 0x7b, 0x7d,
+	0xf0, 0x6a, 0xd2, 0xad, 0x10, 0x00, 0xef, 0xf9, 0xc4, 0xd8, 0x0e, 0x69, 0x82, 0xfb, 0xf6, 0xc3,
+	0xe1, 0x84, 0x75, 0xab, 0xa3, 0x8f, 0xd0, 0xd1, 0x57, 0x33, 0x16, 0x42, 0x86, 0x3c, 0x31, 0x9b,
+	0x3e, 0x84, 0x2e, 0xc3, 0x88, 0xab, 0x14, 0x65, 0x71, 0x50, 0x64, 0xeb, 0xff, 0x43, 0x6f, 0x1b,
+	0xa3, 0x68, 0x65, 0xf4, 0xc3, 0x81, 0xae, 0x79, 0xeb, 0xe5, 0xf4, 0x47, 0x70, 0xa5, 0x48, 0xbf,
+	0xba, 0x03, 0x52, 0xde, 0xd4, 0xfa, 0x19, 0xf6, 0xb6, 0x52, 0x8a, 0x56, 0xc8, 0x04, 0x5a, 0xd6,
+	0xb7, 0xa7, 0xe0, 0xff, 0x61, 0xe1, 0x86, 0xe9, 0xf5, 0xb6, 0x3e, 0x05, 0xdd, 0x68, 0x07, 0xf6,
+	0x74, 0x9a, 0xb1, 0x48, 0x12, 0x9c, 0xa5, 0x42, 0x8e, 0x3e, 0xc1, 0x7e, 0xa9, 0xe7, 0x15, 0x4e,
+	0x9e, 0xfd, 0x6b, 0xbd, 0xed, 0x4f, 0x8f, 0x56, 0xbe, 0x78, 0x86, 0x7b, 0xf0, 0x2b, 0x00, 0x00,
+	0xff, 0xff, 0x8d, 0x75, 0x96, 0x6c, 0xd0, 0x05, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -622,7 +713,6 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type SiteCoordinatorClient interface {
-	RegisterSite(ctx context.Context, in *SiteRegReq, opts ...grpc.CallOption) (*SiteRegRes, error)
 	RegisterSiteAlgo(ctx context.Context, in *SiteAlgoRegReq, opts ...grpc.CallOption) (*SiteAlgoRegRes, error)
 }
 
@@ -632,15 +722,6 @@ type siteCoordinatorClient struct {
 
 func NewSiteCoordinatorClient(cc *grpc.ClientConn) SiteCoordinatorClient {
 	return &siteCoordinatorClient{cc}
-}
-
-func (c *siteCoordinatorClient) RegisterSite(ctx context.Context, in *SiteRegReq, opts ...grpc.CallOption) (*SiteRegRes, error) {
-	out := new(SiteRegRes)
-	err := c.cc.Invoke(ctx, "/protoBuf.SiteCoordinator/RegisterSite", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *siteCoordinatorClient) RegisterSiteAlgo(ctx context.Context, in *SiteAlgoRegReq, opts ...grpc.CallOption) (*SiteAlgoRegRes, error) {
@@ -654,7 +735,6 @@ func (c *siteCoordinatorClient) RegisterSiteAlgo(ctx context.Context, in *SiteAl
 
 // SiteCoordinatorServer is the server API for SiteCoordinator service.
 type SiteCoordinatorServer interface {
-	RegisterSite(context.Context, *SiteRegReq) (*SiteRegRes, error)
 	RegisterSiteAlgo(context.Context, *SiteAlgoRegReq) (*SiteAlgoRegRes, error)
 }
 
@@ -662,33 +742,12 @@ type SiteCoordinatorServer interface {
 type UnimplementedSiteCoordinatorServer struct {
 }
 
-func (*UnimplementedSiteCoordinatorServer) RegisterSite(ctx context.Context, req *SiteRegReq) (*SiteRegRes, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RegisterSite not implemented")
-}
 func (*UnimplementedSiteCoordinatorServer) RegisterSiteAlgo(ctx context.Context, req *SiteAlgoRegReq) (*SiteAlgoRegRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterSiteAlgo not implemented")
 }
 
 func RegisterSiteCoordinatorServer(s *grpc.Server, srv SiteCoordinatorServer) {
 	s.RegisterService(&_SiteCoordinator_serviceDesc, srv)
-}
-
-func _SiteCoordinator_RegisterSite_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SiteRegReq)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(SiteCoordinatorServer).RegisterSite(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/protoBuf.SiteCoordinator/RegisterSite",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SiteCoordinatorServer).RegisterSite(ctx, req.(*SiteRegReq))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _SiteCoordinator_RegisterSiteAlgo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -714,10 +773,6 @@ var _SiteCoordinator_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*SiteCoordinatorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "RegisterSite",
-			Handler:    _SiteCoordinator_RegisterSite_Handler,
-		},
-		{
 			MethodName: "RegisterSiteAlgo",
 			Handler:    _SiteCoordinator_RegisterSiteAlgo_Handler,
 		},
@@ -731,7 +786,7 @@ var _SiteCoordinator_serviceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CloudCoordinatorClient interface {
 	RegisterCloudAlgo(ctx context.Context, in *CloudAlgoRegReq, opts ...grpc.CallOption) (*CloudAlgoRegRes, error)
-	Count(ctx context.Context, in *Query, opts ...grpc.CallOption) (*QueryResponse, error)
+	AlgoRequest(ctx context.Context, in *ComputeRequest, opts ...grpc.CallOption) (*ComputeResponses, error)
 }
 
 type cloudCoordinatorClient struct {
@@ -751,9 +806,9 @@ func (c *cloudCoordinatorClient) RegisterCloudAlgo(ctx context.Context, in *Clou
 	return out, nil
 }
 
-func (c *cloudCoordinatorClient) Count(ctx context.Context, in *Query, opts ...grpc.CallOption) (*QueryResponse, error) {
-	out := new(QueryResponse)
-	err := c.cc.Invoke(ctx, "/protoBuf.CloudCoordinator/Count", in, out, opts...)
+func (c *cloudCoordinatorClient) AlgoRequest(ctx context.Context, in *ComputeRequest, opts ...grpc.CallOption) (*ComputeResponses, error) {
+	out := new(ComputeResponses)
+	err := c.cc.Invoke(ctx, "/protoBuf.CloudCoordinator/AlgoRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -763,7 +818,7 @@ func (c *cloudCoordinatorClient) Count(ctx context.Context, in *Query, opts ...g
 // CloudCoordinatorServer is the server API for CloudCoordinator service.
 type CloudCoordinatorServer interface {
 	RegisterCloudAlgo(context.Context, *CloudAlgoRegReq) (*CloudAlgoRegRes, error)
-	Count(context.Context, *Query) (*QueryResponse, error)
+	AlgoRequest(context.Context, *ComputeRequest) (*ComputeResponses, error)
 }
 
 // UnimplementedCloudCoordinatorServer can be embedded to have forward compatible implementations.
@@ -773,8 +828,8 @@ type UnimplementedCloudCoordinatorServer struct {
 func (*UnimplementedCloudCoordinatorServer) RegisterCloudAlgo(ctx context.Context, req *CloudAlgoRegReq) (*CloudAlgoRegRes, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterCloudAlgo not implemented")
 }
-func (*UnimplementedCloudCoordinatorServer) Count(ctx context.Context, req *Query) (*QueryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Count not implemented")
+func (*UnimplementedCloudCoordinatorServer) AlgoRequest(ctx context.Context, req *ComputeRequest) (*ComputeResponses, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AlgoRequest not implemented")
 }
 
 func RegisterCloudCoordinatorServer(s *grpc.Server, srv CloudCoordinatorServer) {
@@ -799,20 +854,20 @@ func _CloudCoordinator_RegisterCloudAlgo_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _CloudCoordinator_Count_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Query)
+func _CloudCoordinator_AlgoRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ComputeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CloudCoordinatorServer).Count(ctx, in)
+		return srv.(CloudCoordinatorServer).AlgoRequest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protoBuf.CloudCoordinator/Count",
+		FullMethod: "/protoBuf.CloudCoordinator/AlgoRequest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CloudCoordinatorServer).Count(ctx, req.(*Query))
+		return srv.(CloudCoordinatorServer).AlgoRequest(ctx, req.(*ComputeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -826,8 +881,8 @@ var _CloudCoordinator_serviceDesc = grpc.ServiceDesc{
 			Handler:    _CloudCoordinator_RegisterCloudAlgo_Handler,
 		},
 		{
-			MethodName: "Count",
-			Handler:    _CloudCoordinator_Count_Handler,
+			MethodName: "AlgoRequest",
+			Handler:    _CloudCoordinator_AlgoRequest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -872,7 +927,7 @@ var _AlgoConnector_serviceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CoordinatorConnectorClient interface {
-	Count(ctx context.Context, in *Query, opts ...grpc.CallOption) (*QueryResponse, error)
+	AlgoRequest(ctx context.Context, in *ComputeRequest, opts ...grpc.CallOption) (*ComputeResponse, error)
 }
 
 type coordinatorConnectorClient struct {
@@ -883,9 +938,9 @@ func NewCoordinatorConnectorClient(cc *grpc.ClientConn) CoordinatorConnectorClie
 	return &coordinatorConnectorClient{cc}
 }
 
-func (c *coordinatorConnectorClient) Count(ctx context.Context, in *Query, opts ...grpc.CallOption) (*QueryResponse, error) {
-	out := new(QueryResponse)
-	err := c.cc.Invoke(ctx, "/protoBuf.CoordinatorConnector/Count", in, out, opts...)
+func (c *coordinatorConnectorClient) AlgoRequest(ctx context.Context, in *ComputeRequest, opts ...grpc.CallOption) (*ComputeResponse, error) {
+	out := new(ComputeResponse)
+	err := c.cc.Invoke(ctx, "/protoBuf.CoordinatorConnector/AlgoRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -894,35 +949,35 @@ func (c *coordinatorConnectorClient) Count(ctx context.Context, in *Query, opts 
 
 // CoordinatorConnectorServer is the server API for CoordinatorConnector service.
 type CoordinatorConnectorServer interface {
-	Count(context.Context, *Query) (*QueryResponse, error)
+	AlgoRequest(context.Context, *ComputeRequest) (*ComputeResponse, error)
 }
 
 // UnimplementedCoordinatorConnectorServer can be embedded to have forward compatible implementations.
 type UnimplementedCoordinatorConnectorServer struct {
 }
 
-func (*UnimplementedCoordinatorConnectorServer) Count(ctx context.Context, req *Query) (*QueryResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Count not implemented")
+func (*UnimplementedCoordinatorConnectorServer) AlgoRequest(ctx context.Context, req *ComputeRequest) (*ComputeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AlgoRequest not implemented")
 }
 
 func RegisterCoordinatorConnectorServer(s *grpc.Server, srv CoordinatorConnectorServer) {
 	s.RegisterService(&_CoordinatorConnector_serviceDesc, srv)
 }
 
-func _CoordinatorConnector_Count_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Query)
+func _CoordinatorConnector_AlgoRequest_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ComputeRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CoordinatorConnectorServer).Count(ctx, in)
+		return srv.(CoordinatorConnectorServer).AlgoRequest(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protoBuf.CoordinatorConnector/Count",
+		FullMethod: "/protoBuf.CoordinatorConnector/AlgoRequest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoordinatorConnectorServer).Count(ctx, req.(*Query))
+		return srv.(CoordinatorConnectorServer).AlgoRequest(ctx, req.(*ComputeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -932,8 +987,8 @@ var _CoordinatorConnector_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*CoordinatorConnectorServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Count",
-			Handler:    _CoordinatorConnector_Count_Handler,
+			MethodName: "AlgoRequest",
+			Handler:    _CoordinatorConnector_AlgoRequest_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

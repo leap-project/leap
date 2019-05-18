@@ -14,7 +14,10 @@ import (
 
 var (
 	config Config
+	algos = make(map[AlgoId]string)
 )
+
+type AlgoId int32
 
 type Config struct {
 	CoordinatorIpPort string
@@ -51,24 +54,25 @@ func InitializeConfig() {
 
 /*
 Invokes algorithm in site and returns the result of per-
-forming the algorithm on the given query to the coordinator
+forming the algorithm on the given query to the coordinator.
 
-ctx:   Carries value and cancellation signals across API
-       boundaries
-query: Query created by algorithm in the cloud and issued
-       by coordinator
+ctx: Carries value and cancellation signals across API
+     boundaries.
+req: Request created by algorithm in the cloud and issued
+     by coordinator.
  */
-func (s *CoordinatorConnectorService) Count(ctx context.Context, query *pb.Query) (*pb.QueryResponse, error) {
-	fmt.Println("Site-Connector: Request for count")
-	result := count(*query)
-	res := pb.QueryResponse{Count: result}
+func (s *CoordinatorConnectorService) AlgoRequest(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
+	fmt.Println("Site-Connector: Compute request received")
+	// TODO: Use algo id to contact appropriate algorithm
+	result := count(*req.Query)
+	res := pb.ComputeResponse{Response: result}
 	return &res, nil
 }
 
 /*
 Serves RPC calls from site algorithms.
 
-No args
+No args.
 */
 func ListenAlgos() {
 	listener, err := net.Listen("tcp", config.AlgosIpPort)
@@ -83,7 +87,7 @@ func ListenAlgos() {
 /*
 Serves RPC calls from coordinator.
 
-No args
+No args.
 */
 func ListenCoordinator() {
 	listener, err := net.Listen("tcp", config.CoordinatorIpPort)
@@ -96,7 +100,7 @@ func ListenCoordinator() {
 }
 
 /*
-Helper to log errors in a site connector
+Helper to log errors in a site connector.
 
 err: Error returned by a function that should be checked
      if nil or not.

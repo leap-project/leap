@@ -1,4 +1,3 @@
-import socket
 import grpc
 
 import message_pb2
@@ -70,14 +69,34 @@ def create_count_query(operator, field, value):
     elif field == "gender":
         return create_string_query_helper(operator, field, value)
 
-# Makes an RPC call to the coordinator with the given query.
+# Returns a request containing a query and the algorithm id.
+# This request is passed to the coordinator and will be used
+# to return a response.
+#
+# query: The query that the request will slap a header on
+def create_request(q):
+    req = message_pb2.ComputeRequest()
+    req.algo_id = 0
+    req.query.operator = q.operator
+    req.query.field = q.field
+    req.query.numeric_value = q.numeric_value
+    return req
+
+# Makes an RPC call to the coordinator with the given query
+# and returns the count from each site.
+#
 # stub:  Stub for the cloud coordinator
 # query: Query to be performed in local sites
 def count(stub, query):
-    result = stub.Count(query)
-    if not result.count:
+    req = create_request(query)
+    result = stub.AlgoRequest(req)
+    if not result.responses:
         print("Count failed")
-    return result
+    total = 0
+    for i in result.responses:
+        total += i.response
+    print(total)
+    return total
 
 
 if __name__ == "__main__":
@@ -86,6 +105,5 @@ if __name__ == "__main__":
         stub = message_pb2_grpc.CloudCoordinatorStub(channel)
         print("Counting number of patients with age above 81")
         query = create_count_query("GT", "age", 81)
-        result = count(stub, query)
-        print(result)
+        count(stub, query)
 

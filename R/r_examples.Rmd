@@ -1,0 +1,91 @@
+---
+title: "R Code Examples"
+author: "Derek Chiu"
+date: '2019-05-23'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "#>")
+```
+
+# Example Data
+
+A toy dataset is constructed below. We simulate 10 variables across 100 observations, creating various data types such as: integer, double, factor, ordered factor, logical, date, and character.
+
+```{r toy-data}
+# Set number of cases and random seed
+library(magrittr)
+n_cases <- 100
+set.seed(1)
+
+# Toy data with various data types
+toy_data <- tibble::tibble(
+  patient_id = seq_len(n_cases),
+  age = rnorm(n = n_cases, mean = 55, sd = 5),
+  bmi = rnorm(n = n_cases, mean = 23, sd = 2),
+  date_dx = sample(seq(as.Date("2000-01-01"), as.Date("2010-12-31"), by = "day"), n_cases),
+  stage = factor(sample(c("I", "II", "III", "IV"), size = n_cases, replace = TRUE)),
+  grade = factor(sample(1:3, size = n_cases, replace = TRUE)),
+  nodes = rbinom(n = n_cases, size = 5, prob = 0.2),
+  feel = sample(forcats::fct_inorder(
+    c("Strongly Disagree", "Disagree", "Neutral", "Agree", "Strongly Agree"),
+    ordered = TRUE), size = n_cases, replace = TRUE),
+  alive = sample(c(TRUE, FALSE), size = n_cases, replace = TRUE),
+  comment = sample(stringr::words, size = n_cases)
+)
+
+toy_data
+```
+
+# Filters
+
+Use `==` to filter for equalities.
+
+```{r}
+toy_data %>%
+  dplyr::filter(grade == 1)
+```
+
+Use `&` or `,` to separate additional conditions.
+
+```{r}
+toy_data %>%
+  dplyr::filter(grade == 1, stage == "II")
+```
+
+```{r}
+toy_data %>%
+  dplyr::filter(grade == 1 & stage == "II")
+```
+
+Pipe to `nrow()` to get number of cases.
+
+```{r}
+toy_data %>%
+  dplyr::filter(grade == 1, stage == "II") %>% 
+  nrow()
+```
+
+We can use inequalities for numeric variables (type `dbl`).
+
+```{r}
+toy_data %>% 
+  dplyr::filter(age < 50, bmi >= 20)
+```
+
+# Counts
+
+We can tabulate counts for every level of a factor.
+
+```{r}
+toy_data %>% 
+  dplyr::count(feel)
+```
+
+Bivariate counts also work.
+
+```{r}
+toy_data %>% 
+  dplyr::count(feel, stage)
+```

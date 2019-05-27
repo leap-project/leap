@@ -14,10 +14,13 @@ Get Go protocol buffer plugin
 
 # Install protobuf for Go
 go get -u github.com/golang/protobuf/protoc-gen-go
-# Install protobuf for Python
-pip install protobuf
 # Install grpc for Go
 go get -u google.golang.org/grpc
+
+
+apt-get install python3-venv
+# Install protobuf for Python
+pip install protobuf
 # Install grpc for Python
 # - Need pip to be version 9 or higher. Careful when updating
 #   your pip version not to update your system pip. I recommend

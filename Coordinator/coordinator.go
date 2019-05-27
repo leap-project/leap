@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"io/ioutil"
-	pb "leap/protoBuf"
+	pb "leap/ProtoBuf"
 	"net"
 	"os"
 	"time"
@@ -15,7 +15,8 @@ import (
 
 var (
 	config Config
-	algos = make(map[AlgoId]map[SiteId]string) // Map of available algos with a map of the sites with that algo as a value
+	siteConnectors = make(map[AlgoId]map[SiteId]string) // Map of available algos with a map of the ip and port of the site connectors with that algo as a value
+	cloudAlgos = make(map[AlgoId]string) // Map of available algos in the cloud
 )
 
 type AlgoId int32
@@ -26,14 +27,13 @@ type Message struct {
 }
 
 type Config struct {
-	CloudIpPort string
-	SiteIpPort string
+	ListenCloudIpPort string
+	ListenSiteIpPort  string
+	Sites       string
 }
 
 type CloudCoordinatorService struct{}
 type SiteCoordinatorService struct{}
-
-
 
 /*
 Parses user flags and creates config using the given flags.
@@ -52,26 +52,22 @@ func InitializeCoordinator() {
 	err = json.Unmarshal(jsonBytes, &config)
 	checkErr(err)
 
-	CloudIpPortPtr := flag.String("cip", config.CloudIpPort, "The ip and port the coordinator is listening for cloud connections")
-	SiteIpPortPtr := flag.String("sip", config.SiteIpPort, "The ip and port the coordinator is listening for site connections")
+	CloudIpPortPtr := flag.String("cip", config.ListenCloudIpPort, "The ip and port the coordinator is listening for cloud connections")
+	SiteIpPortPtr := flag.String("sip", config.ListenSiteIpPort, "The ip and port the coordinator is listening for site connections")
 	flag.Parse()
 
-	config.CloudIpPort = *CloudIpPortPtr
-	config.SiteIpPort = *SiteIpPortPtr
-	algos[0] = make(map[SiteId]string)
-	algos[0][0] = "127.0.0.1:60000"
+	config.ListenCloudIpPort = *CloudIpPortPtr
+	config.ListenSiteIpPort = *SiteIpPortPtr
+	siteConnectors[0] = make(map[SiteId]string)
+	siteConnectors[0][0] = "127.0.0.1:50003"
 	// algos[0][1] = true
 }
 
-func (s *SiteCoordinatorService) RegisterSite(ctx context.Context, req *pb.SiteRegReq) (*pb.SiteRegRes, error) {
- return nil, nil
-}
-
-func (s *SiteCoordinatorService) RegisterSiteAlgo(ctx context.Context, req *pb.SiteAlgoRegReq) (*pb.SiteAlgoRegRes, error) {
+func (s *SiteCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlgoRegReq) (*pb.SiteAlgoRegRes, error) {
 	return nil, nil
 }
 
-func (s *CloudCoordinatorService) RegisterCloudAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
+func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
 	return nil, nil
 }
 
@@ -84,9 +80,9 @@ ctx: Carries value and cancellation signals across API
      boundaries.
 req: Request created by algorithm in the cloud.
  */
-func (s *CloudCoordinatorService) AlgoRequest(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
+func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
 	fmt.Println("Coordinator: Compute request received")
-	sites := algos[AlgoId(req.AlgoId)]
+	sites := siteConnectors[AlgoId(req.AlgoId)]
 	var results pb.ComputeResponses
 	for _, ipPort := range sites {
 		conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
@@ -95,7 +91,7 @@ func (s *CloudCoordinatorService) AlgoRequest(ctx context.Context, req *pb.Compu
 		c := pb.NewCoordinatorConnectorClient(conn)
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()
-		localResponse, err := c.AlgoRequest(ctx, req)
+		localResponse, err := c.Compute(ctx, req)
 		checkErr(err)
 		results.Responses = append(results.Responses, localResponse)
 	}
@@ -109,9 +105,9 @@ Serves RPC calls from sites.
 No args.
 */
 func ListenSites() {
-	listener, err := net.Listen("tcp", config.SiteIpPort)
+	listener, err := net.Listen("tcp", config.ListenSiteIpPort)
 	checkErr(err)
-	fmt.Println("Coordinator: Listening for site connectors at", config.SiteIpPort)
+	fmt.Println("Coordinator: Listening for site connectors at", config.ListenSiteIpPort)
 	s := grpc.NewServer()
 	pb.RegisterSiteCoordinatorServer(s, &SiteCoordinatorService{})
 	err = s.Serve(listener)
@@ -124,9 +120,9 @@ Serves RPC calls from cloud algorithms.
 No args.
 */
 func ListenCloud() {
-	listener, err := net.Listen("tcp", config.CloudIpPort)
+	listener, err := net.Listen("tcp", config.ListenCloudIpPort)
 	checkErr(err)
-	fmt.Println("Coordinator: Listening for cloud algos at", config.CloudIpPort)
+	fmt.Println("Coordinator: Listening for cloud algos at", config.ListenCloudIpPort)
 	s := grpc.NewServer()
 	pb.RegisterCloudCoordinatorServer(s, &CloudCoordinatorService{})
 	err = s.Serve(listener)

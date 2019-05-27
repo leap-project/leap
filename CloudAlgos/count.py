@@ -1,15 +1,20 @@
 import grpc
+import sys
+import google.protobuf.any_pb2 as any_pb2
+# TODO: Fix this ugly import
+sys.path.append('../ProtoBuf')
 
-import message_pb2
-import message_pb2_grpc
+import coordinator_pb2 as coordinator_pb2
+import coordinator_pb2_grpc as coordinator_pb2_grpc
+import computation_pb2 as computation_pb2
 
 def create_patient():
-    patient = message_pb2.Patient()
+    patient = computation_pb2.Patient()
     patient.fname  = "Han"
     patient.lname  = "Solo"
     patient.email  = "hansolo.gmail.com"
     patient.age    = 29
-    patient.gender = message_pb2.Patient.MALE
+    patient.gender = computation_pb2.Patient.MALE
     patient.weight = 80.0
     patient.height = 180
     return patient
@@ -23,7 +28,7 @@ def create_patient():
 # value:    The value that should be used in the comparison.
 #           For example, in 'age GT 81', 81 is the value
 def create_numeric_query_helper(operator, field, value):
-    query = message_pb2.Query()
+    query = computation_pb2.Query()
     query.operator = operator
     query.field = field
     query.numeric_value = value
@@ -38,7 +43,7 @@ def create_numeric_query_helper(operator, field, value):
 # value:    The value that should be used in the comparison.
 #           For example, in 'gender EQ male', male is the value
 def create_string_query_helper(operator, field, value):
-    query = message_pb2.Query()
+    query = computation_pb2.Query()
     query.operator = operator
     query.field = field
     query.stringValue = value
@@ -75,12 +80,12 @@ def create_count_query(operator, field, value):
 #
 # query: The query that the request will slap a header on
 def create_request(q):
-    req = message_pb2.ComputeRequest()
-    req.algo_id = 0
-    req.query.operator = q.operator
-    req.query.field = q.field
-    req.query.numeric_value = q.numeric_value
-    return req
+    request = computation_pb2.ComputeRequest()
+    any_msg = any_pb2.Any()
+    request.algo_id = 0
+    any_msg.Pack(q)
+    request.req.CopyFrom(any_msg)
+    return request
 
 # Makes an RPC call to the coordinator with the given query
 # and returns the count from each site.
@@ -89,12 +94,14 @@ def create_request(q):
 # query: Query to be performed in local sites
 def count(stub, query):
     req = create_request(query)
-    result = stub.AlgoRequest(req)
+    result = stub.Compute(req)
     if not result.responses:
         print("Count failed")
+    unpacked_result = computation_pb2.IntResponse()
     total = 0
     for i in result.responses:
-        total += i.response
+        i.response.Unpack(unpacked_result)
+        total += unpacked_result.val
     print(total)
     return total
 
@@ -102,7 +109,7 @@ def count(stub, query):
 if __name__ == "__main__":
     # Sets up the connection so that we can make RPC calls
     with grpc.insecure_channel('127.0.0.1:50000') as channel:
-        stub = message_pb2_grpc.CloudCoordinatorStub(channel)
+        stub = coordinator_pb2_grpc.CloudCoordinatorStub(channel)
         print("Counting number of patients with age above 81")
         query = create_count_query("GT", "age", 81)
         count(stub, query)

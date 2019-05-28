@@ -12,15 +12,31 @@ import (
 )
 
 var (
+	// Initial config
 	config Config
-	CloudAlgos = make(map[AlgoId]string) // IP and port of VM with algo given as key
-	SiteConnectors = make(map[AlgoId]map[SiteId]string) // IP's and ports of sites hosting algo given as key
+	// IP and port of VM with algo given as key
+	CloudAlgos = make(map[AlgoId]string)
+	// IP's and ports of sites hosting algo given as key
+	SiteConnectors = make(map[AlgoId]map[SiteId]string)
 )
 
-type Message struct {
-	msg string
-}
+/*
+The id of a site.
+ */
+type SiteId int32
 
+/*
+The id of an algorithm.
+ */
+type AlgoId int32
+
+
+/*
+A struct that holds the ip and port that the coordinator
+listens for requests from algorithms in the cloud, and the
+ip and port it listen for requests from algorithms in dis-
+tributed sites.
+ */
 type Config struct {
 	ListenCloudIpPort string
 	ListenSiteIpPort  string

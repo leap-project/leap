@@ -8,9 +8,15 @@ import (
 	"time"
 )
 
-type AlgoId int32
+/*
+Service containing the API for interactions between the cloud
+and a coordinator.
+ */
 type CloudCoordinatorService struct{}
 
+/*
+
+ */
 func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
 	return nil, nil
 }

@@ -5,8 +5,10 @@ import (
 	pb "leap/ProtoBuf"
 )
 
-
-type SiteId int32
+/*
+Service containing the API for interactions between sites
+and a coordinator.
+ */
 type SiteCoordinatorService struct{}
 
 

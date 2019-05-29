@@ -17,6 +17,18 @@ count_sensitivity=5 # how much can a record change the record
 privatized_count = dps.dp_sensitive_count(count_sensitivity, orig_count, epsilon, delta)
 print("Original count: %d with sensitivity: %d, Privatized count: %d, Epsilon: %f" % (orig_count,count_sensitivity, privatized_count, epsilon))
 
+# Example for privatizing multiple counts such that overall epsilon is same
+orig_counts = [10, 20, 30, 40, 50]
+count_sensitivity=1 # how much can a record change the record
+privatized_counts = []
+for count in orig_counts:
+
+	privatized_count = dps.dp_sensitive_count(count_sensitivity, count, (epsilon)/len(orig_counts), delta)
+	privatized_counts.append(privatized_count)
+
+print("Original counts: %s with sensitivity: %d, Privatized counts: %s, Epsilon: %f" % (orig_counts,count_sensitivity, privatized_counts, epsilon))
+
+
 # # Example for privatizing means
 data_vec = np.random.rand(10) # values in the range 0,1
 data_max = 1
@@ -25,6 +37,7 @@ n = len(data_vec)
 avg = np.mean(data_vec)
 privatized_mean = dps.dp_mean(data_min, data_max, n, avg, epsilon, delta)
 print("Original data: %s, Privatized mean: %f, Epsilon: %f" % (str(data_vec), privatized_mean, epsilon))
+
 
 #Example for privatizing variance
 
@@ -37,22 +50,6 @@ var = (1.0/n) * sum((value - avg) ** 2 for value in data_vec)
 
 privatized_var = dps.dp_variance(data_min,data_max,n, var,epsilon, delta)
 print("Original data: %s , Privatized variance: %f, Epsilon: %f" % (str(data_vec), privatized_var, epsilon))
-
-# Example for privatizing median
-data_vec = np.random.rand(10) # values in the range 0,1
-data_max = 1.0
-data_min = 0.0
-
-
-
-
-# Example for privatizing median
-
-
-#Example for privatizing linear regression
-
-
-
 
 
 

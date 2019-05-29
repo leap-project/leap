@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -10,30 +9,38 @@ import (
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
-	"time"
 )
 
 var (
+	// Initial config
 	config Config
-	siteConnectors = make(map[AlgoId]map[SiteId]string) // Map of available algos with a map of the ip and port of the site connectors with that algo as a value
-	cloudAlgos = make(map[AlgoId]string) // Map of available algos in the cloud
+	// IP and port of VM with algo given as key
+	CloudAlgos = make(map[AlgoId]string)
+	// IP's and ports of sites hosting algo given as key
+	SiteConnectors = make(map[AlgoId]map[SiteId]string)
 )
 
-type AlgoId int32
+/*
+The id of a site.
+ */
 type SiteId int32
 
-type Message struct {
-	msg string
-}
+/*
+The id of an algorithm.
+ */
+type AlgoId int32
 
+
+/*
+A struct that holds the ip and port that the coordinator
+listens for requests from algorithms in the cloud, and the
+ip and port it listen for requests from algorithms in dis-
+tributed sites.
+ */
 type Config struct {
 	ListenCloudIpPort string
 	ListenSiteIpPort  string
-	Sites       string
 }
-
-type CloudCoordinatorService struct{}
-type SiteCoordinatorService struct{}
 
 /*
 Parses user flags and creates config using the given flags.
@@ -58,73 +65,40 @@ func InitializeCoordinator() {
 
 	config.ListenCloudIpPort = *CloudIpPortPtr
 	config.ListenSiteIpPort = *SiteIpPortPtr
-	siteConnectors[0] = make(map[SiteId]string)
-	siteConnectors[0][0] = "127.0.0.1:50003"
-	// algos[0][1] = true
-}
-
-func (s *SiteCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlgoRegReq) (*pb.SiteAlgoRegRes, error) {
-	return nil, nil
-}
-
-func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
-	return nil, nil
+	SiteConnectors[0] = make(map[SiteId]string)
+	SiteConnectors[0][0] = "127.0.0.1:50003"
 }
 
 /*
-Makes a remote procedure call to a site connector with a
-query and returns the result of computing the query on a
-site algorithm.
-
-ctx: Carries value and cancellation signals across API
-     boundaries.
-req: Request created by algorithm in the cloud.
- */
-func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
-	fmt.Println("Coordinator: Compute request received")
-	sites := siteConnectors[AlgoId(req.AlgoId)]
-	var results pb.ComputeResponses
-	for _, ipPort := range sites {
-		conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
-		checkErr(err)
-		defer conn.Close()
-		c := pb.NewCoordinatorConnectorClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-		defer cancel()
-		localResponse, err := c.Compute(ctx, req)
-		checkErr(err)
-		results.Responses = append(results.Responses, localResponse)
-	}
-
-	return &results, nil
-}
-
-/*
-Serves RPC calls from sites.
+Creates a listener, registers the grpc server for coordinating
+algorithms hosted in the cloud, and serves requests that arrive
+at the listener.
 
 No args.
 */
-func ListenSites() {
-	listener, err := net.Listen("tcp", config.ListenSiteIpPort)
-	checkErr(err)
-	fmt.Println("Coordinator: Listening for site connectors at", config.ListenSiteIpPort)
-	s := grpc.NewServer()
-	pb.RegisterSiteCoordinatorServer(s, &SiteCoordinatorService{})
-	err = s.Serve(listener)
-	checkErr(err)
-}
-
-/*
-Serves RPC calls from cloud algorithms.
-
-No args.
-*/
-func ListenCloud() {
+func ServeCloud() {
 	listener, err := net.Listen("tcp", config.ListenCloudIpPort)
 	checkErr(err)
 	fmt.Println("Coordinator: Listening for cloud algos at", config.ListenCloudIpPort)
 	s := grpc.NewServer()
 	pb.RegisterCloudCoordinatorServer(s, &CloudCoordinatorService{})
+	err = s.Serve(listener)
+	checkErr(err)
+}
+
+/*
+Creates a listener, registers the grpc server for coordinating
+algorithms hosted in sites, and serves requests that arrive at
+the listener.
+
+No args.
+*/
+func ServeSites() {
+	listener, err := net.Listen("tcp", config.ListenSiteIpPort)
+	checkErr(err)
+	fmt.Println("Coordinator: Listening for site connectors at", config.ListenSiteIpPort)
+	s := grpc.NewServer()
+	pb.RegisterSiteCoordinatorServer(s, &SiteCoordinatorService{})
 	err = s.Serve(listener)
 	checkErr(err)
 }

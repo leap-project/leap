@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -12,17 +11,22 @@ import (
 	"os"
 )
 
+/*
+The id of an algorithm
+ */
 type AlgoId int32
 
+/*
+A struct that holds the ip and port that the site connector
+listens for requests from algorithms in the site, the ip
+and port it listen for requests from the coordinator, and
+the ip and port to contact the coordinator.
+ */
 type Config struct {
 	ListenCoordinatorIpPort string
 	ListenAlgosIpPort string
-	Coordinator string
-
+	CoordinatorIpPort string
 }
-
-type AlgoConnectorService struct {}
-type CoordinatorConnectorService struct {}
 
 var (
 	config Config
@@ -53,27 +57,6 @@ func InitializeConfig() {
 	config.ListenAlgosIpPort = *CoordinatorIpPortPtr
 	config.ListenCoordinatorIpPort = *AlgosIpPortPtr
 	algos[0] = "127.0.0.1:60000"
-}
-
-/*
-Invokes algorithm in site and returns the result of per-
-forming the algorithm on the given query to the coordinator.
-
-ctx: Carries value and cancellation signals across API
-     boundaries.
-req: Request created by algorithm in the cloud and issued
-     by coordinator.
- */
-func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
-	fmt.Println("Site-Connector: Compute request received")
-	ipPort := algos[AlgoId(req.AlgoId)]
-	conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
-	checkErr(err)
-	defer conn.Close()
-	client := pb.NewSiteAlgoClient(conn)
-	res, err := client.Compute(context.Background(), req)
-	checkErr(err)
-	return res, nil
 }
 
 /*

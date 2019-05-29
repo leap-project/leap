@@ -1,0 +1,35 @@
+syntax = "proto3";
+package protoBuf;
+
+// To compile the protobuf to Go run the following inside the protoBuf folder:
+// protoc -I=. --go_out=. registration-msgs.proto
+
+// To compile the protobuf to Python run the following inside the protoBuf folder:
+// protoc -I=. --python_out=. registration-msgs.proto
+
+
+// Message sent by a site connector to a coordinator indicating an algorithm it wants to register.
+message SiteAlgoRegReq { // Site Algorithm Registration Request
+                         int32 id = 1;
+                         string description = 2;
+                         string protoVersion = 3;
+}
+
+// Message sent by a coordinator to a site connector indicating whether the algorithm registration was successful.
+message SiteAlgoRegRes { // Site Algorithm Registration Response
+                         bool success = 1;
+                         string msg = 2;
+}
+
+// Message sent by a cloud algorithm to a coordinator indicating this algorithm should be registered.
+message CloudAlgoRegReq { // Cloud Algorithm Registration Request
+                          int32 id = 1;
+                          string description = 2;
+                          string proto_version = 3;
+}
+
+// Message sent by a coordinator to a cloud algorithm indicating whether the algorithm registration was successful.
+message CloudAlgoRegRes { // Cloud Algorithm Registration Response
+                          bool success = 1;
+                          string msg = 2;
+}

@@ -13,7 +13,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import computation_pb2 as computation__pb2
+import computation_msgs_pb2 as computation__msgs__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='protoBuf',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x10site-algos.proto\x12\x08protoBuf\x1a\x11\x63omputation.proto2L\n\x08SiteAlgo\x12@\n\x07\x43ompute\x12\x18.protoBuf.ComputeRequest\x1a\x19.protoBuf.ComputeResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x10site-algos.proto\x12\x08protoBuf\x1a\x16\x63omputation-msgs.proto2L\n\x08SiteAlgo\x12@\n\x07\x43ompute\x12\x18.protoBuf.ComputeRequest\x1a\x19.protoBuf.ComputeResponse\"\x00\x62\x06proto3')
   ,
-  dependencies=[computation__pb2.DESCRIPTOR,])
+  dependencies=[computation__msgs__pb2.DESCRIPTOR,])
 
 
 
@@ -37,16 +37,16 @@ _SITEALGO = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=49,
-  serialized_end=125,
+  serialized_start=54,
+  serialized_end=130,
   methods=[
   _descriptor.MethodDescriptor(
     name='Compute',
     full_name='protoBuf.SiteAlgo.Compute',
     index=0,
     containing_service=None,
-    input_type=computation__pb2._COMPUTEREQUEST,
-    output_type=computation__pb2._COMPUTERESPONSE,
+    input_type=computation__msgs__pb2._COMPUTEREQUEST,
+    output_type=computation__msgs__pb2._COMPUTERESPONSE,
     serialized_options=None,
   ),
 ])

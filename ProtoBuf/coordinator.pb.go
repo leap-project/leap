@@ -24,243 +24,22 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-// Message sent by a site connector to a coordinator indicating an algorithm it wants to register
-type SiteAlgoRegReq struct {
-	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Description          string   `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	ProtoVersion         string   `protobuf:"bytes,3,opt,name=protoVersion,proto3" json:"protoVersion,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *SiteAlgoRegReq) Reset()         { *m = SiteAlgoRegReq{} }
-func (m *SiteAlgoRegReq) String() string { return proto.CompactTextString(m) }
-func (*SiteAlgoRegReq) ProtoMessage()    {}
-func (*SiteAlgoRegReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_99e779eb11ceee19, []int{0}
-}
-
-func (m *SiteAlgoRegReq) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SiteAlgoRegReq.Unmarshal(m, b)
-}
-func (m *SiteAlgoRegReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SiteAlgoRegReq.Marshal(b, m, deterministic)
-}
-func (m *SiteAlgoRegReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SiteAlgoRegReq.Merge(m, src)
-}
-func (m *SiteAlgoRegReq) XXX_Size() int {
-	return xxx_messageInfo_SiteAlgoRegReq.Size(m)
-}
-func (m *SiteAlgoRegReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_SiteAlgoRegReq.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SiteAlgoRegReq proto.InternalMessageInfo
-
-func (m *SiteAlgoRegReq) GetId() int32 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
-func (m *SiteAlgoRegReq) GetDescription() string {
-	if m != nil {
-		return m.Description
-	}
-	return ""
-}
-
-func (m *SiteAlgoRegReq) GetProtoVersion() string {
-	if m != nil {
-		return m.ProtoVersion
-	}
-	return ""
-}
-
-// Message sent by a coordinator to a site connector indicating whether the algorithm registration was successful
-type SiteAlgoRegRes struct {
-	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg                  string   `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *SiteAlgoRegRes) Reset()         { *m = SiteAlgoRegRes{} }
-func (m *SiteAlgoRegRes) String() string { return proto.CompactTextString(m) }
-func (*SiteAlgoRegRes) ProtoMessage()    {}
-func (*SiteAlgoRegRes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_99e779eb11ceee19, []int{1}
-}
-
-func (m *SiteAlgoRegRes) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_SiteAlgoRegRes.Unmarshal(m, b)
-}
-func (m *SiteAlgoRegRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_SiteAlgoRegRes.Marshal(b, m, deterministic)
-}
-func (m *SiteAlgoRegRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_SiteAlgoRegRes.Merge(m, src)
-}
-func (m *SiteAlgoRegRes) XXX_Size() int {
-	return xxx_messageInfo_SiteAlgoRegRes.Size(m)
-}
-func (m *SiteAlgoRegRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_SiteAlgoRegRes.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_SiteAlgoRegRes proto.InternalMessageInfo
-
-func (m *SiteAlgoRegRes) GetSuccess() bool {
-	if m != nil {
-		return m.Success
-	}
-	return false
-}
-
-func (m *SiteAlgoRegRes) GetMsg() string {
-	if m != nil {
-		return m.Msg
-	}
-	return ""
-}
-
-// Message sent by a cloud algorithm to a coordinator indicating this algorithm should be registered
-type CloudAlgoRegReq struct {
-	Id                   int32    `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
-	Description          string   `protobuf:"bytes,2,opt,name=description,proto3" json:"description,omitempty"`
-	ProtoVersion         string   `protobuf:"bytes,3,opt,name=proto_version,json=protoVersion,proto3" json:"proto_version,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *CloudAlgoRegReq) Reset()         { *m = CloudAlgoRegReq{} }
-func (m *CloudAlgoRegReq) String() string { return proto.CompactTextString(m) }
-func (*CloudAlgoRegReq) ProtoMessage()    {}
-func (*CloudAlgoRegReq) Descriptor() ([]byte, []int) {
-	return fileDescriptor_99e779eb11ceee19, []int{2}
-}
-
-func (m *CloudAlgoRegReq) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CloudAlgoRegReq.Unmarshal(m, b)
-}
-func (m *CloudAlgoRegReq) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CloudAlgoRegReq.Marshal(b, m, deterministic)
-}
-func (m *CloudAlgoRegReq) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CloudAlgoRegReq.Merge(m, src)
-}
-func (m *CloudAlgoRegReq) XXX_Size() int {
-	return xxx_messageInfo_CloudAlgoRegReq.Size(m)
-}
-func (m *CloudAlgoRegReq) XXX_DiscardUnknown() {
-	xxx_messageInfo_CloudAlgoRegReq.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CloudAlgoRegReq proto.InternalMessageInfo
-
-func (m *CloudAlgoRegReq) GetId() int32 {
-	if m != nil {
-		return m.Id
-	}
-	return 0
-}
-
-func (m *CloudAlgoRegReq) GetDescription() string {
-	if m != nil {
-		return m.Description
-	}
-	return ""
-}
-
-func (m *CloudAlgoRegReq) GetProtoVersion() string {
-	if m != nil {
-		return m.ProtoVersion
-	}
-	return ""
-}
-
-// Message sent by a coordinator to a cloud algorithm indicating whether the algorithm registration was successful
-type CloudAlgoRegRes struct {
-	Success              bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Msg                  string   `protobuf:"bytes,2,opt,name=msg,proto3" json:"msg,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
-}
-
-func (m *CloudAlgoRegRes) Reset()         { *m = CloudAlgoRegRes{} }
-func (m *CloudAlgoRegRes) String() string { return proto.CompactTextString(m) }
-func (*CloudAlgoRegRes) ProtoMessage()    {}
-func (*CloudAlgoRegRes) Descriptor() ([]byte, []int) {
-	return fileDescriptor_99e779eb11ceee19, []int{3}
-}
-
-func (m *CloudAlgoRegRes) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_CloudAlgoRegRes.Unmarshal(m, b)
-}
-func (m *CloudAlgoRegRes) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_CloudAlgoRegRes.Marshal(b, m, deterministic)
-}
-func (m *CloudAlgoRegRes) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_CloudAlgoRegRes.Merge(m, src)
-}
-func (m *CloudAlgoRegRes) XXX_Size() int {
-	return xxx_messageInfo_CloudAlgoRegRes.Size(m)
-}
-func (m *CloudAlgoRegRes) XXX_DiscardUnknown() {
-	xxx_messageInfo_CloudAlgoRegRes.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_CloudAlgoRegRes proto.InternalMessageInfo
-
-func (m *CloudAlgoRegRes) GetSuccess() bool {
-	if m != nil {
-		return m.Success
-	}
-	return false
-}
-
-func (m *CloudAlgoRegRes) GetMsg() string {
-	if m != nil {
-		return m.Msg
-	}
-	return ""
-}
-
-func init() {
-	proto.RegisterType((*SiteAlgoRegReq)(nil), "protoBuf.SiteAlgoRegReq")
-	proto.RegisterType((*SiteAlgoRegRes)(nil), "protoBuf.SiteAlgoRegRes")
-	proto.RegisterType((*CloudAlgoRegReq)(nil), "protoBuf.CloudAlgoRegReq")
-	proto.RegisterType((*CloudAlgoRegRes)(nil), "protoBuf.CloudAlgoRegRes")
-}
-
 func init() { proto.RegisterFile("coordinator.proto", fileDescriptor_99e779eb11ceee19) }
 
 var fileDescriptor_99e779eb11ceee19 = []byte{
-	// 287 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x52, 0x3d, 0x4f, 0xc3, 0x30,
-	0x10, 0x6d, 0x52, 0x41, 0xcb, 0x51, 0xfa, 0xe1, 0x29, 0x64, 0x8a, 0xcc, 0xd2, 0x29, 0x43, 0x59,
-	0x61, 0x28, 0x41, 0xfc, 0x00, 0x23, 0xc1, 0x88, 0x4a, 0x72, 0x0d, 0x96, 0xda, 0x38, 0xf5, 0xd9,
-	0xfc, 0x1b, 0xfe, 0x2b, 0xb2, 0x69, 0xd5, 0x34, 0xa2, 0x48, 0xa8, 0x93, 0xed, 0xf7, 0xce, 0xef,
-	0x3d, 0xdf, 0x19, 0x26, 0xb9, 0x52, 0xba, 0x90, 0xd5, 0xc2, 0x28, 0x9d, 0xd6, 0x5a, 0x19, 0xc5,
-	0xfa, 0x7e, 0x79, 0xb0, 0xcb, 0x78, 0x92, 0xab, 0x75, 0x6d, 0xcd, 0xc2, 0x48, 0x55, 0xfd, 0x90,
-	0x7c, 0x09, 0xc3, 0x67, 0x69, 0x70, 0xbe, 0x2a, 0x95, 0xc0, 0x52, 0xe0, 0x86, 0x0d, 0x21, 0x94,
-	0x45, 0x14, 0x24, 0xc1, 0xf4, 0x4c, 0x84, 0xb2, 0x60, 0x09, 0x5c, 0x16, 0x48, 0xb9, 0x96, 0xb5,
-	0xbb, 0x16, 0x85, 0x49, 0x30, 0xbd, 0x10, 0x4d, 0x88, 0x71, 0x18, 0x78, 0xb1, 0x17, 0xd4, 0xe4,
-	0x4a, 0xba, 0xbe, 0xe4, 0x00, 0xe3, 0x77, 0x2d, 0x1f, 0x62, 0x11, 0xf4, 0xc8, 0xe6, 0x39, 0x12,
-	0x79, 0xb3, 0xbe, 0xd8, 0x1d, 0xd9, 0x18, 0xba, 0x6b, 0x2a, 0xb7, 0x4e, 0x6e, 0xcb, 0x3f, 0x60,
-	0x94, 0xad, 0x94, 0x2d, 0x4e, 0x8a, 0x79, 0x03, 0x57, 0x3e, 0xd2, 0xdb, 0xe7, 0x1f, 0x39, 0xef,
-	0xdb, 0x4e, 0xff, 0x0a, 0x3a, 0x7b, 0x85, 0x91, 0x7b, 0x66, 0xb6, 0x1f, 0x02, 0x7b, 0x84, 0x81,
-	0xc0, 0x52, 0x92, 0x41, 0xed, 0x44, 0x59, 0x94, 0xee, 0xe6, 0x91, 0x1e, 0x76, 0x3e, 0x3e, 0xc6,
-	0x10, 0xef, 0xcc, 0xbe, 0x02, 0x18, 0xfb, 0x60, 0x4d, 0xe9, 0xa7, 0x96, 0xf4, 0xf5, 0x5e, 0xa0,
-	0xd5, 0xae, 0xf8, 0x28, 0x45, 0xbc, 0xc3, 0xe6, 0xd0, 0xcb, 0xfc, 0xcf, 0xc0, 0x66, 0xba, 0x2d,
-	0x24, 0x70, 0x63, 0x91, 0x4c, 0x1c, 0xff, 0xc2, 0x50, 0xad, 0x2a, 0x72, 0x12, 0xef, 0xe7, 0x9e,
-	0xbc, 0xfd, 0x0e, 0x00, 0x00, 0xff, 0xff, 0x37, 0x84, 0x5e, 0x6c, 0x80, 0x02, 0x00, 0x00,
+	// 190 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x8f, 0xbf, 0xce, 0x82, 0x30,
+	0x14, 0x47, 0xf9, 0x96, 0x4f, 0xd3, 0x98, 0xa8, 0x1d, 0xfc, 0xd3, 0x91, 0x5d, 0x06, 0x7c, 0x02,
+	0xc4, 0xf8, 0x00, 0x75, 0x70, 0x46, 0xb8, 0x36, 0x4d, 0x80, 0x0b, 0xbd, 0xed, 0xe3, 0xf8, 0xae,
+	0x86, 0xaa, 0x81, 0x10, 0x99, 0x9a, 0xfc, 0xce, 0xc9, 0x49, 0x2f, 0x5b, 0xe7, 0x88, 0xa6, 0xd0,
+	0x75, 0x66, 0xd1, 0x44, 0x8d, 0x41, 0x8b, 0x7c, 0xee, 0x9f, 0x93, 0x7b, 0x88, 0x4d, 0x8e, 0x55,
+	0xe3, 0x6c, 0x66, 0x35, 0xd6, 0x87, 0x8a, 0x14, 0xbd, 0x0d, 0xb1, 0x35, 0xa0, 0x34, 0x59, 0x33,
+	0x06, 0xf1, 0x8d, 0x2d, 0xaf, 0xda, 0x42, 0xda, 0x37, 0xf9, 0x99, 0x2d, 0xa4, 0xb7, 0xc1, 0x24,
+	0xa5, 0x42, 0xbe, 0x8b, 0xbe, 0xf9, 0xa8, 0x53, 0xbb, 0x4d, 0x82, 0x92, 0xd0, 0x8a, 0x29, 0x42,
+	0x61, 0x10, 0x3f, 0xff, 0xd8, 0x2a, 0x2d, 0xd1, 0x15, 0xc3, 0xf4, 0x65, 0x94, 0xde, 0xf7, 0x01,
+	0xef, 0x0e, 0xda, 0x93, 0x88, 0xc2, 0x80, 0x27, 0x6c, 0x96, 0xfa, 0x43, 0x61, 0xf8, 0xbb, 0xcf,
+	0x24, 0xa1, 0x75, 0x40, 0x56, 0x88, 0x1f, 0x84, 0x1a, 0xac, 0xa9, 0x4b, 0xdc, 0xff, 0x3d, 0x3c,
+	0xbe, 0x02, 0x00, 0x00, 0xff, 0xff, 0xc3, 0x7f, 0xaf, 0x15, 0x4f, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -275,6 +54,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type SiteCoordinatorClient interface {
+	// Registers an algorithm from a site at the coordinator
 	RegisterAlgo(ctx context.Context, in *SiteAlgoRegReq, opts ...grpc.CallOption) (*SiteAlgoRegRes, error)
 }
 
@@ -297,6 +77,7 @@ func (c *siteCoordinatorClient) RegisterAlgo(ctx context.Context, in *SiteAlgoRe
 
 // SiteCoordinatorServer is the server API for SiteCoordinator service.
 type SiteCoordinatorServer interface {
+	// Registers an algorithm from a site at the coordinator
 	RegisterAlgo(context.Context, *SiteAlgoRegReq) (*SiteAlgoRegRes, error)
 }
 
@@ -347,7 +128,9 @@ var _SiteCoordinator_serviceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CloudCoordinatorClient interface {
+	// Registers an algorithm from the cloud at the coordinator
 	RegisterAlgo(ctx context.Context, in *CloudAlgoRegReq, opts ...grpc.CallOption) (*CloudAlgoRegRes, error)
+	// Relays a computation request from the cloud to appropriate sites
 	Compute(ctx context.Context, in *ComputeRequest, opts ...grpc.CallOption) (*ComputeResponses, error)
 }
 
@@ -379,7 +162,9 @@ func (c *cloudCoordinatorClient) Compute(ctx context.Context, in *ComputeRequest
 
 // CloudCoordinatorServer is the server API for CloudCoordinator service.
 type CloudCoordinatorServer interface {
+	// Registers an algorithm from the cloud at the coordinator
 	RegisterAlgo(context.Context, *CloudAlgoRegReq) (*CloudAlgoRegRes, error)
+	// Relays a computation request from the cloud to appropriate sites
 	Compute(context.Context, *ComputeRequest) (*ComputeResponses, error)
 }
 

@@ -1,0 +1,31 @@
+syntax = "proto3";
+package protoBuf;
+import "google/protobuf/any.proto";
+
+// To compile the protobuf to Go run the following inside the protoBuf folder:
+// protoc -I=. --go_out=.  computation-msgs.proto
+
+// To compile the protobuf to Python run the following inside the protoBuf folder:
+// protoc -I=. --python_out=. computation-msgs.proto
+
+
+// Message sent containing the necessary information to execute an algorithm.
+message ComputeRequest {
+    int32 algo_id = 1;
+    google.protobuf.Any req = 2;
+}
+
+// The result returned by an algorithm in one site.
+message ComputeResponse {
+    google.protobuf.Any response = 1;
+}
+
+// The results returned by the algorithms in different sites.
+message ComputeResponses {
+    repeated ComputeResponse responses = 1;
+}
+
+// An integer result for a compute response.
+message IntResponse {
+    int32 val = 1;
+}

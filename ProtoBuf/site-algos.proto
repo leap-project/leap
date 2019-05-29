@@ -1,6 +1,6 @@
 syntax = "proto3";
 package protoBuf;
-import "computation.proto";
+import "computation-msgs.proto";
 
 // To compile the protobuf to Go run the following inside the protoBuf folder:
 // protoc -I=. --go_out=plugins=grpc:.  site-algos.proto
@@ -8,6 +8,11 @@ import "computation.proto";
 // To compile the protobuf to Python run the following inside the protoBuf folder:
 // python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. site-algos.proto
 
+
+// RPC service at a site algo that performs the necessary computation.
 service SiteAlgo {
+
+    // Performs the appropriate computation at the host algo and returns the result.
     rpc Compute (ComputeRequest) returns (ComputeResponse) {}
+
 }

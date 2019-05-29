@@ -1,0 +1,30 @@
+syntax = "proto3";
+package protoBuf;
+
+// To compile the protobuf to Python run the following inside the protoBuf folder:
+// protoc -I=. --python_out=. count-msgs.proto
+
+// Simple example query
+message Query {
+    string operator = 1;
+    string field = 2;
+    string string_value = 3;
+    int32  numeric_value = 4;
+}
+
+message Patient {
+    string first_name = 1;
+    string last_name = 2;
+    string email = 3;
+    int32 age = 4;
+
+    enum Gender {
+        MALE = 0;
+        FEMALE = 1;
+        OTHER = 2;
+    }
+
+    Gender gender = 5;
+    float weight = 6;  // Weight in kilograms
+    int32 height = 7;  // Height in centimeters
+}

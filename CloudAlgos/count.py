@@ -6,15 +6,16 @@ sys.path.append('../ProtoBuf')
 
 import coordinator_pb2 as coordinator_pb2
 import coordinator_pb2_grpc as coordinator_pb2_grpc
-import computation_pb2 as computation_pb2
+import computation_msgs_pb2 as computation_msgs_pb2
+import count_msgs_pb2 as count_msgs_pb2
 
 def create_patient():
-    patient = computation_pb2.Patient()
+    patient = count_msgs_pb2.Patient()
     patient.fname  = "Han"
     patient.lname  = "Solo"
     patient.email  = "hansolo.gmail.com"
     patient.age    = 29
-    patient.gender = computation_pb2.Patient.MALE
+    patient.gender = count_msgs_pb2.Patient.MALE
     patient.weight = 80.0
     patient.height = 180
     return patient
@@ -28,7 +29,7 @@ def create_patient():
 # value:    The value that should be used in the comparison.
 #           For example, in 'age GT 81', 81 is the value
 def create_numeric_query_helper(operator, field, value):
-    query = computation_pb2.Query()
+    query = count_msgs_pb2.Query()
     query.operator = operator
     query.field = field
     query.numeric_value = value
@@ -43,7 +44,7 @@ def create_numeric_query_helper(operator, field, value):
 # value:    The value that should be used in the comparison.
 #           For example, in 'gender EQ male', male is the value
 def create_string_query_helper(operator, field, value):
-    query = computation_pb2.Query()
+    query = count_msgs_pb2.Query()
     query.operator = operator
     query.field = field
     query.stringValue = value
@@ -80,7 +81,7 @@ def create_count_query(operator, field, value):
 #
 # query: The query that the request will slap a header on
 def create_request(q):
-    request = computation_pb2.ComputeRequest()
+    request = computation_msgs_pb2.ComputeRequest()
     any_msg = any_pb2.Any()
     request.algo_id = 0
     any_msg.Pack(q)
@@ -97,7 +98,7 @@ def count(stub, query):
     result = stub.Compute(req)
     if not result.responses:
         print("Count failed")
-    unpacked_result = computation_pb2.IntResponse()
+    unpacked_result = computation_msgs_pb2.IntResponse()
     total = 0
     for i in result.responses:
         i.response.Unpack(unpacked_result)

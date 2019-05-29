@@ -7,7 +7,8 @@ import google.protobuf.any_pb2 as any_pb2
 # TODO: Find way to get rid of this ugly import
 sys.path.append('../ProtoBuf')
 
-import computation_pb2 as computation
+import computation_msgs_pb2 as computation_pb2
+import count_msgs_pb2 as count_pb2
 import site_algos_pb2_grpc as site_algos_grpc
 
 patients = [{"fname": "Han", "lname": "Solo", "email": "hsolo@gmail.com", "age": 29, "gender": "male", "weight": 80, "height": 180},
@@ -58,12 +59,12 @@ class SiteAlgoServicer(site_algos_grpc.SiteAlgoServicer):
 
     def Compute(self, request, context):
         print("Site-Algo: Got compute call")
-        query = computation.Query()
+        query = count_pb2.Query()
         if request.req.Is(query.DESCRIPTOR):
             request.req.Unpack(query)
         result = count(query)
-        res = computation.ComputeResponse()
-        int_response = computation.IntResponse()
+        res = computation_pb2.ComputeResponse()
+        int_response = computation_pb2.IntResponse()
         int_response.val = result
         any_res = any_pb2.Any()
         any_res.Pack(int_response)

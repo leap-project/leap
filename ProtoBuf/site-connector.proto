@@ -1,12 +1,13 @@
 syntax = "proto3";
 package protoBuf;
-import "computation.proto";
+import "computation-msgs.proto";
 
 // To compile the protobuf to Go run the following inside the protoBuf folder:
 // protoc -I=. --go_out=plugins=grpc:.  site-connector.proto
 
 // To compile the protobuf to Python run the following inside the protoBuf folder:
 // python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. site-connector.proto
+
 
 // RPC service at a site connector that will handle requests from site algorithms
 service AlgoConnector {
@@ -15,5 +16,8 @@ service AlgoConnector {
 
 // RPC service at a site connector that will handle requests from coordinator
 service CoordinatorConnector {
+
+    // // Relays a computation request from the coordinato to appropriate algorithm in site
     rpc Compute (ComputeRequest) returns (ComputeResponse) {}
+
 }

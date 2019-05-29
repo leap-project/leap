@@ -13,7 +13,8 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
-import computation_pb2 as computation__pb2
+import computation_msgs_pb2 as computation__msgs__pb2
+import registration_msgs_pb2 as registration__msgs__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,211 +22,13 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='protoBuf',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x11\x63oordinator.proto\x12\x08protoBuf\x1a\x11\x63omputation.proto\"G\n\x0eSiteAlgoRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x14\n\x0cprotoVersion\x18\x03 \x01(\t\".\n\x0eSiteAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\"I\n\x0f\x43loudAlgoRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x15\n\rproto_version\x18\x03 \x01(\t\"/\n\x0f\x43loudAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t2W\n\x0fSiteCoordinator\x12\x44\n\x0cRegisterAlgo\x12\x18.protoBuf.SiteAlgoRegReq\x1a\x18.protoBuf.SiteAlgoRegRes\"\x00\x32\x9d\x01\n\x10\x43loudCoordinator\x12\x46\n\x0cRegisterAlgo\x12\x19.protoBuf.CloudAlgoRegReq\x1a\x19.protoBuf.CloudAlgoRegRes\"\x00\x12\x41\n\x07\x43ompute\x12\x18.protoBuf.ComputeRequest\x1a\x1a.protoBuf.ComputeResponses\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x11\x63oordinator.proto\x12\x08protoBuf\x1a\x16\x63omputation-msgs.proto\x1a\x17registration-msgs.proto2W\n\x0fSiteCoordinator\x12\x44\n\x0cRegisterAlgo\x12\x18.protoBuf.SiteAlgoRegReq\x1a\x18.protoBuf.SiteAlgoRegRes\"\x00\x32\x9d\x01\n\x10\x43loudCoordinator\x12\x46\n\x0cRegisterAlgo\x12\x19.protoBuf.CloudAlgoRegReq\x1a\x19.protoBuf.CloudAlgoRegRes\"\x00\x12\x41\n\x07\x43ompute\x12\x18.protoBuf.ComputeRequest\x1a\x1a.protoBuf.ComputeResponses\"\x00\x62\x06proto3')
   ,
-  dependencies=[computation__pb2.DESCRIPTOR,])
+  dependencies=[computation__msgs__pb2.DESCRIPTOR,registration__msgs__pb2.DESCRIPTOR,])
 
 
 
-
-_SITEALGOREGREQ = _descriptor.Descriptor(
-  name='SiteAlgoRegReq',
-  full_name='protoBuf.SiteAlgoRegReq',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='protoBuf.SiteAlgoRegReq.id', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='description', full_name='protoBuf.SiteAlgoRegReq.description', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='protoVersion', full_name='protoBuf.SiteAlgoRegReq.protoVersion', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=50,
-  serialized_end=121,
-)
-
-
-_SITEALGOREGRES = _descriptor.Descriptor(
-  name='SiteAlgoRegRes',
-  full_name='protoBuf.SiteAlgoRegRes',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='success', full_name='protoBuf.SiteAlgoRegRes.success', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='msg', full_name='protoBuf.SiteAlgoRegRes.msg', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=123,
-  serialized_end=169,
-)
-
-
-_CLOUDALGOREGREQ = _descriptor.Descriptor(
-  name='CloudAlgoRegReq',
-  full_name='protoBuf.CloudAlgoRegReq',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='id', full_name='protoBuf.CloudAlgoRegReq.id', index=0,
-      number=1, type=5, cpp_type=1, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='description', full_name='protoBuf.CloudAlgoRegReq.description', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='proto_version', full_name='protoBuf.CloudAlgoRegReq.proto_version', index=2,
-      number=3, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=171,
-  serialized_end=244,
-)
-
-
-_CLOUDALGOREGRES = _descriptor.Descriptor(
-  name='CloudAlgoRegRes',
-  full_name='protoBuf.CloudAlgoRegRes',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='success', full_name='protoBuf.CloudAlgoRegRes.success', index=0,
-      number=1, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='msg', full_name='protoBuf.CloudAlgoRegRes.msg', index=1,
-      number=2, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=246,
-  serialized_end=293,
-)
-
-DESCRIPTOR.message_types_by_name['SiteAlgoRegReq'] = _SITEALGOREGREQ
-DESCRIPTOR.message_types_by_name['SiteAlgoRegRes'] = _SITEALGOREGRES
-DESCRIPTOR.message_types_by_name['CloudAlgoRegReq'] = _CLOUDALGOREGREQ
-DESCRIPTOR.message_types_by_name['CloudAlgoRegRes'] = _CLOUDALGOREGRES
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
-
-SiteAlgoRegReq = _reflection.GeneratedProtocolMessageType('SiteAlgoRegReq', (_message.Message,), dict(
-  DESCRIPTOR = _SITEALGOREGREQ,
-  __module__ = 'coordinator_pb2'
-  # @@protoc_insertion_point(class_scope:protoBuf.SiteAlgoRegReq)
-  ))
-_sym_db.RegisterMessage(SiteAlgoRegReq)
-
-SiteAlgoRegRes = _reflection.GeneratedProtocolMessageType('SiteAlgoRegRes', (_message.Message,), dict(
-  DESCRIPTOR = _SITEALGOREGRES,
-  __module__ = 'coordinator_pb2'
-  # @@protoc_insertion_point(class_scope:protoBuf.SiteAlgoRegRes)
-  ))
-_sym_db.RegisterMessage(SiteAlgoRegRes)
-
-CloudAlgoRegReq = _reflection.GeneratedProtocolMessageType('CloudAlgoRegReq', (_message.Message,), dict(
-  DESCRIPTOR = _CLOUDALGOREGREQ,
-  __module__ = 'coordinator_pb2'
-  # @@protoc_insertion_point(class_scope:protoBuf.CloudAlgoRegReq)
-  ))
-_sym_db.RegisterMessage(CloudAlgoRegReq)
-
-CloudAlgoRegRes = _reflection.GeneratedProtocolMessageType('CloudAlgoRegRes', (_message.Message,), dict(
-  DESCRIPTOR = _CLOUDALGOREGRES,
-  __module__ = 'coordinator_pb2'
-  # @@protoc_insertion_point(class_scope:protoBuf.CloudAlgoRegRes)
-  ))
-_sym_db.RegisterMessage(CloudAlgoRegRes)
 
 
 
@@ -235,16 +38,16 @@ _SITECOORDINATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=295,
-  serialized_end=382,
+  serialized_start=80,
+  serialized_end=167,
   methods=[
   _descriptor.MethodDescriptor(
     name='RegisterAlgo',
     full_name='protoBuf.SiteCoordinator.RegisterAlgo',
     index=0,
     containing_service=None,
-    input_type=_SITEALGOREGREQ,
-    output_type=_SITEALGOREGRES,
+    input_type=registration__msgs__pb2._SITEALGOREGREQ,
+    output_type=registration__msgs__pb2._SITEALGOREGRES,
     serialized_options=None,
   ),
 ])
@@ -259,16 +62,16 @@ _CLOUDCOORDINATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=None,
-  serialized_start=385,
-  serialized_end=542,
+  serialized_start=170,
+  serialized_end=327,
   methods=[
   _descriptor.MethodDescriptor(
     name='RegisterAlgo',
     full_name='protoBuf.CloudCoordinator.RegisterAlgo',
     index=0,
     containing_service=None,
-    input_type=_CLOUDALGOREGREQ,
-    output_type=_CLOUDALGOREGRES,
+    input_type=registration__msgs__pb2._CLOUDALGOREGREQ,
+    output_type=registration__msgs__pb2._CLOUDALGOREGRES,
     serialized_options=None,
   ),
   _descriptor.MethodDescriptor(
@@ -276,8 +79,8 @@ _CLOUDCOORDINATOR = _descriptor.ServiceDescriptor(
     full_name='protoBuf.CloudCoordinator.Compute',
     index=1,
     containing_service=None,
-    input_type=computation__pb2._COMPUTEREQUEST,
-    output_type=computation__pb2._COMPUTERESPONSES,
+    input_type=computation__msgs__pb2._COMPUTEREQUEST,
+    output_type=computation__msgs__pb2._COMPUTERESPONSES,
     serialized_options=None,
   ),
 ])

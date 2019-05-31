@@ -12,11 +12,6 @@ import (
 )
 
 /*
-The id of an algorithm
- */
-type AlgoId int32
-
-/*
 A struct that holds the ip and port that the site connector
 listens for requests from algorithms in the site, the ip
 and port it listen for requests from the coordinator, and
@@ -29,8 +24,9 @@ type Config struct {
 }
 
 var (
+	siteId int32
 	config Config
-	algos = make(map[AlgoId]string)
+	algos = make(map[int32]string)
 )
 
 /*
@@ -52,11 +48,12 @@ func InitializeConfig() {
 
 	CoordinatorIpPortPtr := flag.String("cip", config.ListenCoordinatorIpPort, "The ip and port to listen for coordinators")
 	AlgosIpPortPtr := flag.String("aip", config.ListenAlgosIpPort, "The ip and port to listen for site algorithms")
+	SiteIdPtr := flag.Int("id", 0, "The id of a site")
 	flag.Parse()
 
 	config.ListenAlgosIpPort = *CoordinatorIpPortPtr
 	config.ListenCoordinatorIpPort = *AlgosIpPortPtr
-	algos[0] = "127.0.0.1:60000"
+	siteId = int32(*SiteIdPtr)
 }
 
 /*

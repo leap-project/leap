@@ -15,21 +15,10 @@ var (
 	// Initial config
 	config Config
 	// IP and port of VM with algo given as key
-	CloudAlgos = make(map[AlgoId]string)
+	CloudAlgos = make(map[int32]string)
 	// IP's and ports of sites hosting algo given as key
-	SiteConnectors = make(map[AlgoId]map[SiteId]string)
+	SiteConnectors = make(map[int32]map[int32]string)
 )
-
-/*
-The id of a site.
- */
-type SiteId int32
-
-/*
-The id of an algorithm.
- */
-type AlgoId int32
-
 
 /*
 A struct that holds the ip and port that the coordinator
@@ -65,8 +54,6 @@ func InitializeCoordinator() {
 
 	config.ListenCloudIpPort = *CloudIpPortPtr
 	config.ListenSiteIpPort = *SiteIpPortPtr
-	SiteConnectors[0] = make(map[SiteId]string)
-	SiteConnectors[0][0] = "127.0.0.1:50003"
 }
 
 /*

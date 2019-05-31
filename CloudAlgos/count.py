@@ -96,8 +96,8 @@ def create_request(q):
 def count(stub, query):
     req = create_request(query)
     result = stub.Compute(req)
-    if not result.responses:
-        print("Count failed")
+    if hasattr(result, "err"):
+        print(result.err)
     unpacked_result = computation_msgs_pb2.IntResponse()
     total = 0
     for i in result.responses:

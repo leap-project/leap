@@ -23,7 +23,7 @@ class SiteCoordinatorStub(object):
     """
     self.RegisterAlgo = channel.unary_unary(
         '/protoBuf.SiteCoordinator/RegisterAlgo',
-        request_serializer=registration__msgs__pb2.SiteAlgoRegReq.SerializeToString,
+        request_serializer=registration__msgs__pb2.SiteRegReq.SerializeToString,
         response_deserializer=registration__msgs__pb2.SiteAlgoRegRes.FromString,
         )
 
@@ -50,7 +50,7 @@ def add_SiteCoordinatorServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'RegisterAlgo': grpc.unary_unary_rpc_method_handler(
           servicer.RegisterAlgo,
-          request_deserializer=registration__msgs__pb2.SiteAlgoRegReq.FromString,
+          request_deserializer=registration__msgs__pb2.SiteRegReq.FromString,
           response_serializer=registration__msgs__pb2.SiteAlgoRegRes.SerializeToString,
       ),
   }

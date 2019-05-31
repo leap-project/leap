@@ -1,5 +1,6 @@
 syntax = "proto3";
 package protoBuf;
+
 import "computation-msgs.proto";
 import "registration-msgs.proto";
 
@@ -14,7 +15,7 @@ import "registration-msgs.proto";
 service SiteCoordinator {
 
     // Registers an algorithm from a site at the coordinator
-    rpc RegisterAlgo (SiteAlgoRegReq) returns (SiteAlgoRegRes) {}
+    rpc RegisterAlgo (SiteRegReq) returns (SiteAlgoRegRes) {}
 
 }
 

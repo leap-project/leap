@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='protoBuf',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x11\x63oordinator.proto\x12\x08protoBuf\x1a\x16\x63omputation-msgs.proto\x1a\x17registration-msgs.proto2W\n\x0fSiteCoordinator\x12\x44\n\x0cRegisterAlgo\x12\x18.protoBuf.SiteAlgoRegReq\x1a\x18.protoBuf.SiteAlgoRegRes\"\x00\x32\x9d\x01\n\x10\x43loudCoordinator\x12\x46\n\x0cRegisterAlgo\x12\x19.protoBuf.CloudAlgoRegReq\x1a\x19.protoBuf.CloudAlgoRegRes\"\x00\x12\x41\n\x07\x43ompute\x12\x18.protoBuf.ComputeRequest\x1a\x1a.protoBuf.ComputeResponses\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x11\x63oordinator.proto\x12\x08protoBuf\x1a\x16\x63omputation-msgs.proto\x1a\x17registration-msgs.proto2S\n\x0fSiteCoordinator\x12@\n\x0cRegisterAlgo\x12\x14.protoBuf.SiteRegReq\x1a\x18.protoBuf.SiteAlgoRegRes\"\x00\x32\x9d\x01\n\x10\x43loudCoordinator\x12\x46\n\x0cRegisterAlgo\x12\x19.protoBuf.CloudAlgoRegReq\x1a\x19.protoBuf.CloudAlgoRegRes\"\x00\x12\x41\n\x07\x43ompute\x12\x18.protoBuf.ComputeRequest\x1a\x1a.protoBuf.ComputeResponses\"\x00\x62\x06proto3')
   ,
   dependencies=[computation__msgs__pb2.DESCRIPTOR,registration__msgs__pb2.DESCRIPTOR,])
 
@@ -39,14 +39,14 @@ _SITECOORDINATOR = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   serialized_start=80,
-  serialized_end=167,
+  serialized_end=163,
   methods=[
   _descriptor.MethodDescriptor(
     name='RegisterAlgo',
     full_name='protoBuf.SiteCoordinator.RegisterAlgo',
     index=0,
     containing_service=None,
-    input_type=registration__msgs__pb2._SITEALGOREGREQ,
+    input_type=registration__msgs__pb2._SITEREGREQ,
     output_type=registration__msgs__pb2._SITEALGOREGRES,
     serialized_options=None,
   ),
@@ -62,8 +62,8 @@ _CLOUDCOORDINATOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=None,
-  serialized_start=170,
-  serialized_end=327,
+  serialized_start=166,
+  serialized_end=323,
   methods=[
   _descriptor.MethodDescriptor(
     name='RegisterAlgo',

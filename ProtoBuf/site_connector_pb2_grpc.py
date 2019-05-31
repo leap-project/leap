@@ -2,6 +2,7 @@
 import grpc
 
 import computation_msgs_pb2 as computation__msgs__pb2
+import registration_msgs_pb2 as registration__msgs__pb2
 
 
 class AlgoConnectorStub(object):
@@ -12,7 +13,6 @@ class AlgoConnectorStub(object):
   python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. site-connector.proto
 
   RPC service at a site connector that will handle requests from site algorithms
-  rpc RegisterAlgo (SiteAlgoRegReq) returns (SiteAlgoRegRes) {}
   """
 
   def __init__(self, channel):
@@ -21,6 +21,11 @@ class AlgoConnectorStub(object):
     Args:
       channel: A grpc.Channel.
     """
+    self.RegisterAlgo = channel.unary_unary(
+        '/protoBuf.AlgoConnector/RegisterAlgo',
+        request_serializer=registration__msgs__pb2.SiteAlgoRegReq.SerializeToString,
+        response_deserializer=registration__msgs__pb2.SiteAlgoRegRes.FromString,
+        )
 
 
 class AlgoConnectorServicer(object):
@@ -31,12 +36,23 @@ class AlgoConnectorServicer(object):
   python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. site-connector.proto
 
   RPC service at a site connector that will handle requests from site algorithms
-  rpc RegisterAlgo (SiteAlgoRegReq) returns (SiteAlgoRegRes) {}
   """
+
+  def RegisterAlgo(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
 
 
 def add_AlgoConnectorServicer_to_server(servicer, server):
   rpc_method_handlers = {
+      'RegisterAlgo': grpc.unary_unary_rpc_method_handler(
+          servicer.RegisterAlgo,
+          request_deserializer=registration__msgs__pb2.SiteAlgoRegReq.FromString,
+          response_serializer=registration__msgs__pb2.SiteAlgoRegRes.SerializeToString,
+      ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
       'protoBuf.AlgoConnector', rpc_method_handlers)

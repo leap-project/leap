@@ -14,6 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 import computation_msgs_pb2 as computation__msgs__pb2
+import registration_msgs_pb2 as registration__msgs__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='protoBuf',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x14site-connector.proto\x12\x08protoBuf\x1a\x16\x63omputation-msgs.proto2\x0f\n\rAlgoConnector2X\n\x14\x43oordinatorConnector\x12@\n\x07\x43ompute\x12\x18.protoBuf.ComputeRequest\x1a\x19.protoBuf.ComputeResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x14site-connector.proto\x12\x08protoBuf\x1a\x16\x63omputation-msgs.proto\x1a\x17registration-msgs.proto2U\n\rAlgoConnector\x12\x44\n\x0cRegisterAlgo\x12\x18.protoBuf.SiteAlgoRegReq\x1a\x18.protoBuf.SiteAlgoRegRes\"\x00\x32X\n\x14\x43oordinatorConnector\x12@\n\x07\x43ompute\x12\x18.protoBuf.ComputeRequest\x1a\x19.protoBuf.ComputeResponse\"\x00\x62\x06proto3')
   ,
-  dependencies=[computation__msgs__pb2.DESCRIPTOR,])
+  dependencies=[computation__msgs__pb2.DESCRIPTOR,registration__msgs__pb2.DESCRIPTOR,])
 
 
 
@@ -37,9 +38,18 @@ _ALGOCONNECTOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=58,
-  serialized_end=73,
+  serialized_start=83,
+  serialized_end=168,
   methods=[
+  _descriptor.MethodDescriptor(
+    name='RegisterAlgo',
+    full_name='protoBuf.AlgoConnector.RegisterAlgo',
+    index=0,
+    containing_service=None,
+    input_type=registration__msgs__pb2._SITEALGOREGREQ,
+    output_type=registration__msgs__pb2._SITEALGOREGRES,
+    serialized_options=None,
+  ),
 ])
 _sym_db.RegisterServiceDescriptor(_ALGOCONNECTOR)
 
@@ -52,8 +62,8 @@ _COORDINATORCONNECTOR = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=1,
   serialized_options=None,
-  serialized_start=75,
-  serialized_end=163,
+  serialized_start=170,
+  serialized_end=258,
   methods=[
   _descriptor.MethodDescriptor(
     name='Compute',

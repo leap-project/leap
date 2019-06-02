@@ -1,5 +1,6 @@
 import grpc
 import time
+import multiprocessing
 import argparse
 import concurrent.futures as futures
 import sys
@@ -50,6 +51,8 @@ def serve():
     server.start()
     print("Site Algo " + args.algoId + ": Server started")
     print("Site Algo " + args.algoId + ": Listening at " + args.ipPort)
+    while True:
+        time.sleep(5)
 
 class SiteAlgoServicer(site_algos_grpc.SiteAlgoServicer):
 
@@ -92,7 +95,6 @@ class SiteAlgoServicer(site_algos_grpc.SiteAlgoServicer):
         return res
 
 if __name__ == "__main__":
-    serve()
+    serverProcess = multiprocessing.Process(target=serve)
+    serverProcess.start()
     register()
-    while True:
-        time.sleep(5)

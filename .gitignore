@@ -2,3 +2,6 @@
 *venv/
 *.pyc
 .Rproj.user
+*pb.go
+*pb2.py
+*pb2_grpc.py

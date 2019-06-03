@@ -35,7 +35,7 @@ def register():
         req.algo_ip_port = args.ipPort
         response = stub.RegisterAlgo(req)
         if response.success:
-            print("Site-Algo: Successfully registered algorithm with coordinator")
+            print("Site-Algo " + args.algoId + ": Successfully registered algorithm with coordinator")
 
 def getRedcapData(url, token, filterLogic):
     project = redcap.Project(url, token)

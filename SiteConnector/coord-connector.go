@@ -21,13 +21,12 @@ type CoordinatorConnectorService struct{}
 func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
 	fmt.Println("Site-Connector: Compute request received")
 
-	algoIpPort := algos[req.AlgoId]
+	algoIpPort := SiteAlgos[req.AlgoId]
 	conn, err := grpc.Dial(algoIpPort, grpc.WithInsecure())
 	checkErr(err)
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)
-	fmt.Println(conn.GetState())
 	res, err := client.Compute(context.Background(), req)
 	checkErr(err)
 	return res, nil

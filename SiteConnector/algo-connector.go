@@ -29,12 +29,12 @@ func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlg
 	defer conn.Close()
 
 	c := pb.NewSiteCoordinatorClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
 	defer cancel()
 
 	response, err := c.RegisterAlgo(ctx, &newRequest)
 	if err == nil && response.Success {
-		algos[req.AlgoId] = req.AlgoIpPort
+		SiteAlgos[req.AlgoId] = req.AlgoIpPort
 	}
 	checkErr(err)
 	return response, err

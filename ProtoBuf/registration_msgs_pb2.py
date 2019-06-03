@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='protoBuf',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x17registration-msgs.proto\x12\x08protoBuf\"c\n\x0eSiteAlgoRegReq\x12\x0f\n\x07\x61lgo_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x15\n\rproto_version\x18\x03 \x01(\t\x12\x14\n\x0c\x61lgo_ip_port\x18\x04 \x01(\t\"Z\n\nSiteRegReq\x12\x0f\n\x07site_id\x18\x01 \x01(\x05\x12\x14\n\x0csite_ip_port\x18\x02 \x01(\t\x12%\n\x03req\x18\x03 \x01(\x0b\x32\x18.protoBuf.SiteAlgoRegReq\".\n\x0eSiteAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\"I\n\x0f\x43loudAlgoRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x15\n\rproto_version\x18\x03 \x01(\t\"/\n\x0f\x43loudAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x17registration-msgs.proto\x12\x08protoBuf\"c\n\x0eSiteAlgoRegReq\x12\x0f\n\x07\x61lgo_id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x15\n\rproto_version\x18\x03 \x01(\t\x12\x14\n\x0c\x61lgo_ip_port\x18\x04 \x01(\t\"Z\n\nSiteRegReq\x12\x0f\n\x07site_id\x18\x01 \x01(\x05\x12\x14\n\x0csite_ip_port\x18\x02 \x01(\t\x12%\n\x03req\x18\x03 \x01(\x0b\x32\x18.protoBuf.SiteAlgoRegReq\".\n\x0eSiteAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\t\"_\n\x0f\x43loudAlgoRegReq\x12\n\n\x02id\x18\x01 \x01(\x05\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x15\n\rproto_version\x18\x03 \x01(\t\x12\x14\n\x0c\x61lgo_ip_port\x18\x04 \x01(\t\"/\n\x0f\x43loudAlgoRegRes\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0b\n\x03msg\x18\x02 \x01(\tb\x06proto3')
 )
 
 
@@ -189,6 +189,13 @@ _CLOUDALGOREGREQ = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='algo_ip_port', full_name='protoBuf.CloudAlgoRegReq.algo_ip_port', index=3,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=_b("").decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -202,7 +209,7 @@ _CLOUDALGOREGREQ = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=278,
-  serialized_end=351,
+  serialized_end=373,
 )
 
 
@@ -239,8 +246,8 @@ _CLOUDALGOREGRES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=353,
-  serialized_end=400,
+  serialized_start=375,
+  serialized_end=422,
 )
 
 _SITEREGREQ.fields_by_name['req'].message_type = _SITEALGOREGREQ

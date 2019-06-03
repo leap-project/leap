@@ -24,7 +24,7 @@ type Config struct {
 var (
 	siteId int32
 	config Config
-	algos  = make(map[int32]string)
+	SiteAlgos  = make(map[int32]string)
 )
 
 // Parses user flags and creates config using the given flags.

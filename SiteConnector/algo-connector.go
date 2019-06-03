@@ -8,12 +8,18 @@ import (
 	"time"
 )
 
-/*
-Service containing the API for interactions between the site
-connector and the site algorithms.
- */
-type AlgoConnectorService struct {}
+// Service containing the API for interactions between the site
+// connector and the site algorithms.
+type AlgoConnectorService struct{}
 
+// Sends a registration request from a site algo to the
+// coordinator. This allows  cloud algorithms to send compute
+// requests to registered site algos.
+//
+// ctx: Carries value and cancellation signals across API
+//      boundaries.
+// req: A registration request with the site and algo id
+//      of the algorithm to be registered.
 func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlgoRegReq) (*pb.SiteAlgoRegRes, error) {
 	fmt.Println("Site-Connector: Registration request received")
 

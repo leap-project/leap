@@ -9,28 +9,21 @@ import (
 	"time"
 )
 
-/*
-Service containing the API for interactions between the cloud
-and a coordinator.
- */
+// Service containing the API for interactions between the cloud
+// and a coordinator.
 type CloudCoordinatorService struct{}
 
-/*
-
- */
 func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
 	return nil, nil
 }
 
-/*
-Makes a remote procedure call to a site connector with a
-query and returns the results of computing the query on
-multiple site algorithms.
-
-ctx: Carries value and cancellation signals across API
-     boundaries.
-req: Request created by algorithm in the cloud.
- */
+// Makes a remote procedure call to a site connector with a
+// query and returns the results of computing the query on
+// multiple site algorithms.
+//
+// ctx: Carries value and cancellation signals across API
+//      boundaries.
+// req: Request created by algorithm in the cloud.
 func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
 	fmt.Println("Coordinator: Compute request received")
 

@@ -11,31 +11,27 @@ import (
 	"os"
 )
 
-/*
-A struct that holds the ip and port that the site connector
-listens for requests from algorithms in the site, the ip
-and port it listen for requests from the coordinator, and
-the ip and port to contact the coordinator.
- */
+// A struct that holds the ip and port that the site connector
+// listens for requests from algorithms in the site, the ip
+// and port it listen for requests from the coordinator, and
+// the ip and port to contact the coordinator.
 type Config struct {
 	ListenCoordinatorIpPort string
-	ListenAlgosIpPort string
-	CoordinatorIpPort string
+	ListenAlgosIpPort       string
+	CoordinatorIpPort       string
 }
 
 var (
 	siteId int32
 	config Config
-	algos = make(map[int32]string)
+	algos  = make(map[int32]string)
 )
 
-/*
-Parses user flags and creates config using the given flags.
-If a flag is absent, use the default flag given in the
-config.json file.
-
-No args
- */
+// Parses user flags and creates config using the given flags.
+// If a flag is absent, use the default flag given in the
+// config.json file.
+//
+// No args
 func InitializeConfig() {
 	jsonFile, err := os.Open("config.json")
 	checkErr(err)
@@ -56,11 +52,9 @@ func InitializeConfig() {
 	siteId = int32(*SiteIdPtr)
 }
 
-/*
-Serves RPC calls from site algorithms.
-
-No args.
-*/
+// Serves RPC calls from site algorithms.
+//
+// No args.
 func ListenAlgos() {
 	listener, err := net.Listen("tcp", config.ListenAlgosIpPort)
 	fmt.Println("Site-Connector: Listening for site algos at", config.ListenAlgosIpPort)
@@ -71,11 +65,9 @@ func ListenAlgos() {
 	checkErr(err)
 }
 
-/*
-Serves RPC calls from coordinator.
-
-No args.
-*/
+// Serves RPC calls from coordinator.
+//
+// No args.
 func ListenCoordinator() {
 	listener, err := net.Listen("tcp", config.ListenCoordinatorIpPort)
 	fmt.Println("Site-Connector: Listening for coordinator at", config.ListenCoordinatorIpPort)
@@ -86,12 +78,10 @@ func ListenCoordinator() {
 	checkErr(err)
 }
 
-/*
-Helper to log errors in a site connector.
-
-err: Error returned by a function that should be checked
-     if nil or not.
-*/
+// Helper to log errors in a site connector.
+//
+// err: Error returned by a function that should be checked
+//      if nil or not.
 func checkErr(err error) {
 	if err != nil {
 		fmt.Println("Site Connector:", err.Error())

@@ -20,24 +20,20 @@ var (
 	SiteConnectors = make(map[int32]map[int32]string)
 )
 
-/*
-A struct that holds the ip and port that the coordinator
-listens for requests from algorithms in the cloud, and the
-ip and port it listen for requests from algorithms in dis-
-tributed sites.
- */
+// A struct that holds the ip and port that the coordinator
+// listens for requests from algorithms in the cloud, and the
+// ip and port it listen for requests from algorithms in dis-
+// tributed sites.
 type Config struct {
 	ListenCloudIpPort string
 	ListenSiteIpPort  string
 }
 
-/*
-Parses user flags and creates config using the given flags.
-If a flag is absent, use the default flag given in the
-config.json file.
-
-No args.
- */
+// Parses user flags and creates config using the given flags.
+// If a flag is absent, use the default flag given in the
+// config.json file.
+//
+// No args.
 func InitializeCoordinator() {
 	jsonFile, err := os.Open("config.json")
 	checkErr(err)
@@ -56,13 +52,11 @@ func InitializeCoordinator() {
 	config.ListenSiteIpPort = *SiteIpPortPtr
 }
 
-/*
-Creates a listener, registers the grpc server for coordinating
-algorithms hosted in the cloud, and serves requests that arrive
-at the listener.
-
-No args.
-*/
+// Creates a listener, registers the grpc server for coordinating
+// algorithms hosted in the cloud, and serves requests that arrive
+// at the listener.
+//
+// No args.
 func ServeCloud() {
 	listener, err := net.Listen("tcp", config.ListenCloudIpPort)
 	checkErr(err)
@@ -73,13 +67,11 @@ func ServeCloud() {
 	checkErr(err)
 }
 
-/*
-Creates a listener, registers the grpc server for coordinating
-algorithms hosted in sites, and serves requests that arrive at
-the listener.
-
-No args.
-*/
+// Creates a listener, registers the grpc server for coordinating
+// algorithms hosted in sites, and serves requests that arrive at
+// the listener.
+//
+// No args.
 func ServeSites() {
 	listener, err := net.Listen("tcp", config.ListenSiteIpPort)
 	checkErr(err)
@@ -90,12 +82,10 @@ func ServeSites() {
 	checkErr(err)
 }
 
-/*
-Helper to log errors in the coordinator.
-
-err: Error returned by a function that should be checked
-     if nil or not.
-*/
+// Helper to log errors in the coordinator.
+//
+// err: Error returned by a function that should be checked
+//      if nil or not.
 func checkErr(err error) {
 	if err != nil {
 		fmt.Println("Coordinator:", err.Error())

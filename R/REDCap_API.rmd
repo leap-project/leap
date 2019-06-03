@@ -74,6 +74,30 @@ metadata
 ```
 
 
+### Query out all records who are above 50 and bmi less than 25
+```{r}
+#!/usr/bin/env Rscript
+library(RCurl)
+result <- postForm(
+    uri='https://rc.bcchr.ca/redcap_demo/api/',
+    token='3405DC778F3D3B9639E53C1A3394EC09',
+    content='record',
+    format='csv',
+    type='flat',
+    rawOrLabel='raw',
+    rawOrLabelHeaders='raw',
+    exportCheckboxLabel='false',
+    exportSurveyFields='false',
+    exportDataAccessGroups='false',
+    returnFormat='json',
+    filterLogic='[age] > 50 and [bmi] < 25'
+)
+print(result)
+
+```
+
+
+
 ### Export all records from Porject: `REDCAP API TEST`
 ```{r}
 #!/usr/bin/env Rscript
@@ -197,6 +221,7 @@ result <- postForm(
 res <- textConnection(result)
 toy_data <- read.csv(res, stringsAsFactors = FALSE)
 ```
+
 # Filters
 Use `==` to filter for equalities.
 ```{r}

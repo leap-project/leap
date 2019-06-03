@@ -34,3 +34,6 @@ pip install protobuf
 #   minal.
 pip install grpcio
 pip install grpcio-tools
+pip install requests
+# Install latest PyCap (the one with regular pip doesn't have 'filter_logic'
+pip install -e git+https://github.com/sburns/PyCap.git#egg=PyCap

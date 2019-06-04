@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"leap/CustomErrors"
 	pb "leap/ProtoBuf"
 )
 
@@ -24,6 +25,10 @@ func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.Compu
 	algoIpPort := SiteAlgos[req.AlgoId]
 	conn, err := grpc.Dial(algoIpPort, grpc.WithInsecure())
 	checkErr(err)
+	if err != nil {
+		delete(SiteAlgos, req.AlgoId)
+		return &pb.ComputeResponse{}, CustomErrors.NewSiteUnavailableError()
+	}
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)

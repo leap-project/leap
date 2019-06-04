@@ -1,4 +1,5 @@
 import grpc
+import argparse
 import sys
 import google.protobuf.any_pb2 as any_pb2
 # TODO: Fix this ugly import
@@ -8,6 +9,11 @@ import coordinator_pb2_grpc
 import registration_msgs_pb2
 import computation_msgs_pb2
 import count_msgs_pb2
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-id", "--algoId", default=0, help="The id of this algorithm")
+parser.add_argument("-cip", "--coordinatorIpPort", default='127.0.0.1:50000', help="The ip and port of the coordinator")
+args = parser.parse_args()
 
 # Creates a cloud algo registration request using the parameters
 # given.
@@ -58,7 +64,7 @@ def create_count_query(filter_logic):
 def create_computation_request(q):
     request = computation_msgs_pb2.ComputeRequest()
     any_msg = any_pb2.Any()
-    request.algo_id = 0
+    request.algo_id = int(args.algoId)
     any_msg.Pack(q)
     request.req.CopyFrom(any_msg)
     return request
@@ -83,10 +89,10 @@ def count(stub, query):
 
 if __name__ == "__main__":
     # Sets up the connection so that we can make RPC calls
-    with grpc.insecure_channel('127.0.0.1:50000') as channel:
+    with grpc.insecure_channel(args.coordinatorIpPort) as channel:
         stub = coordinator_pb2_grpc.CloudCoordinatorStub(channel)
 
-        register(stub, 0, "")
+        register(stub, int(args.algoId), "")
         query = create_count_query("[age] > 50 and [bmi] < 25")
         print("Counting all records that are above 50 and with bmi less than 25")
         count(stub, query)

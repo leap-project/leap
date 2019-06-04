@@ -43,7 +43,7 @@ func InitializeConfig() {
 	checkErr(err)
 
 	CoordinatorIpPortPtr := flag.String("cip", config.ListenCoordinatorIpPort, "The ip and port to listen for coordinators")
-	AlgosIpPortPtr := flag.String("aip", config.ListenAlgosIpPort, "The ip and port to listen for site algorithms")
+	AlgosIpPortPtr := flag.String("sip", config.ListenAlgosIpPort, "The ip and port to listen for site algorithms")
 	SiteIdPtr := flag.Int("id", 0, "The id of a site")
 	flag.Parse()
 

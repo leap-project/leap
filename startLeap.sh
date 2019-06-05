@@ -34,7 +34,6 @@ do
     algoPort=$((60000 + $algosPortCount))
     algosPortCount=$((algosPortCount + 1))
     cd ~/gopath/src/leap/SiteAlgos/
-    source ../venv/bin/activate
     python -m count -ip="127.0.0.1:$algoPort" -cip="127.0.0.1:$listenAlgosPort" &
 
     i=$((i + 1))

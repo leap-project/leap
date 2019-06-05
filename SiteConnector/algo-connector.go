@@ -24,7 +24,7 @@ type AlgoConnectorService struct{}
 func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlgoRegReq) (*pb.SiteAlgoRegRes, error) {
 	fmt.Println("Site-Connector: Registration request received")
 
-	newRequest := pb.SiteRegReq{SiteId: siteId, SiteIpPort: config.ListenCoordinatorIpPort, Req: req}
+	newRequest := pb.SiteRegReq{SiteId: config.SiteId, SiteIpPort: config.ListenCoordinatorIpPort, Req: req}
 	conn, err := grpc.Dial(config.CoordinatorIpPort, grpc.WithInsecure())
 	checkErr(err)
 	if err != nil {
@@ -33,7 +33,7 @@ func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlg
 	defer conn.Close()
 
 	c := pb.NewSiteCoordinatorClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	response, err := c.RegisterAlgo(ctx, &newRequest)

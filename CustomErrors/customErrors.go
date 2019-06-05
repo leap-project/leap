@@ -18,7 +18,6 @@ func IsSiteUnavailableError(e error) bool {
 	return ok
 }
 
-
 // CloudAlgoNotRegistered Error
 type CloudAlgoNotRegisteredError struct {
 	message string
@@ -36,7 +35,6 @@ func IsCloudAlgoNotRegisteredError(e error) bool {
 	_, ok := e.(CloudAlgoNotRegisteredError)
 	return ok
 }
-
 
 // SiteAlgoNotRegisteredError
 type SiteAlgoNotRegisteredError struct {

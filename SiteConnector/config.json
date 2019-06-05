@@ -1,5 +1,6 @@
 {
   "ListenCoordinatorIpPort": "127.0.0.1:50002",
   "ListenAlgosIpPort": "127.0.0.1:50003",
-  "CoordinatorIpPort": "127.0.0.1:50001"
+  "CoordinatorIpPort": "127.0.0.1:50001",
+  "SiteId": 0
 }

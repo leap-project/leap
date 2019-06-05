@@ -19,12 +19,12 @@ type Config struct {
 	ListenCoordinatorIpPort string
 	ListenAlgosIpPort       string
 	CoordinatorIpPort       string
+	SiteId                  int32
 }
 
 var (
-	siteId int32
-	config Config
-	SiteAlgos  = make(map[int32]string)
+	config    Config
+	SiteAlgos = make(map[int32]string)
 )
 
 // Parses user flags and creates config using the given flags.
@@ -42,14 +42,16 @@ func InitializeConfig() {
 	err = json.Unmarshal(jsonBytes, &config)
 	checkErr(err)
 
-	CoordinatorIpPortPtr := flag.String("cip", config.ListenCoordinatorIpPort, "The ip and port to listen for coordinators")
-	AlgosIpPortPtr := flag.String("sip", config.ListenAlgosIpPort, "The ip and port to listen for site algorithms")
 	SiteIdPtr := flag.Int("id", 0, "The id of a site")
+	CoordinatorIpPortPtr := flag.String("cip", config.ListenCoordinatorIpPort, "The ip and port to listen for coordinators")
+	AlgosIpPortPtr := flag.String("aip", config.ListenAlgosIpPort, "The ip and port to listen for site algorithms")
+	CoordinatorPtr := flag.String("c", config.CoordinatorIpPort, "The ip and port of the coordinator to be contacted")
 	flag.Parse()
 
-	config.ListenAlgosIpPort = *CoordinatorIpPortPtr
-	config.ListenCoordinatorIpPort = *AlgosIpPortPtr
-	siteId = int32(*SiteIdPtr)
+	config.SiteId = int32(*SiteIdPtr)
+	config.ListenCoordinatorIpPort = *CoordinatorIpPortPtr
+	config.ListenAlgosIpPort = *AlgosIpPortPtr
+	config.CoordinatorIpPort = *CoordinatorPtr
 }
 
 // Serves RPC calls from site algorithms.

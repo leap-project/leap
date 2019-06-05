@@ -1,3 +1,4 @@
+#!/bin/bash
 # Install protoc compiler and runtime
 sudo apt-get install autoconf automake libtool curl make g++ unzip
 cd

@@ -72,7 +72,7 @@ func getResultsFromSites(req *pb.ComputeRequest, sites map[int32]string) pb.Comp
 		defer conn.Close()
 
 		c := pb.NewCoordinatorConnectorClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 		defer cancel()
 
 		localResponse, err := c.Compute(ctx, req)
@@ -102,7 +102,7 @@ func selectRegistrationError(req pb.ComputeRequest) (*pb.ComputeResponses, error
 	if len(sites) == 0 {
 		return &pb.ComputeResponses{}, CustomErrors.NewSiteAlgoNotRegisteredError()
 	} else if !contains {
-		return  &pb.ComputeResponses{}, CustomErrors.NewCloudAlgoNotRegisteredError()
+		return &pb.ComputeResponses{}, CustomErrors.NewCloudAlgoNotRegisteredError()
 	} else {
 		return &pb.ComputeResponses{}, nil
 	}

@@ -24,8 +24,7 @@ type CloudCoordinatorService struct{}
 func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
 	sites := SiteConnectors[req.Id]
 	if len(sites) == 0 {
-		response := pb.CloudAlgoRegRes{Success: false, Msg: "There are no sites with the algorithm id you want to register."}
-		return &response, CustomErrors.NewSiteAlgoNotRegisteredError()
+		return nil, CustomErrors.NewSiteAlgoNotRegisteredError()
 	}
 	CloudAlgos[req.Id] = req.AlgoIpPort
 	response := pb.CloudAlgoRegRes{Success: true, Msg: "Algorithm successfully registered."}
@@ -48,10 +47,10 @@ func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRe
 		return res, err
 	}
 
-	results := getResultsFromSites(req, sites)
+	results, err := getResultsFromSites(req, sites)
 
-	if len(results.Responses) == 0 {
-		return &results, CustomErrors.NewSiteUnavailableError()
+	if err != nil {
+		return &results, err
 	}
 
 	return &results, nil
@@ -60,30 +59,61 @@ func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRe
 // Sends a ComputeRequest to all the sites that have the algo
 // specified in the request. The results are then added to a
 // ComputeResponses struct, which is returned to the caller.
+// If all contacted sites are unavailable, returns an error
+// indicating that there are no sites live that support the re-
+// quested algorithm.
 //
 // req: The compute request to be sent to each site.
 // sites: The sites that the requests are going to be sent to.
-func getResultsFromSites(req *pb.ComputeRequest, sites map[int32]string) pb.ComputeResponses {
+func getResultsFromSites(req *pb.ComputeRequest, sites map[int32]string) (pb.ComputeResponses, error) {
 	var results pb.ComputeResponses
-
+	fmt.Println(sites)
+	numUnavailableSites := 0
+	numUnavailableAlgos := 0
 	for key, ipPort := range sites {
-		conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
+		response, err := getResultFromSite(req, ipPort)
+		CustomErrors.IsUnavailableError(err)
 		checkErr(err)
-		defer conn.Close()
 
-		c := pb.NewCoordinatorConnectorClient(conn)
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
-		defer cancel()
-
-		localResponse, err := c.Compute(ctx, req)
-		checkErr(err)
-		if CustomErrors.IsSiteUnavailableError(err) {
+		if CustomErrors.IsUnavailableError(err) {
+			numUnavailableSites++
+			delete(SiteConnectors[req.AlgoId], key)
+		} else if CustomErrors.IsAlgoUnavailableError(err) {
+			numUnavailableAlgos++
 			delete(SiteConnectors[req.AlgoId], key)
 		} else {
-			results.Responses = append(results.Responses, localResponse)
+			results.Responses = append(results.Responses, response)
 		}
 	}
-	return results
+	fmt.Println(sites)
+	if numUnavailableSites == len(sites) {
+		return results, CustomErrors.NewSiteUnavailableError()
+	} else if numUnavailableAlgos == len(sites) {
+		return results, CustomErrors.NewAlgoUnavailableError()
+	}
+
+	return results, nil
+}
+
+// Sends an RPC carrying the compute request to the site with
+// the ip and port specified in the parameters. The response
+// to the RPC is returned.
+//
+// req: The compute request to be sent to a site.
+// ipPort: The ip and port of the site hosting the desired
+//         algorithm.
+func getResultFromSite(req *pb.ComputeRequest, ipPort string) (*pb.ComputeResponse, error) {
+	conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
+	checkErr(err)
+	defer conn.Close()
+
+	c := pb.NewCoordinatorConnectorClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	localResponse, err := c.Compute(ctx, req)
+
+	return localResponse, err
 }
 
 // This function checks the number of sites that have the

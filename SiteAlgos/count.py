@@ -19,7 +19,7 @@ import site_connector_pb2_grpc as site_connector_grpc
 parser = argparse.ArgumentParser()
 parser.add_argument("-id", "--algoId", default="0", help="The id of this algorithm")
 parser.add_argument("-ip", "--ipPort", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
-parser.add_argument("-cip", "--connectorIpPort", default="127.0.0.1:50002", help="The ip and port of the site connector")
+parser.add_argument("-cip", "--connectorIpPort", default="127.0.0.1:50003", help="The ip and port of the site connector")
 args = parser.parse_args()
 
 redCapUrl = "https://rc.bcchr.ca/redcap_demo/api/"

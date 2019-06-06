@@ -24,11 +24,13 @@ func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.Compu
 
 	algoIpPort := SiteAlgos[req.AlgoId]
 	conn, err := grpc.Dial(algoIpPort, grpc.WithInsecure())
+
 	checkErr(err)
-	if err != nil {
+	if CustomErrors.IsUnavailableError(err) {
 		delete(SiteAlgos, req.AlgoId)
-		return &pb.ComputeResponse{}, CustomErrors.NewSiteUnavailableError()
+		return nil, CustomErrors.NewAlgoUnavailableError()
 	}
+
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)

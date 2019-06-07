@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"io/ioutil"
+	"leap/Concurrent"
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
@@ -14,10 +15,14 @@ import (
 var (
 	// Initial config
 	config Config
-	// IP and port of VM with algo given as key
-	CloudAlgos = make(map[int32]string)
-	// IP's and ports of sites hosting algo given as key
-	SiteConnectors = make(map[int32]map[int32]string)
+	// A concurrent map with algo id as key and ip and port
+	// of a cloud algo as value. Equivalent to map[int32]string.
+	CloudAlgos = Concurrent.NewMap()
+	// A concurrent map with algo id as key and a concurrent map
+	// as a value. The map as a value uses site ids for keys and
+	// the value is the ip and port to contact the site. It is
+	// equivalent to map[int32]map[int32]string.
+	SiteConnectors = Concurrent.NewMap()
 )
 
 // A struct that holds the ip and port that the coordinator

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"google.golang.org/grpc"
 	"io/ioutil"
+	"leap/Concurrent"
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
@@ -24,7 +25,7 @@ type Config struct {
 
 var (
 	config    Config
-	SiteAlgos = make(map[int32]string)
+	SiteAlgos = Concurrent.NewMap()
 )
 
 // Parses user flags and creates config using the given flags.

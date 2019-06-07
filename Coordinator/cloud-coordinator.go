@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc"
+	"leap/Concurrent"
 	"leap/CustomErrors"
 	pb "leap/ProtoBuf"
 	"time"
@@ -22,13 +23,17 @@ type CloudCoordinatorService struct{}
 // req: A registration request with the algo id
 //      of the algorithm to be registered.
 func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
-	sites := SiteConnectors[req.Id]
-	if len(sites) == 0 {
+	if SiteConnectors.Contains(req.Id) {
+		sites := SiteConnectors.Get(req.Id).(*Concurrent.Map)
+		if  sites.Length() == 0 {
+			return nil, CustomErrors.NewSiteAlgoNotRegisteredError()
+		}
+		CloudAlgos.Set(req.Id, req.AlgoIpPort)
+		response := pb.CloudAlgoRegRes{Success: true, Msg: "Algorithm successfully registered."}
+		return &response, nil
+	} else {
 		return nil, CustomErrors.NewSiteAlgoNotRegisteredError()
 	}
-	CloudAlgos[req.Id] = req.AlgoIpPort
-	response := pb.CloudAlgoRegRes{Success: true, Msg: "Algorithm successfully registered."}
-	return &response, nil
 }
 
 // Makes a remote procedure call to a site connector with a
@@ -40,8 +45,12 @@ func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.Clou
 // req: Request created by algorithm in the cloud.
 func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
 	fmt.Println("Coordinator: Compute request received")
-	sites := SiteConnectors[req.AlgoId]
 
+	if !SiteConnectors.Contains(req.AlgoId) {
+		return nil, CustomErrors.NewSiteAlgoNotRegisteredError()
+	}
+
+	sites := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
 	res, err := selectRegistrationError(*req)
 	if err != nil {
 		return res, err
@@ -65,25 +74,31 @@ func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRe
 //
 // req: The compute request to be sent to each site.
 // sites: The sites that the requests are going to be sent to.
-func getResultsFromSites(req *pb.ComputeRequest, sites map[int32]string) (pb.ComputeResponses, error) {
+func getResultsFromSites(req *pb.ComputeRequest, sites *Concurrent.Map) (pb.ComputeResponses, error) {
 	var results pb.ComputeResponses
 	numUnavailableSites := 0
 	numUnavailableAlgos := 0
-	sitesLength := len(sites)
+	sitesLength := 0
 
-	for key, ipPort := range sites {
+	for item := range sites.Iter() {
+		key := item.Key
+		ipPort := item.Value.(string)
 		response, err := getResultFromSite(req, ipPort)
 		checkErr(err)
 
 		if CustomErrors.IsAlgoUnavailableError(err) {
 			numUnavailableAlgos++
-			delete(SiteConnectors[req.AlgoId], key)
+			sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+			sitesWithAlgo.Delete(key)
 		} else if CustomErrors.IsUnavailableError(err) {
 			numUnavailableSites++
-			delete(SiteConnectors[req.AlgoId], key)
+			sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+			sitesWithAlgo.Delete(key)
 		} else {
 			results.Responses = append(results.Responses, response)
 		}
+
+		sitesLength++
 	}
 
 	if numUnavailableSites == sitesLength {
@@ -126,10 +141,10 @@ func getResultFromSite(req *pb.ComputeRequest, ipPort string) (*pb.ComputeRespon
 // req: A request that has the id of the algorithm being
 //      requested.
 func selectRegistrationError(req pb.ComputeRequest) (*pb.ComputeResponses, error) {
-	sites := SiteConnectors[req.AlgoId]
-	_, contains := CloudAlgos[req.AlgoId]
+	sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+	contains := CloudAlgos.Contains(req.AlgoId)
 
-	if len(sites) == 0 {
+	if sitesWithAlgo.Length() == 0 {
 		return &pb.ComputeResponses{}, CustomErrors.NewSiteAlgoNotRegisteredError()
 	} else if !contains {
 		return &pb.ComputeResponses{}, CustomErrors.NewCloudAlgoNotRegisteredError()

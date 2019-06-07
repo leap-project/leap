@@ -38,11 +38,22 @@ func (m *Map) Set(key interface{}, value interface{}) {
 // whether the given value exists.
 //
 // key: A key in the map.
-func (m *Map) Get(key interface{}) (value interface{}, ok bool) {
+func (m *Map) Get(key interface{}) (value interface{}) {
 	m.Lock()
 	defer m.Unlock()
-	value, ok = m.items[key]
-	return value, ok
+	value, _ = m.items[key]
+	return value
+}
+
+// A function that returns whether the map contains a value
+// associated with a given key.
+//
+// key: Key to check for a value
+func (m *Map) Contains(key interface{}) bool {
+	m.Lock()
+	defer m.Unlock()
+	_, ok := m.items[key]
+	return ok
 }
 
 // A function that deletes the value associated with the
@@ -55,11 +66,20 @@ func (m *Map) Delete(key interface{}) {
 	delete(m.items, key)
 }
 
+// A function that returns the amount of items in the map
+//
+// No args
+func (m *Map) Length() int {
+	m.Lock()
+	defer m.Unlock()
+	return len(m.items)
+}
+
 // Allows the builtin range keyword to be used for iterating
 // over the concurrent map.
 //
 // No args
-func (m *Map) Iter() <- chan Item {
+func (m *Map) Iter() <-chan Item {
 	c := make(chan Item)
 	go m.sendItemsOverChannel(&c)
 	return c

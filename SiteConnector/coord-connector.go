@@ -22,7 +22,7 @@ type CoordinatorConnectorService struct{}
 func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
 	fmt.Println("Site-Connector: Compute request received")
 
-	algoIpPort := SiteAlgos[req.AlgoId]
+	algoIpPort := SiteAlgos.Get(req.AlgoId).(string)
 	conn, err := grpc.Dial(algoIpPort, grpc.WithInsecure())
 
 	checkErr(err)
@@ -32,7 +32,7 @@ func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.Compu
 	res, err := client.Compute(context.Background(), req)
 
 	if CustomErrors.IsUnavailableError(err) {
-		delete(SiteAlgos, req.AlgoId)
+		SiteAlgos.Delete(req.AlgoId)
 		return nil, CustomErrors.NewAlgoUnavailableError()
 	}
 

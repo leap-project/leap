@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"leap/Concurrent"
 	pb "leap/ProtoBuf"
 	"strconv"
 )
@@ -26,12 +27,13 @@ func (s *SiteCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.SiteR
 	algoId := req.Req.AlgoId
 	ipPort := req.SiteIpPort
 
-	_, ok := SiteConnectors[algoId]
-	if ok {
-		SiteConnectors[algoId][siteId] = ipPort
+	if SiteConnectors.Contains(algoId) {
+		sitesWithAlgo := SiteConnectors.Get(algoId).(*Concurrent.Map)
+		sitesWithAlgo.Set(siteId, ipPort)
 	} else {
-		SiteConnectors[algoId] = make(map[int32]string)
-		SiteConnectors[algoId][siteId] = ipPort
+		SiteConnectors.Set(algoId, Concurrent.NewMap())
+		sitesWithAlgo := SiteConnectors.Get(algoId).(*Concurrent.Map)
+		sitesWithAlgo.Set(siteId, ipPort)
 	}
 
 	msg := "Algo " + strconv.Itoa(int(algoId)) + " registered successfully"

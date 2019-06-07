@@ -27,9 +27,18 @@ func (e SiteUnavailableError) Error() string {
 	return e.message
 }
 
-func IsSiteUnavailableError(e error) bool {
-	_, ok := e.(SiteUnavailableError)
-	return ok
+func IsSiteUnavailableError(err error) bool {
+	_, ok := err.(SiteUnavailableError)
+	if ok {
+		return  ok
+	} else {
+		e, ok := status.FromError(err)
+		if ok && e.Message() == NewSiteUnavailableError().message {
+			return true
+		} else {
+			return false
+		}
+	}
 }
 
 // CoordinatorUnavailableError
@@ -45,8 +54,18 @@ func (e CoordinatorUnavailableError) Error() string {
 	return e.message
 }
 
-func IsCoordinatorUnavailableError(e error) bool {
-	_, ok := e.(CoordinatorUnavailableError)
+func IsCoordinatorUnavailableError(err error) bool {
+	_, ok := err.(CoordinatorUnavailableError)
+	if ok {
+		return  ok
+	} else {
+		e, ok := status.FromError(err)
+		if ok && e.Message() == NewCoordinatorUnavailableError().message {
+			return true
+		} else {
+			return false
+		}
+	}
 	return ok
 }
 
@@ -63,8 +82,18 @@ func (e AlgoUnavailableError) Error() string {
 	return e.message
 }
 
-func IsAlgoUnavailableError(e error) bool {
-	_, ok := e.(AlgoUnavailableError)
+func IsAlgoUnavailableError(err error) bool {
+	_, ok := err.(AlgoUnavailableError)
+	if ok {
+		return  ok
+	} else {
+		e, ok := status.FromError(err)
+		if ok && e.Message() == NewAlgoUnavailableError().message {
+			return true
+		} else {
+			return false
+		}
+	}
 	return ok
 }
 
@@ -81,8 +110,18 @@ func (e CloudAlgoNotRegisteredError) Error() string {
 	return e.message
 }
 
-func IsCloudAlgoNotRegisteredError(e error) bool {
-	_, ok := e.(CloudAlgoNotRegisteredError)
+func IsCloudAlgoNotRegisteredError(err error) bool {
+	_, ok := err.(CloudAlgoNotRegisteredError)
+	if ok {
+		return  ok
+	} else {
+		e, ok := status.FromError(err)
+		if ok && e.Message() == NewCloudAlgoNotRegisteredError().message {
+			return true
+		} else {
+			return false
+		}
+	}
 	return ok
 }
 
@@ -99,7 +138,17 @@ func (e SiteAlgoNotRegisteredError) Error() string {
 	return e.message
 }
 
-func IsSiteAlgoNotRegisteredError(e error) bool {
-	_, ok := e.(SiteAlgoNotRegisteredError)
+func IsSiteAlgoNotRegisteredError(err error) bool {
+	_, ok := err.(SiteAlgoNotRegisteredError)
+	if ok {
+		return  ok
+	} else {
+		e, ok := status.FromError(err)
+		if ok && e.Message() == NewSiteAlgoNotRegisteredError().message {
+			return true
+		} else {
+			return false
+		}
+	}
 	return ok
 }

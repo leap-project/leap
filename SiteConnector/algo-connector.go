@@ -27,9 +27,6 @@ func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlg
 	newRequest := pb.SiteRegReq{SiteId: config.SiteId, SiteIpPort: config.ListenCoordinatorIpPort, Req: req}
 	conn, err := grpc.Dial(config.CoordinatorIpPort, grpc.WithInsecure())
 	checkErr(err)
-	if CustomErrors.IsUnavailableError(err) {
-		return nil, CustomErrors.NewCoordinatorUnavailableError()
-	}
 	defer conn.Close()
 
 	c := pb.NewSiteCoordinatorClient(conn)
@@ -37,6 +34,9 @@ func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlg
 	defer cancel()
 
 	response, err := c.RegisterAlgo(ctx, &newRequest)
+	if CustomErrors.IsUnavailableError(err) {
+		return nil, CustomErrors.NewCoordinatorUnavailableError()
+	}
 	if err == nil && response.Success {
 		SiteAlgos[req.AlgoId] = req.AlgoIpPort
 	}

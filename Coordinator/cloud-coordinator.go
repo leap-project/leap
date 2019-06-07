@@ -67,28 +67,28 @@ func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRe
 // sites: The sites that the requests are going to be sent to.
 func getResultsFromSites(req *pb.ComputeRequest, sites map[int32]string) (pb.ComputeResponses, error) {
 	var results pb.ComputeResponses
-	fmt.Println(sites)
 	numUnavailableSites := 0
 	numUnavailableAlgos := 0
+	sitesLength := len(sites)
+
 	for key, ipPort := range sites {
 		response, err := getResultFromSite(req, ipPort)
-		CustomErrors.IsUnavailableError(err)
 		checkErr(err)
 
-		if CustomErrors.IsUnavailableError(err) {
-			numUnavailableSites++
-			delete(SiteConnectors[req.AlgoId], key)
-		} else if CustomErrors.IsAlgoUnavailableError(err) {
+		if CustomErrors.IsAlgoUnavailableError(err) {
 			numUnavailableAlgos++
+			delete(SiteConnectors[req.AlgoId], key)
+		} else if CustomErrors.IsUnavailableError(err) {
+			numUnavailableSites++
 			delete(SiteConnectors[req.AlgoId], key)
 		} else {
 			results.Responses = append(results.Responses, response)
 		}
 	}
-	fmt.Println(sites)
-	if numUnavailableSites == len(sites) {
+
+	if numUnavailableSites == sitesLength {
 		return results, CustomErrors.NewSiteUnavailableError()
-	} else if numUnavailableAlgos == len(sites) {
+	} else if numUnavailableAlgos == sitesLength {
 		return results, CustomErrors.NewAlgoUnavailableError()
 	}
 

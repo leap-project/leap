@@ -11,7 +11,9 @@ make
 make check
 sudo make install
 sudo ldconfig # refresh shared library cache
-Get Go protocol buffer plugin
+# Get Go protocol buffer plugin
+export PATH=$PATH:$GOPATH/bin
+
 
 # Install protobuf for Go
 go get -u github.com/golang/protobuf/protoc-gen-go

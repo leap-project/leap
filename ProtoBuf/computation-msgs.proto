@@ -30,3 +30,8 @@ message ComputeResponses {
 message IntResponse {
     int32 val = 1;
 }
+
+// A string result for a compute response
+message StringResponse {
+    string val = 1;
+}

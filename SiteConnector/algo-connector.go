@@ -37,6 +37,7 @@ func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlg
 	if CustomErrors.IsUnavailableError(err) {
 		return nil, CustomErrors.NewCoordinatorUnavailableError()
 	}
+
 	if err == nil && response.Success {
 		SiteAlgos.Set(req.AlgoId, req.AlgoIpPort)
 	}

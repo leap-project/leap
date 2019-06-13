@@ -98,4 +98,3 @@ func (m *Map) sendItemsOverChannel(c *chan Item) {
 	}
 	close(*c)
 }
-

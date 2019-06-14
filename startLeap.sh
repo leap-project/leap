@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# WARNING: Don't spawn too many sites. Redcap at BC Children's
+# has a limit of 100 requests per minute.
+
 # This script starts Leap with n sites. each with one algo
 # Usage:   $ bash startLeap.sh n
 # Example: $ bash starLeap.sh 3

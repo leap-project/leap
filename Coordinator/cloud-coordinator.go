@@ -7,12 +7,23 @@ import (
 	"leap/Concurrent"
 	"leap/CustomErrors"
 	pb "leap/ProtoBuf"
+	"sync/atomic"
 	"time"
 )
 
 // Service containing the API for interactions between the cloud
 // and a coordinator.
 type CloudCoordinatorService struct{}
+
+type ErrorCounter struct {
+	NumUnavailableSites int32
+	NumUnavailableAlgos int32
+}
+
+type ResultFromSite struct {
+	Err       error
+	Response *pb.ComputeResponse
+}
 
 // Registers a cloud algorithm at a coordinator. This allows
 // cloud algorithms to send compute requests to registered
@@ -56,63 +67,62 @@ func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRe
 	return &results, nil
 }
 
-// TODO: Send requests asynchronously
-// Sends a ComputeRequest to all the sites that have the algo
-// specified in the request. The results are then added to a
-// ComputeResponses struct, which is returned to the caller.
-// If all contacted sites are unavailable, returns an error
-// indicating that there are no sites live that support the re-
-// quested algorithm. If the algo is unavailable in all sites,
-// returns an error indicating the requested algo is not live
-// in any of the sites. Algos and sites are considered unavai-
-// lable in the case of the errors above, until they are re-
-// gistered again
+// Spawns a goroutine for each site that can support the
+// algorithm in the request. The responses are then received
+// through a channel and append to the results. The results
+// are then returned to calling algorithm in the cloud.
 //
 // req: The compute request to be sent to each site.
 // sites: The sites that the requests are going to be sent to.
 func getResultsFromSites(req *pb.ComputeRequest, sites *Concurrent.Map) (pb.ComputeResponses, error) {
-	var results pb.ComputeResponses
-	numUnavailableSites := 0
-	numUnavailableAlgos := 0
-	sitesLength := 0
+	var responses pb.ComputeResponses
+	c := make(chan ResultFromSite)
 
+	sitesLength := int32(0)
+	counters := ErrorCounter{NumUnavailableSites: 0, NumUnavailableAlgos: 0}
+
+	// Asynchronously send compute request to each site.
 	for item := range sites.Iter() {
-		key := item.Key
-		ipPort := item.Value.(string)
-		response, err := getResultFromSite(req, ipPort)
-		checkErr(err)
-
-		if CustomErrors.IsAlgoUnavailableError(err) {
-			numUnavailableAlgos++
-			sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
-			sitesWithAlgo.Delete(key)
-		} else if CustomErrors.IsUnavailableError(err) {
-			numUnavailableSites++
-			sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
-			sitesWithAlgo.Delete(key)
-		} else {
-			results.Responses = append(results.Responses, response)
-		}
+		go getResultFromSite(req, item, &counters, c)
 		sitesLength++
 	}
 
-	if numUnavailableSites == sitesLength {
-		return results, CustomErrors.NewSiteUnavailableError()
-	} else if numUnavailableAlgos == sitesLength {
-		return results, CustomErrors.NewAlgoUnavailableError()
+	// Append the responses to the asynchronous requests
+	for i := int32(0); i < sitesLength; i++ {
+		select {
+			case response := <-c:
+				if response.Err == nil {
+					responses.Responses = append(responses.Responses, response.Response)
+				}
+		}
 	}
 
-	return results, nil
+	// Determine type of error if there is any
+	if counters.NumUnavailableSites == sitesLength {
+		return responses, CustomErrors.NewSiteUnavailableError()
+	} else if counters.NumUnavailableAlgos == sitesLength {
+		return responses, CustomErrors.NewAlgoUnavailableError()
+	}
+
+	return responses, nil
 }
 
-// Sends an RPC carrying the compute request to the site with
-// the ip and port specified in the parameters. The response
-// to the RPC is returned.
+// Sends an RPC carrying the compute request to a site. The
+// response is then sent through a channel to the function
+// waiting for the responses. If the site or algo is unavailable,
+// it is removed from the map of available algos.
 //
 // req: The compute request to be sent to a site.
-// ipPort: The ip and port of the site hosting the desired
-//         algorithm.
-func getResultFromSite(req *pb.ComputeRequest, ipPort string) (*pb.ComputeResponse, error) {
+// item: An item from the SiteConnector map that contains the
+//       site id as key and the ip and port of the site as the
+//       value.
+// counters: A counter for the amount of requests that fail
+//           because the algorithm is unavailable.
+// ch: The channel where the response is sent to.
+func getResultFromSite(req *pb.ComputeRequest, item Concurrent.Item, counters *ErrorCounter, ch chan ResultFromSite) {
+	key := item.Key
+	ipPort := item.Value.(string)
+
 	conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
 	checkErr(err)
 	defer conn.Close()
@@ -121,9 +131,21 @@ func getResultFromSite(req *pb.ComputeRequest, ipPort string) (*pb.ComputeRespon
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	localResponse, err := c.Compute(ctx, req)
+	response, err := c.Compute(ctx, req)
 
-	return localResponse, err
+	// If error, increment appropriate counter and delete unavailable sites and algos
+	if CustomErrors.IsAlgoUnavailableError(err) {
+		atomic.AddInt32(&counters.NumUnavailableAlgos, 1)
+		sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+		sitesWithAlgo.Delete(key)
+	} else if CustomErrors.IsUnavailableError(err) {
+		atomic.AddInt32(&counters.NumUnavailableSites, 1)
+		sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+		sitesWithAlgo.Delete(key)
+	}
+
+	// Send response to goroutine waiting for responses
+	ch <- ResultFromSite{Response: response, Err: err}
 }
 
 // This function checks the number of sites that have the

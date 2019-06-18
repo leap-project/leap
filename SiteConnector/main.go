@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 // Run with go run *.go
 //
 // Accepted Flags
@@ -14,8 +10,9 @@ import (
 // e.g go run *.go -cip=127.0.0.1:50002 -aip=127.0.0.1:50003 -id=0
 
 func main() {
-	fmt.Println("Site-Connector: Starting site-connector")
 	InitializeConfig()
+	StartLogging()
+	log.Info("Starting site-connector")
 	go ListenCoordinator()
 	go ListenAlgos()
 	// Sleep main goroutine forever

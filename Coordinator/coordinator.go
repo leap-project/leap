@@ -25,7 +25,7 @@ var (
 	// equivalent to map[int32]map[int32]string.
 	SiteConnectors = Concurrent.NewMap()
 	// Logging tool
-	log = logrus.WithFields(logrus.Fields{"node-type": "coordinator"})
+	log = logrus.WithFields(logrus.Fields{"node": "coordinator"})
 )
 
 // A struct that holds the ip and port that the coordinator
@@ -112,7 +112,11 @@ func StartLogging() {
 		os.Mkdir("Logs/", os.ModePerm)
 	}
 
+	filePath := "Logs/coordinator.log"
+	_, err = os.Create(filePath)
+	checkErr(err)
+
 	hook := lfshook.NewHook(lfshook.PathMap{}, &logrus.JSONFormatter{})
-	hook.SetDefaultPath("Logs/coordinator.log")
+	hook.SetDefaultPath(filePath)
 	logrus.AddHook(hook)
 }

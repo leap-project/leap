@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"leap/CustomErrors"
 	pb "leap/ProtoBuf"
@@ -20,8 +20,7 @@ type CoordinatorConnectorService struct{}
 // req: Request created by algorithm in the cloud and issued
 //      by coordinator.
 func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
-	fmt.Println("Site-Connector: Compute request received")
-
+	log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Info("Received compute request.")
 	algoIpPort := SiteAlgos.Get(req.AlgoId).(string)
 	conn, err := grpc.Dial(algoIpPort, grpc.WithInsecure())
 
@@ -32,6 +31,8 @@ func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.Compu
 	res, err := client.Compute(context.Background(), req)
 
 	if CustomErrors.IsUnavailableError(err) {
+		log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn("Algo is unavailable.")
+		checkErr(err)
 		SiteAlgos.Delete(req.AlgoId)
 		return nil, CustomErrors.NewAlgoUnavailableError()
 	}

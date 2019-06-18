@@ -140,7 +140,7 @@ type CloudAlgoNotRegisteredError struct {
 //
 // No args.
 func NewCloudAlgoNotRegisteredError() CloudAlgoNotRegisteredError {
-	return CloudAlgoNotRegisteredError{message: "This algo hasn't been registered yet."}
+	return CloudAlgoNotRegisteredError{message: "Registration Failure. This algo hasn't been registered yet."}
 }
 
 // Returns the message of the error.
@@ -178,7 +178,7 @@ type SiteAlgoNotRegisteredError struct {
 //
 // No args.
 func NewSiteAlgoNotRegisteredError() SiteAlgoNotRegisteredError {
-	return SiteAlgoNotRegisteredError{message: "There are no site algorithms with this id."}
+	return SiteAlgoNotRegisteredError{message: "There are no site algorithms registered with this id."}
 }
 
 // Returns the message of the error.

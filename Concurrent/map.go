@@ -1,6 +1,8 @@
 package Concurrent
 
-import "sync"
+import (
+	"sync"
+)
 
 // A map data structure that can be used concurrently
 type Map struct {

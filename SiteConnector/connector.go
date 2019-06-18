@@ -3,13 +3,15 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"io/ioutil"
 	"leap/Concurrent"
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
+	"strconv"
 )
 
 // A struct that holds the ip and port that the site connector
@@ -26,6 +28,7 @@ type Config struct {
 var (
 	config    Config
 	SiteAlgos = Concurrent.NewMap()
+	log = logrus.WithFields(logrus.Fields{"node-type": "site-connector"})
 )
 
 // Parses user flags and creates config using the given flags.
@@ -60,7 +63,7 @@ func InitializeConfig() {
 // No args.
 func ListenAlgos() {
 	listener, err := net.Listen("tcp", config.ListenAlgosIpPort)
-	fmt.Println("Site-Connector: Listening for site algos at", config.ListenAlgosIpPort)
+	log.WithFields(logrus.Fields{"ip-port": config.ListenAlgosIpPort}).Info("Listening for site algos.")
 	checkErr(err)
 	s := grpc.NewServer()
 	pb.RegisterAlgoConnectorServer(s, &AlgoConnectorService{})
@@ -73,7 +76,7 @@ func ListenAlgos() {
 // No args.
 func ListenCoordinator() {
 	listener, err := net.Listen("tcp", config.ListenCoordinatorIpPort)
-	fmt.Println("Site-Connector: Listening for coordinator at", config.ListenCoordinatorIpPort)
+	log.WithFields(logrus.Fields{"ip-port": config.ListenCoordinatorIpPort}).Info("Listening for coordinator.")
 	checkErr(err)
 	s := grpc.NewServer()
 	pb.RegisterCoordinatorConnectorServer(s, &CoordinatorConnectorService{})
@@ -87,6 +90,28 @@ func ListenCoordinator() {
 //      if nil or not.
 func checkErr(err error) {
 	if err != nil {
-		fmt.Println("Site Connector:", err.Error())
+		log.Error(err.Error())
 	}
+}
+
+// Creates a 'Logs' directory if one doesn't exist, and creates
+// a file to output the log files. This function also adds a
+// hook to logrus, so that it can write to the file in text
+// format, and display messages in terminal with colour.
+//
+// No args.
+func StartLogging() {
+	_, err := os.Stat("Logs/")
+	if os.IsNotExist(err) {
+		os.Mkdir("Logs/", os.ModePerm)
+	}
+
+	filePath := "Logs/site" + strconv.Itoa(int(config.SiteId)) + ".log"
+	_, err = os.Create(filePath)
+	checkErr(err)
+
+	hook := lfshook.NewHook(lfshook.PathMap{}, &logrus.JSONFormatter{})
+	hook.SetDefaultPath(filePath)
+	logrus.AddHook(hook)
+	log = logrus.WithFields(logrus.Fields{"node": "site-connector", "site-id": config.SiteId})
 }

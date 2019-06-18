@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"leap/CustomErrors"
 	pb "leap/ProtoBuf"
@@ -22,8 +22,7 @@ type AlgoConnectorService struct{}
 // req: A registration request with the site and algo id
 //      of the algorithm to be registered.
 func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlgoRegReq) (*pb.SiteAlgoRegRes, error) {
-	fmt.Println("Site-Connector: Registration request received")
-
+	log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Info("Received registration request.")
 	newRequest := pb.SiteRegReq{SiteId: config.SiteId, SiteIpPort: config.ListenCoordinatorIpPort, Req: req}
 	conn, err := grpc.Dial(config.CoordinatorIpPort, grpc.WithInsecure())
 	checkErr(err)
@@ -35,6 +34,8 @@ func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlg
 
 	response, err := c.RegisterAlgo(ctx, &newRequest)
 	if CustomErrors.IsUnavailableError(err) {
+		log.Warn("Coordinator is unavailable.")
+		checkErr(err)
 		return nil, CustomErrors.NewCoordinatorUnavailableError()
 	}
 

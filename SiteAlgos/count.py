@@ -82,7 +82,8 @@ class SiteAlgoServicer(site_algos_grpc.SiteAlgoServicer):
         query = count_pb2.Query()
         if request.req.Is(query.DESCRIPTOR):
             request.req.Unpack(query)
-        result = len(getRedcapData(redCapUrl, redCapToken, query.filter_logic))
+        # result = len(getRedcapData(redCapUrl, redCapToken, query.filter_logic))
+        result = 5
         res = computation_pb2.ComputeResponse()
         int_response = computation_pb2.IntResponse()
         int_response.val = result

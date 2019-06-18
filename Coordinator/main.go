@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 // Run with go run *.go
 //
 // Accepted Flags
@@ -13,7 +9,8 @@ import (
 // e.g go run *.go -cip=127.0.0.1:8000 -sip=127.0.0.1:8001
 
 func main() {
-	fmt.Println("Coordinator: Starting coordinator")
+	StartLogging()
+	log.Info("Starting coordinator.")
 	InitializeCoordinator()
 	go ServeSites()
 	go ServeCloud()

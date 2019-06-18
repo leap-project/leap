@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/sirupsen/logrus"
 	"leap/Concurrent"
 	pb "leap/ProtoBuf"
 	"strconv"
@@ -21,8 +21,7 @@ type SiteCoordinatorService struct{}
 // req: A registration request with the site and algo id
 //      of the algorithm to be registered.
 func (s *SiteCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.SiteRegReq) (*pb.SiteAlgoRegRes, error) {
-	fmt.Println("Coordinator: Registration request received")
-
+	log.WithFields(logrus.Fields{"site-id": req.SiteId, "algo-id": req.Req.AlgoId}).Info("Received registration request.")
 	siteId := req.SiteId
 	algoId := req.Req.AlgoId
 	ipPort := req.SiteIpPort

@@ -3,7 +3,8 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"io/ioutil"
 	"leap/Concurrent"
@@ -23,6 +24,8 @@ var (
 	// the value is the ip and port to contact the site. It is
 	// equivalent to map[int32]map[int32]string.
 	SiteConnectors = Concurrent.NewMap()
+	// Logging tool
+	log = logrus.WithFields(logrus.Fields{"node-type": "coordinator"})
 )
 
 // A struct that holds the ip and port that the coordinator
@@ -65,7 +68,7 @@ func InitializeCoordinator() {
 func ServeCloud() {
 	listener, err := net.Listen("tcp", config.ListenCloudIpPort)
 	checkErr(err)
-	fmt.Println("Coordinator: Listening for cloud algos at", config.ListenCloudIpPort)
+	log.WithFields(logrus.Fields{"ip-port": config.ListenCloudIpPort}).Info("Listening for cloud algos.")
 	s := grpc.NewServer()
 	pb.RegisterCloudCoordinatorServer(s, &CloudCoordinatorService{})
 	err = s.Serve(listener)
@@ -80,7 +83,7 @@ func ServeCloud() {
 func ServeSites() {
 	listener, err := net.Listen("tcp", config.ListenSiteIpPort)
 	checkErr(err)
-	fmt.Println("Coordinator: Listening for site connectors at", config.ListenSiteIpPort)
+	log.WithFields(logrus.Fields{"ip-port": config.ListenSiteIpPort}).Info("Listening for site connectors.")
 	s := grpc.NewServer()
 	pb.RegisterSiteCoordinatorServer(s, &SiteCoordinatorService{})
 	err = s.Serve(listener)
@@ -93,6 +96,23 @@ func ServeSites() {
 //      if nil or not.
 func checkErr(err error) {
 	if err != nil {
-		fmt.Println("Coordinator:", err.Error())
+		log.Error(err.Error())
 	}
+}
+
+// Creates a 'Logs' directory if one doesn't exist, and creates
+// a file to output the log files. This function also adds a
+// hook to logrus, so that it can write to the file in text
+// format, and display messages in terminal with colour.
+//
+// No args.
+func StartLogging() {
+	_, err := os.Stat("Logs/")
+	if os.IsNotExist(err) {
+		os.Mkdir("Logs/", os.ModePerm)
+	}
+
+	hook := lfshook.NewHook(lfshook.PathMap{}, &logrus.JSONFormatter{})
+	hook.SetDefaultPath("Logs/coordinator.log")
+	logrus.AddHook(hook)
 }

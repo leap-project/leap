@@ -19,7 +19,10 @@ export PATH=$PATH:$GOPATH/bin
 go get -u github.com/golang/protobuf/protoc-gen-go
 # Install grpc for Go
 go get -u google.golang.org/grpc
-
+# Install logrus for Go
+go get -u github.com/sirupsen/logrus
+# Enable colour at terminal with multiwriter
+go get -u github.com/rifflock/lfshook
 
 apt-get install python3-venv
 # Install protobuf for Python
@@ -40,3 +43,5 @@ pip install grpcio-tools
 pip install requests
 # Install latest PyCap (the one with regular pip doesn't have 'filter_logic'
 pip install -e git+https://github.com/sburns/PyCap.git#egg=PyCap
+# Install numpy
+pip install numpy

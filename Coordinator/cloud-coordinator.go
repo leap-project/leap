@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"leap/Concurrent"
 	"leap/CustomErrors"
@@ -51,7 +51,7 @@ func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.Clou
 //      boundaries.
 // req: Request created by algorithm in the cloud.
 func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
-	fmt.Println("Coordinator: Compute request received")
+	log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Info("Received Compute request.")
 	res, err := isRegistrationError(*req)
 	if err != nil {
 		return res, err
@@ -120,7 +120,7 @@ func getResultsFromSites(req *pb.ComputeRequest, sites *Concurrent.Map) (pb.Comp
 //           because the algorithm is unavailable.
 // ch: The channel where the response is sent to.
 func getResultFromSite(req *pb.ComputeRequest, item Concurrent.Item, counters *ErrorCounter, ch chan ResultFromSite) {
-	key := item.Key
+	siteId := item.Key
 	ipPort := item.Value.(string)
 
 	conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
@@ -137,11 +137,13 @@ func getResultFromSite(req *pb.ComputeRequest, item Concurrent.Item, counters *E
 	if CustomErrors.IsAlgoUnavailableError(err) {
 		atomic.AddInt32(&counters.NumUnavailableAlgos, 1)
 		sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
-		sitesWithAlgo.Delete(key)
+		sitesWithAlgo.Delete(siteId)
+		log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn("Algo is unavailable.")
 	} else if CustomErrors.IsUnavailableError(err) {
 		atomic.AddInt32(&counters.NumUnavailableSites, 1)
 		sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
-		sitesWithAlgo.Delete(key)
+		sitesWithAlgo.Delete(siteId)
+		log.WithFields(logrus.Fields{"site-id": siteId}).Warn("Site is unavailable.")
 	}
 
 	// Send response to goroutine waiting for responses

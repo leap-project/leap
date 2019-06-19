@@ -11,9 +11,10 @@ package main
 func main() {
 	StartLogging()
 	log.Info("Starting coordinator.")
-	InitializeCoordinator()
-	go ServeSites()
-	go ServeCloud()
+	config := GetConfigFromFile()
+	coord = NewCoordinator(config)
+	go coord.ServeSites()
+	go coord.ServeCloud()
 	// Sleep main goroutine forever
 	select {}
 }

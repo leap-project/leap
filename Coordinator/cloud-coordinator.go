@@ -35,13 +35,13 @@ type ResultFromSite struct {
 //      of the algorithm to be registered.
 func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
 	log.WithFields(logrus.Fields{"algo-id": req.Id}).Info("Received registration request.")
-	if !SiteConnectors.Contains(req.Id) {
+	if !containsSiteAlgo(req.Id) {
 		err := CustomErrors.NewSiteAlgoNotRegisteredError()
 		log.WithFields(logrus.Fields{"algo-id": req.Id}).Warn(err.Error())
 		return nil, err
 	}
 
-	CloudAlgos.Set(req.Id, req.AlgoIpPort)
+	coord.CloudAlgos.Set(req.Id, req.AlgoIpPort)
 	response := pb.CloudAlgoRegRes{Success: true, Msg: "Algorithm successfully registered."}
 	log.WithFields(logrus.Fields{"algo-id": req.Id}).Info("Algo successfully registered.")
 	return &response, nil
@@ -62,7 +62,7 @@ func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRe
 		return res, err
 	}
 
-	sites := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+	sites := coord.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
 	results, err := getResultsFromSites(req, sites)
 
 	if err != nil {
@@ -141,13 +141,13 @@ func getResultFromSite(req *pb.ComputeRequest, item Concurrent.Item, counters *E
 	// If error, increment appropriate counter and delete unavailable sites and algos
 	if CustomErrors.IsAlgoUnavailableError(err) {
 		atomic.AddInt32(&counters.NumUnavailableAlgos, 1)
-		sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+		sitesWithAlgo := coord.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
 		sitesWithAlgo.Delete(siteId)
 		log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn("Algo is unavailable.")
 		checkErr(err)
 	} else if CustomErrors.IsUnavailableError(err) {
 		atomic.AddInt32(&counters.NumUnavailableSites, 1)
-		sitesWithAlgo := SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+		sitesWithAlgo := coord.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
 		sitesWithAlgo.Delete(siteId)
 		log.WithFields(logrus.Fields{"site-id": siteId}).Warn("Site is unavailable.")
 		checkErr(err)
@@ -167,7 +167,7 @@ func getResultFromSite(req *pb.ComputeRequest, item Concurrent.Item, counters *E
 // req: A request that has the id of the algorithm being
 //      requested.
 func isRegistrationError(req pb.ComputeRequest) (*pb.ComputeResponses, error) {
-	containsCloudAlgo := CloudAlgos.Contains(req.AlgoId)
+	containsCloudAlgo := coord.CloudAlgos.Contains(req.AlgoId)
 	containsSiteAlgo := containsSiteAlgo(req.AlgoId)
 	if !containsSiteAlgo {
 		return &pb.ComputeResponses{}, CustomErrors.NewSiteAlgoNotRegisteredError()
@@ -183,11 +183,11 @@ func isRegistrationError(req pb.ComputeRequest) (*pb.ComputeResponses, error) {
 //
 // algoId: The id of a site algo.
 func containsSiteAlgo(algoId int32) bool {
-	if !SiteConnectors.Contains(algoId) {
+	if !coord.SiteConnectors.Contains(algoId) {
 		return false
 	}
 
-	ips := SiteConnectors.Get(algoId).(*Concurrent.Map)
+	ips := coord.SiteConnectors.Get(algoId).(*Concurrent.Map)
 	if ips.Length() == 0 {
 		return false
 	} else {

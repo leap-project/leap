@@ -26,12 +26,12 @@ func (s *SiteCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.SiteR
 	algoId := req.Req.AlgoId
 	ipPort := req.SiteIpPort
 
-	if SiteConnectors.Contains(algoId) {
-		sitesWithAlgo := SiteConnectors.Get(algoId).(*Concurrent.Map)
+	if coord.SiteConnectors.Contains(algoId) {
+		sitesWithAlgo := coord.SiteConnectors.Get(algoId).(*Concurrent.Map)
 		sitesWithAlgo.Set(siteId, ipPort)
 	} else {
-		SiteConnectors.Set(algoId, Concurrent.NewMap())
-		sitesWithAlgo := SiteConnectors.Get(algoId).(*Concurrent.Map)
+		coord.SiteConnectors.Set(algoId, Concurrent.NewMap())
+		sitesWithAlgo := coord.SiteConnectors.Get(algoId).(*Concurrent.Map)
 		sitesWithAlgo.Set(siteId, ipPort)
 	}
 

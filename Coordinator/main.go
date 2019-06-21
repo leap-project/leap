@@ -9,9 +9,9 @@ package main
 // e.g go run *.go -cip=127.0.0.1:8000 -sip=127.0.0.1:8001
 
 func main() {
-	StartLogging()
-	log.Info("Starting coordinator.")
 	config := GetConfigFromFile()
+	AddFileHookToLogs()
+	log.Info("Starting coordinator.")
 	coord = NewCoordinator(config)
 	go coord.ServeSites()
 	go coord.ServeCloud()

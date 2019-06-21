@@ -23,8 +23,8 @@ type AlgoConnectorService struct{}
 //      of the algorithm to be registered.
 func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlgoRegReq) (*pb.SiteAlgoRegRes, error) {
 	log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Info("Received registration request.")
-	newRequest := pb.SiteRegReq{SiteId: config.SiteId, SiteIpPort: config.ListenCoordinatorIpPort, Req: req}
-	conn, err := grpc.Dial(config.CoordinatorIpPort, grpc.WithInsecure())
+	newRequest := pb.SiteRegReq{SiteId: siteConn.Conf.SiteId, SiteIpPort: siteConn.Conf.ListenCoordinatorIpPort, Req: req}
+	conn, err := grpc.Dial(siteConn.Conf.CoordinatorIpPort, grpc.WithInsecure())
 	checkErr(err)
 	defer conn.Close()
 
@@ -40,7 +40,7 @@ func (s *AlgoConnectorService) RegisterAlgo(ctx context.Context, req *pb.SiteAlg
 	}
 
 	if err == nil && response.Success {
-		SiteAlgos.Set(req.AlgoId, req.AlgoIpPort)
+		siteConn.SiteAlgos.Set(req.AlgoId, req.AlgoIpPort)
 	}
 	checkErr(err)
 	return response, err

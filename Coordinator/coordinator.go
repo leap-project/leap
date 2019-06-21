@@ -75,6 +75,27 @@ func GetConfigFromFile() Config {
 	return config
 }
 
+// Creates a 'Logs' directory if one doesn't exist, and creates
+// a file to output the log files. This function also adds a
+// hook to logrus, so that it can write to the file in text
+// format, and display messages in terminal with colour.
+//
+// No args.
+func AddFileHookToLogs() {
+	_, err := os.Stat("Logs/")
+	if os.IsNotExist(err) {
+		os.Mkdir("Logs/", os.ModePerm)
+	}
+
+	filePath := "Logs/coordinator.log"
+	_, err = os.Create(filePath)
+	checkErr(err)
+
+	hook := lfshook.NewHook(lfshook.PathMap{}, &logrus.JSONFormatter{})
+	hook.SetDefaultPath(filePath)
+	logrus.AddHook(hook)
+}
+
 // Creates a listener, registers the grpc server for coordinating
 // algorithms hosted in the cloud, and serves requests that arrive
 // at the listener.
@@ -103,27 +124,6 @@ func (c *Coordinator) ServeSites() {
 	pb.RegisterSiteCoordinatorServer(s, &SiteCoordinatorService{})
 	err = s.Serve(listener)
 	checkErr(err)
-}
-
-// Creates a 'Logs' directory if one doesn't exist, and creates
-// a file to output the log files. This function also adds a
-// hook to logrus, so that it can write to the file in text
-// format, and display messages in terminal with colour.
-//
-// No args.
-func StartLogging() {
-	_, err := os.Stat("Logs/")
-	if os.IsNotExist(err) {
-		os.Mkdir("Logs/", os.ModePerm)
-	}
-
-	filePath := "Logs/coordinator.log"
-	_, err = os.Create(filePath)
-	checkErr(err)
-
-	hook := lfshook.NewHook(lfshook.PathMap{}, &logrus.JSONFormatter{})
-	hook.SetDefaultPath(filePath)
-	logrus.AddHook(hook)
 }
 
 // Helper to log errors in the coordinator.

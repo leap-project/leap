@@ -21,7 +21,7 @@ type CoordinatorConnectorService struct{}
 //      by coordinator.
 func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
 	log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Info("Received compute request.")
-	algoIpPort := SiteAlgos.Get(req.AlgoId).(string)
+	algoIpPort := siteConn.SiteAlgos.Get(req.AlgoId).(string)
 	conn, err := grpc.Dial(algoIpPort, grpc.WithInsecure())
 
 	checkErr(err)
@@ -33,7 +33,7 @@ func (s *CoordinatorConnectorService) Compute(ctx context.Context, req *pb.Compu
 	if CustomErrors.IsUnavailableError(err) {
 		log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn("Algo is unavailable.")
 		checkErr(err)
-		SiteAlgos.Delete(req.AlgoId)
+		siteConn.SiteAlgos.Delete(req.AlgoId)
 		return nil, CustomErrors.NewAlgoUnavailableError()
 	}
 

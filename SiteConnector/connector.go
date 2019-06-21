@@ -14,6 +14,13 @@ import (
 	"strconv"
 )
 
+type SiteConnector struct {
+	// Initial Config
+	Conf Config
+	// List of Algos in this site
+	SiteAlgos *Concurrent.Map
+}
+
 // A struct that holds the ip and port that the site connector
 // listens for requests from algorithms in the site, the ip
 // and port it listen for requests from the coordinator, and
@@ -26,23 +33,33 @@ type Config struct {
 }
 
 var (
-	config    Config
-	SiteAlgos = Concurrent.NewMap()
+	// Site Connector
+	siteConn *SiteConnector
+	// Logging tool
 	log = logrus.WithFields(logrus.Fields{"node-type": "site-connector"})
 )
+
+// Creates a new site connector with the configurations given
+// as the parameter.
+//
+// config: The ip and port configurations of the site connector.
+func NewSiteConnector(config Config) *SiteConnector {
+	return &SiteConnector{Conf: config, SiteAlgos: Concurrent.NewMap()}
+}
 
 // Parses user flags and creates config using the given flags.
 // If a flag is absent, use the default flag given in the
 // config.json file.
 //
 // No args
-func InitializeConfig() {
+func GetConfigFromFile() Config {
 	jsonFile, err := os.Open("config.json")
 	checkErr(err)
 	defer jsonFile.Close()
 	jsonBytes, err := ioutil.ReadAll(jsonFile)
 	checkErr(err)
 
+	config := Config{}
 	err = json.Unmarshal(jsonBytes, &config)
 	checkErr(err)
 
@@ -56,14 +73,37 @@ func InitializeConfig() {
 	config.ListenCoordinatorIpPort = *CoordinatorIpPortPtr
 	config.ListenAlgosIpPort = *AlgosIpPortPtr
 	config.CoordinatorIpPort = *CoordinatorPtr
+	return config
+}
+
+// Creates a 'Logs' directory if one doesn't exist, and creates
+// a file to output the log files. This function also adds a
+// hook to logrus, so that it can write to the file in text
+// format, and display messages in terminal with colour.
+//
+// No args.
+func AddFileHookToLogs(siteId int) {
+	_, err := os.Stat("Logs/")
+	if os.IsNotExist(err) {
+		os.Mkdir("Logs/", os.ModePerm)
+	}
+
+	filePath := "Logs/site" + strconv.Itoa(siteId) + ".log"
+	_, err = os.Create(filePath)
+	checkErr(err)
+
+	hook := lfshook.NewHook(lfshook.PathMap{}, &logrus.JSONFormatter{})
+	hook.SetDefaultPath(filePath)
+	logrus.AddHook(hook)
+	log = logrus.WithFields(logrus.Fields{"node": "site-connector", "site-id": siteId})
 }
 
 // Serves RPC calls from site algorithms.
 //
 // No args.
-func ListenAlgos() {
-	listener, err := net.Listen("tcp", config.ListenAlgosIpPort)
-	log.WithFields(logrus.Fields{"ip-port": config.ListenAlgosIpPort}).Info("Listening for site algos.")
+func (sc *SiteConnector) ListenAlgos() {
+	listener, err := net.Listen("tcp", sc.Conf.ListenAlgosIpPort)
+	log.WithFields(logrus.Fields{"ip-port": sc.Conf.ListenAlgosIpPort}).Info("Listening for site algos.")
 	checkErr(err)
 	s := grpc.NewServer()
 	pb.RegisterAlgoConnectorServer(s, &AlgoConnectorService{})
@@ -74,9 +114,9 @@ func ListenAlgos() {
 // Serves RPC calls from coordinator.
 //
 // No args.
-func ListenCoordinator() {
-	listener, err := net.Listen("tcp", config.ListenCoordinatorIpPort)
-	log.WithFields(logrus.Fields{"ip-port": config.ListenCoordinatorIpPort}).Info("Listening for coordinator.")
+func (sc *SiteConnector) ListenCoordinator() {
+	listener, err := net.Listen("tcp", sc.Conf.ListenCoordinatorIpPort)
+	log.WithFields(logrus.Fields{"ip-port": sc.Conf.ListenCoordinatorIpPort}).Info("Listening for coordinator.")
 	checkErr(err)
 	s := grpc.NewServer()
 	pb.RegisterCoordinatorConnectorServer(s, &CoordinatorConnectorService{})
@@ -92,26 +132,4 @@ func checkErr(err error) {
 	if err != nil {
 		log.Error(err.Error())
 	}
-}
-
-// Creates a 'Logs' directory if one doesn't exist, and creates
-// a file to output the log files. This function also adds a
-// hook to logrus, so that it can write to the file in text
-// format, and display messages in terminal with colour.
-//
-// No args.
-func StartLogging() {
-	_, err := os.Stat("Logs/")
-	if os.IsNotExist(err) {
-		os.Mkdir("Logs/", os.ModePerm)
-	}
-
-	filePath := "Logs/site" + strconv.Itoa(int(config.SiteId)) + ".log"
-	_, err = os.Create(filePath)
-	checkErr(err)
-
-	hook := lfshook.NewHook(lfshook.PathMap{}, &logrus.JSONFormatter{})
-	hook.SetDefaultPath(filePath)
-	logrus.AddHook(hook)
-	log = logrus.WithFields(logrus.Fields{"node": "site-connector", "site-id": config.SiteId})
 }

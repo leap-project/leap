@@ -10,11 +10,12 @@ package main
 // e.g go run *.go -cip=127.0.0.1:50002 -aip=127.0.0.1:50003 -id=0
 
 func main() {
-	InitializeConfig()
-	StartLogging()
+	config := GetConfigFromFile()
+	AddFileHookToLogs(int(config.SiteId))
 	log.Info("Starting site-connector")
-	go ListenCoordinator()
-	go ListenAlgos()
+	connector := NewSiteConnector(config)
+	go connector.ListenCoordinator()
+	go connector.ListenAlgos()
 	// Sleep main goroutine forever
 	select {}
 }

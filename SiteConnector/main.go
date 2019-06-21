@@ -13,9 +13,9 @@ func main() {
 	config := GetConfigFromFile()
 	AddFileHookToLogs(int(config.SiteId))
 	log.Info("Starting site-connector")
-	connector := NewSiteConnector(config)
-	go connector.ListenCoordinator()
-	go connector.ListenAlgos()
+	siteConn = NewSiteConnector(config)
+	go siteConn.ListenCoordinator()
+	go siteConn.ListenAlgos()
 	// Sleep main goroutine forever
 	select {}
 }

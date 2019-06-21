@@ -14,6 +14,13 @@ import (
 	"strconv"
 )
 
+var (
+	// Site Connector
+	siteConn *SiteConnector
+	// Logging tool
+	log = logrus.WithFields(logrus.Fields{"node-type": "site-connector"})
+)
+
 type SiteConnector struct {
 	// Initial Config
 	Conf Config
@@ -31,13 +38,6 @@ type Config struct {
 	CoordinatorIpPort       string
 	SiteId                  int32
 }
-
-var (
-	// Site Connector
-	siteConn *SiteConnector
-	// Logging tool
-	log = logrus.WithFields(logrus.Fields{"node-type": "site-connector"})
-)
 
 // Creates a new site connector with the configurations given
 // as the parameter.

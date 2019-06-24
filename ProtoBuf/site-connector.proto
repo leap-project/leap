@@ -12,16 +12,12 @@ import "registration-msgs.proto";
 
 
 // RPC service at a site connector that will handle requests from site algorithms
-service AlgoConnector {
+service SiteConnector {
 
-    rpc RegisterAlgo (SiteAlgoRegReq) returns (SiteAlgoRegRes) {}
+    //  Registers an algo with the coordinator
+    rpc RegisterSiteAlgo (SiteAlgoRegReq) returns (SiteAlgoRegRes) {}
 
-}
-
-// RPC service at a site connector that will handle requests from coordinator
-service CoordinatorConnector {
-
-    // // Relays a computation request from the coordinato to appropriate algorithm in site
+    // Relays a computation request from the coordinator to appropriate algorithm in site
     rpc Compute (ComputeRequest) returns (ComputeResponse) {}
 
 }

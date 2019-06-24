@@ -19,7 +19,7 @@ import site_connector_pb2_grpc as site_connector_grpc
 parser = argparse.ArgumentParser()
 parser.add_argument("-id", "--algoId", default="0", help="The id of this algorithm")
 parser.add_argument("-ip", "--ipPort", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
-parser.add_argument("-cip", "--connectorIpPort", default="127.0.0.1:50003", help="The ip and port of the site connector")
+parser.add_argument("-cip", "--connectorIpPort", default="127.0.0.1:50001", help="The ip and port of the site connector")
 args = parser.parse_args()
 
 redCapUrl = "https://rc.bcchr.ca/redcap_demo/api/"
@@ -31,13 +31,13 @@ redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 # No args
 def register():
     with grpc.insecure_channel(args.connectorIpPort) as channel:
-        stub = site_connector_grpc.AlgoConnectorStub(channel)
+        stub = site_connector_grpc.SiteConnectorStub(channel)
         req = registration_pb2.SiteAlgoRegReq()
         req.algo_id = int(args.algoId)
         req.description = "A count algorithm"
         req.proto_version = "proto3"
         req.algo_ip_port = args.ipPort
-        response = stub.RegisterAlgo(req)
+        response = stub.RegisterSiteAlgo(req)
         if response.success:
             print("Site-Algo " + args.algoId + ": Successfully registered algorithm with coordinator")
 

@@ -40,7 +40,7 @@ def create_registration_request(id, description, proto_version, ip_port):
 def register(stub, algo_id, ip_port):
     description = "A count algorithm"
     registration_request = create_registration_request(algo_id, description, "proto3", ip_port)
-    response = stub.RegisterAlgo(registration_request)
+    response = stub.RegisterCloudAlgo(registration_request)
     if hasattr(response, "success"):
         if response.success:
             print(response.msg)
@@ -90,7 +90,7 @@ def count(stub, query):
 if __name__ == "__main__":
     # Sets up the connection so that we can make RPC calls
     with grpc.insecure_channel(args.coordinatorIpPort) as channel:
-        stub = coordinator_pb2_grpc.CloudCoordinatorStub(channel)
+        stub = coordinator_pb2_grpc.CoordinatorStub(channel)
 
         register(stub, int(args.algoId), "")
         query = create_count_query("[age] > 50 and [bmi] < 25")

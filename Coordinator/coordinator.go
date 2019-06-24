@@ -1,4 +1,4 @@
-package main
+package coordinator
 
 import (
 	"encoding/json"
@@ -13,16 +13,19 @@ import (
 	"os"
 )
 
-var (
-	// Coordinator
-	coord *Coordinator
-	// Logging tool
-	log = logrus.WithFields(logrus.Fields{"node": "coordinator"})
-)
+// A struct that holds the ip and port that the coordinator
+// listens for requests from algorithms in the cloud, and the
+// ip and port it listen for requests from algorithms in dis-
+// tributed sites.
+type Config struct {
+	IpPort string
+}
 
 type Coordinator struct {
 	// Initial config
 	Conf Config
+	// Logging tool
+	Log *logrus.Entry
 	// A concurrent map with algo id as key and ip and port
 	// of a cloud algo as value. Equivalent to map[int32]string.
 	CloudAlgos *Concurrent.Map
@@ -33,45 +36,34 @@ type Coordinator struct {
 	SiteConnectors *Concurrent.Map
 }
 
-// A struct that holds the ip and port that the coordinator
-// listens for requests from algorithms in the cloud, and the
-// ip and port it listen for requests from algorithms in dis-
-// tributed sites.
-type Config struct {
-	ListenCloudIpPort string
-	ListenSiteIpPort  string
-}
-
 // Creates a new coordinator with the configurations given
 // as the parameter.
 //
 // config: The ip and port configuration of the coordinator.
 func NewCoordinator(config Config) *Coordinator {
-	return &Coordinator{Conf: config, CloudAlgos: Concurrent.NewMap(), SiteConnectors: Concurrent.NewMap()}
+	return &Coordinator{Conf: config,
+						CloudAlgos: Concurrent.NewMap(),
+						SiteConnectors: Concurrent.NewMap(),
+						Log: logrus.WithFields(logrus.Fields{"node": "coordinator"})}
 }
 
 // Parses user flags and creates config using the given flags.
 // If a flag is absent, use the default flag given in the
 // config.json file.
 //
-// No args.
-func GetConfigFromFile() Config {
-	jsonFile, err := os.Open("config.json")
-	checkErr(err)
+// filePath: The path to a file with config information.
+func GetConfig(filePath string) Config {
+	jsonFile, _ := os.Open(filePath)
 	defer jsonFile.Close()
-	jsonBytes, err := ioutil.ReadAll(jsonFile)
-	checkErr(err)
+	jsonBytes, _ := ioutil.ReadAll(jsonFile)
 
 	config := Config{}
-	err = json.Unmarshal(jsonBytes, &config)
-	checkErr(err)
+	json.Unmarshal(jsonBytes, &config)
 
-	CloudIpPortPtr := flag.String("cip", config.ListenCloudIpPort, "The ip and port the coordinator is listening for cloud connections")
-	SiteIpPortPtr := flag.String("sip", config.ListenSiteIpPort, "The ip and port the coordinator is listening for site connections")
+	IpPortPtr := flag.String("ip", config.IpPort, "The ip and port of the coordinator")
 	flag.Parse()
 
-	config.ListenCloudIpPort = *CloudIpPortPtr
-	config.ListenSiteIpPort = *SiteIpPortPtr
+	config.IpPort = *IpPortPtr
 	return config
 }
 
@@ -80,58 +72,44 @@ func GetConfigFromFile() Config {
 // hook to logrus, so that it can write to the file in text
 // format, and display messages in terminal with colour.
 //
-// No args.
-func AddFileHookToLogs() {
-	_, err := os.Stat("Logs/")
+// filepath: The path to the file where the logs should be added.
+// dirpath:  The path to the directory where the logs will be located.
+func AddFileHookToLogs(dirPath string) {
+	_, err := os.Stat(dirPath)
 	if os.IsNotExist(err) {
-		os.Mkdir("Logs/", os.ModePerm)
+		os.Mkdir(dirPath, os.ModePerm)
 	}
 
-	filePath := "Logs/coordinator.log"
-	_, err = os.Create(filePath)
-	checkErr(err)
+	filePath := dirPath + "coordinator.log"
+	os.Create(filePath)
 
 	hook := lfshook.NewHook(lfshook.PathMap{}, &logrus.JSONFormatter{})
 	hook.SetDefaultPath(filePath)
 	logrus.AddHook(hook)
 }
 
-// Creates a listener, registers the grpc server for coordinating
-// algorithms hosted in the cloud, and serves requests that arrive
-// at the listener.
+// Creates a listener, registers the grpc server for the
+// coordinator, and serves requests that arrive at the
+// listener.
 //
 // No args.
-func (c *Coordinator) ServeCloud() {
-	listener, err := net.Listen("tcp", c.Conf.ListenCloudIpPort)
-	checkErr(err)
-	log.WithFields(logrus.Fields{"ip-port": c.Conf.ListenCloudIpPort}).Info("Listening for cloud algos.")
+func (c *Coordinator) Serve() {
+	listener, err := net.Listen("tcp", c.Conf.IpPort)
+	checkErr(c, err)
+	c.Log.WithFields(logrus.Fields{"ip-port": c.Conf.IpPort}).Info("Listening for requests.")
 	s := grpc.NewServer()
-	pb.RegisterCloudCoordinatorServer(s, &CloudCoordinatorService{})
+	pb.RegisterCoordinatorServer(s, c)
 	err = s.Serve(listener)
-	checkErr(err)
-}
-
-// Creates a listener, registers the grpc server for coordinating
-// algorithms hosted in sites, and serves requests that arrive at
-// the listener.
-//
-// No args.
-func (c *Coordinator) ServeSites() {
-	listener, err := net.Listen("tcp", c.Conf.ListenSiteIpPort)
-	checkErr(err)
-	log.WithFields(logrus.Fields{"ip-port": c.Conf.ListenSiteIpPort}).Info("Listening for site connectors.")
-	s := grpc.NewServer()
-	pb.RegisterSiteCoordinatorServer(s, &SiteCoordinatorService{})
-	err = s.Serve(listener)
-	checkErr(err)
+	checkErr(c, err)
 }
 
 // Helper to log errors in the coordinator.
 //
+// coord: Coordinator instance
 // err: Error returned by a function that should be checked
 //      if nil or not.
-func checkErr(err error) {
+func checkErr(c *Coordinator, err error) {
 	if err != nil {
-		log.Error(err.Error())
+		c.Log.Error(err.Error())
 	}
 }

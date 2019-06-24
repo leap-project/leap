@@ -11,19 +11,14 @@ import "registration-msgs.proto";
 // python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. coordinator.proto
 
 
-// RPC service at the coordinator that will handle requests from sites
-service SiteCoordinator {
+// RPC service at the coordinator that will handle requests from sites and cloud algos
+service Coordinator {
 
     // Registers an algorithm from a site at the coordinator
-    rpc RegisterAlgo (SiteRegReq) returns (SiteAlgoRegRes) {}
-
-}
-
-// RPC service at the coordinator that will handle requests from cloud algorithms
-service CloudCoordinator {
+    rpc RegisterSiteAlgo (SiteRegReq) returns (SiteAlgoRegRes) {}
 
     // Registers an algorithm from the cloud at the coordinator
-    rpc RegisterAlgo (CloudAlgoRegReq) returns (CloudAlgoRegRes) {}
+    rpc RegisterCloudAlgo (CloudAlgoRegReq) returns (CloudAlgoRegRes) {}
 
     // Relays a computation request from the cloud to appropriate sites
     rpc Compute (ComputeRequest) returns (ComputeResponses) {}

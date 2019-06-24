@@ -1,4 +1,4 @@
-package main
+package coordinator
 
 import (
 	"context"
@@ -8,10 +8,6 @@ import (
 	"strconv"
 )
 
-// Service containing the API for interactions between sites
-// and a coordinator.
-type SiteCoordinatorService struct{}
-
 // Registers a ste algorithm at a coordinator. This allows
 // cloud algorithms to send compute requests to registered
 // site algos.
@@ -20,18 +16,18 @@ type SiteCoordinatorService struct{}
 //      boundaries.
 // req: A registration request with the site and algo id
 //      of the algorithm to be registered.
-func (s *SiteCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.SiteRegReq) (*pb.SiteAlgoRegRes, error) {
-	log.WithFields(logrus.Fields{"site-id": req.SiteId, "algo-id": req.Req.AlgoId}).Info("Received registration request.")
+func (c *Coordinator) RegisterSiteAlgo(ctx context.Context, req *pb.SiteRegReq) (*pb.SiteAlgoRegRes, error) {
+	c.Log.WithFields(logrus.Fields{"site-id": req.SiteId, "algo-id": req.Req.AlgoId}).Info("Received registration request.")
 	siteId := req.SiteId
 	algoId := req.Req.AlgoId
 	ipPort := req.SiteIpPort
 
-	if coord.SiteConnectors.Contains(algoId) {
-		sitesWithAlgo := coord.SiteConnectors.Get(algoId).(*Concurrent.Map)
+	if c.SiteConnectors.Contains(algoId) {
+		sitesWithAlgo := c.SiteConnectors.Get(algoId).(*Concurrent.Map)
 		sitesWithAlgo.Set(siteId, ipPort)
 	} else {
-		coord.SiteConnectors.Set(algoId, Concurrent.NewMap())
-		sitesWithAlgo := coord.SiteConnectors.Get(algoId).(*Concurrent.Map)
+		c.SiteConnectors.Set(algoId, Concurrent.NewMap())
+		sitesWithAlgo := c.SiteConnectors.Get(algoId).(*Concurrent.Map)
 		sitesWithAlgo.Set(siteId, ipPort)
 	}
 

@@ -1,4 +1,4 @@
-package main
+package coordinator
 
 import (
 	"context"
@@ -10,10 +10,6 @@ import (
 	"sync/atomic"
 	"time"
 )
-
-// Service containing the API for interactions between the cloud
-// and a coordinator.
-type CloudCoordinatorService struct{}
 
 type ErrorCounter struct {
 	NumUnavailableSites int32
@@ -33,17 +29,17 @@ type ResultFromSite struct {
 //      boundaries.
 // req: A registration request with the algo id
 //      of the algorithm to be registered.
-func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
-	log.WithFields(logrus.Fields{"algo-id": req.Id}).Info("Received registration request.")
-	if !containsSiteAlgo(req.Id) {
+func (c *Coordinator) RegisterCloudAlgo(ctx context.Context, req *pb.CloudAlgoRegReq) (*pb.CloudAlgoRegRes, error) {
+	c.Log.WithFields(logrus.Fields{"algo-id": req.Id}).Info("Received registration request.")
+	if !c.containsSiteAlgo(req.Id) {
 		err := CustomErrors.NewSiteAlgoNotRegisteredError()
-		log.WithFields(logrus.Fields{"algo-id": req.Id}).Warn(err.Error())
+		c.Log.WithFields(logrus.Fields{"algo-id": req.Id}).Warn(err.Error())
 		return nil, err
 	}
 
-	coord.CloudAlgos.Set(req.Id, req.AlgoIpPort)
+	c.CloudAlgos.Set(req.Id, req.AlgoIpPort)
 	response := pb.CloudAlgoRegRes{Success: true, Msg: "Algorithm successfully registered."}
-	log.WithFields(logrus.Fields{"algo-id": req.Id}).Info("Algo successfully registered.")
+	c.Log.WithFields(logrus.Fields{"algo-id": req.Id}).Info("Algo successfully registered.")
 	return &response, nil
 }
 
@@ -54,16 +50,16 @@ func (s *CloudCoordinatorService) RegisterAlgo(ctx context.Context, req *pb.Clou
 // ctx: Carries value and cancellation signals across API
 //      boundaries.
 // req: Request created by algorithm in the cloud.
-func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
-	log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Info("Received compute request.")
-	res, err := isRegistrationError(*req)
+func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
+	c.Log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Info("Received compute request.")
+	res, err := c.isRegistrationError(*req)
 	if err != nil {
-		log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn(err.Error())
+		c.Log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn(err.Error())
 		return res, err
 	}
 
-	sites := coord.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
-	results, err := getResultsFromSites(req, sites)
+	sites := c.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+	results, err := c.getResultsFromSites(req, sites)
 
 	if err != nil {
 		return &results, err
@@ -79,23 +75,23 @@ func (s *CloudCoordinatorService) Compute(ctx context.Context, req *pb.ComputeRe
 //
 // req: The compute request to be sent to each site.
 // sites: The sites that the requests are going to be sent to.
-func getResultsFromSites(req *pb.ComputeRequest, sites *Concurrent.Map) (pb.ComputeResponses, error) {
+func (c *Coordinator) getResultsFromSites(req *pb.ComputeRequest, sites *Concurrent.Map) (pb.ComputeResponses, error) {
 	var responses pb.ComputeResponses
-	c := make(chan ResultFromSite)
+	ch := make(chan ResultFromSite)
 
 	sitesLength := int32(0)
 	counters := ErrorCounter{NumUnavailableSites: 0, NumUnavailableAlgos: 0}
 
 	// Asynchronously send compute request to each site.
 	for item := range sites.Iter() {
-		go getResultFromSite(req, item, &counters, c)
+		go c.getResultFromSite(req, item, &counters, ch)
 		sitesLength++
 	}
 
 	// Append the responses to the asynchronous requests
 	for i := int32(0); i < sitesLength; i++ {
 		select {
-			case response := <-c:
+			case response := <-ch:
 				if response.Err == nil {
 					responses.Responses = append(responses.Responses, response.Response)
 				}
@@ -124,33 +120,33 @@ func getResultsFromSites(req *pb.ComputeRequest, sites *Concurrent.Map) (pb.Comp
 // counters: A counter for the amount of requests that fail
 //           because the algorithm is unavailable.
 // ch: The channel where the response is sent to.
-func getResultFromSite(req *pb.ComputeRequest, item Concurrent.Item, counters *ErrorCounter, ch chan ResultFromSite) {
+func (c *Coordinator) getResultFromSite(req *pb.ComputeRequest, item Concurrent.Item, counters *ErrorCounter, ch chan ResultFromSite) {
 	siteId := item.Key
 	ipPort := item.Value.(string)
 
 	conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
-	checkErr(err)
+	checkErr(c, err)
 	defer conn.Close()
 
-	c := pb.NewCoordinatorConnectorClient(conn)
+	client := pb.NewSiteConnectorClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	response, err := c.Compute(ctx, req)
+	response, err := client.Compute(ctx, req)
 
 	// If error, increment appropriate counter and delete unavailable sites and algos
 	if CustomErrors.IsAlgoUnavailableError(err) {
 		atomic.AddInt32(&counters.NumUnavailableAlgos, 1)
-		sitesWithAlgo := coord.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+		sitesWithAlgo := c.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
 		sitesWithAlgo.Delete(siteId)
-		log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn("Algo is unavailable.")
-		checkErr(err)
+		c.Log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn("Algo is unavailable.")
+		checkErr(c, err)
 	} else if CustomErrors.IsUnavailableError(err) {
 		atomic.AddInt32(&counters.NumUnavailableSites, 1)
-		sitesWithAlgo := coord.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
+		sitesWithAlgo := c.SiteConnectors.Get(req.AlgoId).(*Concurrent.Map)
 		sitesWithAlgo.Delete(siteId)
-		log.WithFields(logrus.Fields{"site-id": siteId}).Warn("Site is unavailable.")
-		checkErr(err)
+		c.Log.WithFields(logrus.Fields{"site-id": siteId}).Warn("Site is unavailable.")
+		checkErr(c, err)
 	}
 
 	// Send response to goroutine waiting for responses
@@ -166,9 +162,9 @@ func getResultFromSite(req *pb.ComputeRequest, item Concurrent.Item, counters *E
 //
 // req: A request that has the id of the algorithm being
 //      requested.
-func isRegistrationError(req pb.ComputeRequest) (*pb.ComputeResponses, error) {
-	containsCloudAlgo := coord.CloudAlgos.Contains(req.AlgoId)
-	containsSiteAlgo := containsSiteAlgo(req.AlgoId)
+func (c *Coordinator) isRegistrationError(req pb.ComputeRequest) (*pb.ComputeResponses, error) {
+	containsCloudAlgo := c.CloudAlgos.Contains(req.AlgoId)
+	containsSiteAlgo := c.containsSiteAlgo(req.AlgoId)
 	if !containsSiteAlgo {
 		return &pb.ComputeResponses{}, CustomErrors.NewSiteAlgoNotRegisteredError()
 	} else if !containsCloudAlgo {
@@ -182,12 +178,12 @@ func isRegistrationError(req pb.ComputeRequest) (*pb.ComputeResponses, error) {
 // as a parameter. Return false otherwise.
 //
 // algoId: The id of a site algo.
-func containsSiteAlgo(algoId int32) bool {
-	if !coord.SiteConnectors.Contains(algoId) {
+func (c *Coordinator) containsSiteAlgo(algoId int32) bool {
+	if !c.SiteConnectors.Contains(algoId) {
 		return false
 	}
 
-	ips := coord.SiteConnectors.Get(algoId).(*Concurrent.Map)
+	ips := c.SiteConnectors.Get(algoId).(*Concurrent.Map)
 	if ips.Length() == 0 {
 		return false
 	} else {

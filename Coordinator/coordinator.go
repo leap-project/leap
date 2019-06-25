@@ -103,6 +103,15 @@ func (c *Coordinator) Serve() {
 	checkErr(c, err)
 }
 
+// Stops the grpc server for the coordinator. Server will
+// stop accepting connecitons and will close all the connected
+// connections.
+//
+// No args.
+func (c *Coordinator) Stop() {
+	c.Stop()
+}
+
 // Helper to log errors in the coordinator.
 //
 // coord: Coordinator instance

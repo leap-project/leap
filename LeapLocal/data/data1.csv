@@ -1,0 +1,7 @@
+patient_id, age, date_dx, stage, feel, alive
+1, 31, 2007-04-01, I, Strong, False 
+2, 32, 2007-04-02, II, Weak, True 
+3, 33, 2007-04-03, III, Strong, True 
+4, 34, 2007-04-04, I, Strong, False 
+5, 35, 2007-04-05, II, Strong, False 
+6, 36, 2007-04-06, III, Strong, False 

@@ -37,7 +37,7 @@ func (c *Coordinator) RegisterCloudAlgo(ctx context.Context, req *pb.CloudAlgoRe
 		return nil, err
 	}
 
-	c.CloudAlgos.Set(req.Id, req.AlgoIpPort)
+	c.CloudAlgos.Set(req.Id, "")
 	response := pb.CloudAlgoRegRes{Success: true, Msg: "Algorithm successfully registered."}
 	c.Log.WithFields(logrus.Fields{"algo-id": req.Id}).Info("Algo successfully registered.")
 	return &response, nil

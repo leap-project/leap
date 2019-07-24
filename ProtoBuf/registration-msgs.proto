@@ -34,7 +34,6 @@ message CloudAlgoRegReq { // Cloud Algorithm Registration Request
                           int32 id = 1;
                           string description = 2;
                           string proto_version = 3;
-                          string algo_ip_port = 4;
 }
 
 // Message sent by a coordinator to a cloud algorithm indicating whether the algorithm registration was successful.

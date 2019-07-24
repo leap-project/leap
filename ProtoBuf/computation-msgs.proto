@@ -22,7 +22,7 @@ package protoBuf;
 // A generic JSON encoded request
 message ComputeRequest {
     int32 algo_id = 1;
-    string response = 2;
+    string req = 2;
 }
 
 // A generic JSON encoded response

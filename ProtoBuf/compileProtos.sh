@@ -4,9 +4,6 @@
 protoc -I=. --go_out=.  computation-msgs.proto
 protoc -I=. --python_out=. computation-msgs.proto
 
-# Compile count-msgs.proto
-protoc -I=. --python_out=. count-msgs.proto
-
 # Compile registration-msgs.proto
 protoc -I=. --go_out=. registration-msgs.proto
 protoc -I=. --python_out=. registration-msgs.proto

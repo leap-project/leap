@@ -1,7 +1,7 @@
 package main
 
 import (
-	"leap/SiteConnector"
+	siteconnector "leap/SiteConnector"
 )
 
 // Run with go run *.go
@@ -17,6 +17,7 @@ func main() {
 	sc := siteconnector.NewSiteConnector(config)
 	siteconnector.AddFileHookToLogs("Logs/", int(config.SiteId))
 	go sc.Serve()
+	sc.Register()
 	// Sleep main goroutine forever
 	select {}
 }

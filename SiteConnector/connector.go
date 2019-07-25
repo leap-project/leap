@@ -1,17 +1,20 @@
 package siteconnector
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"leap/Concurrent"
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
 	"strconv"
+	"time"
+
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 type SiteConnector struct {
@@ -28,10 +31,10 @@ type SiteConnector struct {
 // and port it listen for requests from the coordinator, and
 // the ip and port to contact the coordinator.
 type Config struct {
-	IpPort					string
-	CoordinatorIpPort       string
-	AlgoIpPort				string
-	SiteId                  int32
+	IpPort            string
+	CoordinatorIpPort string
+	AlgoIpPort        string
+	SiteId            int32
 }
 
 // Creates a new site connector with the configurations given
@@ -40,8 +43,8 @@ type Config struct {
 // config: The ip and port configurations of the site connector.
 func NewSiteConnector(config Config) *SiteConnector {
 	return &SiteConnector{Conf: config,
-						  Log: logrus.WithFields(logrus.Fields{"node": "site-connector", "site-id": config.SiteId}),
-						  PendingRequests: Concurrent.NewMap()}
+		Log:             logrus.WithFields(logrus.Fields{"node": "site-connector", "site-id": config.SiteId}),
+		PendingRequests: Concurrent.NewMap()}
 }
 
 // Parses user flags and creates config using the given flags.
@@ -106,6 +109,20 @@ func (sc *SiteConnector) Serve() {
 	pb.RegisterSiteConnectorServer(s, sc)
 	err = s.Serve(listener)
 	checkErr(sc, err)
+}
+
+func (sc *SiteConnector) Register() {
+	conn, err := grpc.Dial(sc.Conf.CoordinatorIpPort, grpc.WithInsecure())
+	checkErr(sc, err)
+	defer conn.Close()
+
+	client := pb.NewCoordinatorClient(conn)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	siteRegReq := pb.SiteRegReq{SiteId: sc.Conf.SiteId, SiteIpPort: sc.Conf.IpPort}
+	response, err := client.RegisterSite(ctx, &siteRegReq)
+	sc.Log.Debug(response)
 }
 
 // Helper to log errors in a site connector.

@@ -14,6 +14,6 @@ import "computation-msgs.proto";
 service SiteConnector {
 
     // Relays a computation request from the coordinator to appropriate algorithm in site
-    rpc Compute (ComputeRequest) returns (ComputeResponse) {}
+    rpc Map (MapRequest) returns (MapResponse) {}
 
 }

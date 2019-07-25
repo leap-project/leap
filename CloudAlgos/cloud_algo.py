@@ -18,7 +18,7 @@ sys.path.append("../")
 import ProtoBuf as pb
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ipPort", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
-parser.add_argument("-cip", "--coordinatorIpPort", default="127.0.0.1:50001", help="The ip and port of the cloud coordinator")
+parser.add_argument("-cip", "--coordinatorIpPort", default="127.0.0.1:50000", help="The ip and port of the cloud coordinator")
 args = parser.parse_args()
 
 # Receives ComputeRequest from Coordinator

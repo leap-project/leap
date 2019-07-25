@@ -18,6 +18,6 @@ service Coordinator {
     rpc RegisterSite (SiteRegReq) returns (SiteRegRes) {}
 
     // Relays a computation request from the cloud to appropriate sites
-    rpc Compute (ComputeRequest) returns (ComputeResponses) {}
+    rpc Map (MapRequest) returns (MapResponses) {}
 
 }

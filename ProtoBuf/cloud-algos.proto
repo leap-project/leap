@@ -4,16 +4,15 @@ package protoBuf;
 import "computation-msgs.proto";
 
 // To compile the protobuf to Go run the following inside the protoBuf folder:
-// protoc -I=. --go_out=plugins=grpc:.  site-algos.proto
+// protoc -I=. --go_out=plugins=grpc:.  cloud-algos.proto
 
 // To compile the protobuf to Python run the following inside the protoBuf folder:
-// python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. site-algos.proto
+// python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. cloud-algos.proto
 
 
-// RPC service at a site algo that performs the necessary computation.
-service SiteAlgo {
-
+// RPC service at a cloud algo that performs the necessary computation.
+service CloudAlgo {
     // Performs the appropriate computation at the host algo and returns the result.
-    rpc Map (MapRequest) returns (MapResponse) {}
+    rpc Compute (ComputeRequest) returns (ComputeResponse) {}
 
 }

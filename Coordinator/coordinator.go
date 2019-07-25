@@ -3,15 +3,15 @@ package coordinator
 import (
 	"encoding/json"
 	"flag"
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"leap/Concurrent"
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
-	"sync"
+
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 // A struct that holds the ip and port that the coordinator
@@ -27,11 +27,6 @@ type Coordinator struct {
 	Conf Config
 	// Logging tool
 	Log *logrus.Entry
-	// TODO: Deal with overflow
-	// NextId
-	NextId int64
-	// Lock for NextId
-	IdMux sync.Mutex
 	// A concurrent map with request id as key and value. It re-
 	// presents the client requests that are being computed.
 	PendingRequests *Concurrent.Map
@@ -46,11 +41,10 @@ type Coordinator struct {
 // config: The ip and port configuration of the coordinator.
 func NewCoordinator(config Config) *Coordinator {
 	return &Coordinator{Conf: config,
-						Log: logrus.WithFields(logrus.Fields{"node": "coordinator"}),
-						NextId: 0,
-						PendingRequests: Concurrent.NewMap(),
-						SiteConnectors: Concurrent.NewMap(),
-}
+		Log:             logrus.WithFields(logrus.Fields{"node": "coordinator"}),
+		PendingRequests: Concurrent.NewMap(),
+		SiteConnectors:  Concurrent.NewMap(),
+	}
 }
 
 // Parses user flags and creates config using the given flags.

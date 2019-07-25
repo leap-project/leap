@@ -8,6 +8,3 @@ import sys
 sys.path.append("../ProtoBuf")
 
 from . import *
-
-
-

@@ -2,12 +2,13 @@ package coordinator
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"leap/Concurrent"
 	"leap/CustomErrors"
 	pb "leap/ProtoBuf"
 	"time"
+
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 )
 
 type ErrorCounter struct {
@@ -16,8 +17,8 @@ type ErrorCounter struct {
 }
 
 type ResultFromSite struct {
-	Err       error
-	Response *pb.ComputeResponse
+	Err      error
+	Response *pb.MapResponse
 }
 
 // Makes a remote procedure call to a site connector with a
@@ -27,16 +28,10 @@ type ResultFromSite struct {
 // ctx: Carries value and cancellation signals across API
 //      boundaries.
 // req: Request created by algorithm in the cloud.
-func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponses, error) {
-	c.IdMux.Lock()
-	id := c.NextId
-	c.NextId = c.NextId + 1
-	c.IdMux.Unlock()
+func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponses, error) {
+	c.PendingRequests.Set(req.Id, req.Id)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received compute request.")
 
-	c.PendingRequests.Set(id, id)
-	c.Log.WithFields(logrus.Fields{"request-id": id}).Info("Received compute request.")
-
-	req.Id = id
 	results, err := c.getResultsFromSites(req)
 
 	if err != nil {
@@ -52,8 +47,8 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 // are returned to the calling algorithm in the cloud.
 //
 // req: The compute request to be sent to each site.
-func (c *Coordinator) getResultsFromSites(req *pb.ComputeRequest) (pb.ComputeResponses, error) {
-	var responses pb.ComputeResponses
+func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, error) {
+	var responses pb.MapResponses
 	ch := make(chan ResultFromSite)
 
 	sitesLength := 0
@@ -67,10 +62,10 @@ func (c *Coordinator) getResultsFromSites(req *pb.ComputeRequest) (pb.ComputeRes
 	// Append the responses to the asynchronous requests
 	for i := 0; i < sitesLength; i++ {
 		select {
-			case response := <-ch:
-				if response.Err == nil {
-					responses.Responses = append(responses.Responses, response.Response)
-				}
+		case response := <-ch:
+			if response.Err == nil {
+				responses.Responses = append(responses.Responses, response.Response)
+			}
 		}
 	}
 
@@ -92,7 +87,7 @@ func (c *Coordinator) getResultsFromSites(req *pb.ComputeRequest) (pb.ComputeRes
 //       site id as key and the ip and port of the site as the
 //       value.
 // ch: The channel where the response is sent to.
-func (c *Coordinator) getResultFromSite(req *pb.ComputeRequest, site Concurrent.Item, ch chan ResultFromSite) {
+func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site Concurrent.Item, ch chan ResultFromSite) {
 	siteId := site.Key
 	ipPort := site.Value.(string)
 
@@ -104,7 +99,7 @@ func (c *Coordinator) getResultFromSite(req *pb.ComputeRequest, site Concurrent.
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	response, err := client.Compute(ctx, req)
+	response, err := client.Map(ctx, req)
 
 	// If error, increment appropriate counter and delete unavailable sites and algos
 	if CustomErrors.IsUnavailableError(err) {

@@ -15,7 +15,7 @@ import (
 //      boundaries.
 // req: Request created by algorithm in the cloud and issued
 //      by coordinator.
-func (sc *SiteConnector) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
+func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponse, error) {
 	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received compute request.")
 	sc.PendingRequests.Set(req.Id, req.Id)
 	conn, err := grpc.Dial(sc.Conf.AlgoIpPort, grpc.WithInsecure())
@@ -24,7 +24,7 @@ func (sc *SiteConnector) Compute(ctx context.Context, req *pb.ComputeRequest) (*
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)
-	res, err := client.Compute(context.Background(), req)
+	res, err := client.Map(context.Background(), req)
 
 	if CustomErrors.IsUnavailableError(err) {
 		sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("Site Algo is unavailable.")

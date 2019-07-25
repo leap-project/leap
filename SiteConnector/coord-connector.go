@@ -16,9 +16,9 @@ import (
 // req: Request created by algorithm in the cloud and issued
 //      by coordinator.
 func (sc *SiteConnector) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
-	sc.Log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Info("Received compute request.")
-	algoIpPort := sc.SiteAlgos.Get(req.AlgoId).(string)
-	conn, err := grpc.Dial(algoIpPort, grpc.WithInsecure())
+	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received compute request.")
+	sc.PendingRequests.Set(req.Id, req.Id)
+	conn, err := grpc.Dial(sc.Conf.AlgoIpPort, grpc.WithInsecure())
 
 	checkErr(sc, err)
 	defer conn.Close()
@@ -27,10 +27,9 @@ func (sc *SiteConnector) Compute(ctx context.Context, req *pb.ComputeRequest) (*
 	res, err := client.Compute(context.Background(), req)
 
 	if CustomErrors.IsUnavailableError(err) {
-		sc.Log.WithFields(logrus.Fields{"algo-id": req.AlgoId}).Warn("Algo is unavailable.")
+		sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("Site Algo is unavailable.")
 		checkErr(sc, err)
-		sc.SiteAlgos.Delete(req.AlgoId)
-		return nil, CustomErrors.NewAlgoUnavailableError()
+		return nil, CustomErrors.NewSiteUnavailableError()
 	}
 
 	checkErr(sc, err)

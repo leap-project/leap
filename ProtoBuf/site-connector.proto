@@ -2,7 +2,6 @@ syntax = "proto3";
 package protoBuf;
 
 import "computation-msgs.proto";
-import "registration-msgs.proto";
 
 // To compile the protobuf to Go run the following inside the protoBuf folder:
 // protoc -I=. --go_out=plugins=grpc:.  site-connector.proto
@@ -13,9 +12,6 @@ import "registration-msgs.proto";
 
 // RPC service at a site connector that will handle requests from site algorithms
 service SiteConnector {
-
-    //  Registers an algo with the coordinator
-    rpc RegisterSiteAlgo (SiteAlgoRegReq) returns (SiteAlgoRegRes) {}
 
     // Relays a computation request from the coordinator to appropriate algorithm in site
     rpc Compute (ComputeRequest) returns (ComputeResponse) {}

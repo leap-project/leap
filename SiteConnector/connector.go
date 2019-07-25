@@ -19,8 +19,8 @@ type SiteConnector struct {
 	Conf Config
 	// Logging tool
 	Log *logrus.Entry
-	// List of Algos in this site
-	SiteAlgos *Concurrent.Map
+	// List of pending requests in this site
+	PendingRequests *Concurrent.Map
 }
 
 // A struct that holds the ip and port that the site connector
@@ -30,6 +30,7 @@ type SiteConnector struct {
 type Config struct {
 	IpPort					string
 	CoordinatorIpPort       string
+	AlgoIpPort				string
 	SiteId                  int32
 }
 
@@ -40,7 +41,7 @@ type Config struct {
 func NewSiteConnector(config Config) *SiteConnector {
 	return &SiteConnector{Conf: config,
 						  Log: logrus.WithFields(logrus.Fields{"node": "site-connector", "site-id": config.SiteId}),
-		                  SiteAlgos: Concurrent.NewMap()}
+						  PendingRequests: Concurrent.NewMap()}
 }
 
 // Parses user flags and creates config using the given flags.
@@ -58,12 +59,14 @@ func GetConfig(filePath string) Config {
 
 	IpPortPtr := flag.String("ip", config.IpPort, "The ip and port to listen for requests")
 	CoordinatorIpPortPtr := flag.String("cip", config.CoordinatorIpPort, "The ip and port of the coordinator to be contacted")
+	AlgoIpPortPtr := flag.String("aip", config.AlgoIpPort, "The ip and port of the python server to be contacted")
 	SiteIdPtr := flag.Int("id", 0, "The id of a site")
 	flag.Parse()
 
 	config.SiteId = int32(*SiteIdPtr)
 	config.IpPort = *IpPortPtr
 	config.CoordinatorIpPort = *CoordinatorIpPortPtr
+	config.AlgoIpPort = *AlgoIpPortPtr
 	return config
 }
 

@@ -15,10 +15,7 @@ import "registration-msgs.proto";
 service Coordinator {
 
     // Registers an algorithm from a site at the coordinator
-    rpc RegisterSiteAlgo (SiteRegReq) returns (SiteAlgoRegRes) {}
-
-    // Registers an algorithm from the cloud at the coordinator
-    rpc RegisterCloudAlgo (CloudAlgoRegReq) returns (CloudAlgoRegRes) {}
+    rpc RegisterSite (SiteRegReq) returns (SiteRegRes) {}
 
     // Relays a computation request from the cloud to appropriate sites
     rpc Compute (ComputeRequest) returns (ComputeResponses) {}

@@ -11,35 +11,16 @@ import redcap
 sys.path.append('../ProtoBuf')
 
 import computation_msgs_pb2 as computation_pb2
-import registration_msgs_pb2 as registration_pb2
 import count_msgs_pb2 as count_pb2
 import site_algos_pb2_grpc as site_algos_grpc
-import site_connector_pb2_grpc as site_connector_grpc
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-id", "--algoId", default="0", help="The id of this algorithm")
 parser.add_argument("-ip", "--ipPort", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
 parser.add_argument("-cip", "--connectorIpPort", default="127.0.0.1:50001", help="The ip and port of the site connector")
 args = parser.parse_args()
 
 redCapUrl = "https://rc.bcchr.ca/redcap_demo/api/"
 redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
-
-# Makes an RPC to the site-connector, with the intent of
-# registering this algorithm with the coordinator.
-#
-# No args
-def register():
-    with grpc.insecure_channel(args.connectorIpPort) as channel:
-        stub = site_connector_grpc.SiteConnectorStub(channel)
-        req = registration_pb2.SiteAlgoRegReq()
-        req.algo_id = int(args.algoId)
-        req.description = "A count algorithm"
-        req.proto_version = "proto3"
-        req.algo_ip_port = args.ipPort
-        response = stub.RegisterSiteAlgo(req)
-        if response.success:
-            print("Site-Algo " + args.algoId + ": Successfully registered algorithm with coordinator")
 
 # Contacts a redCap project and returns the filtered records
 # from this project.
@@ -62,8 +43,8 @@ def serve():
     site_algos_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(), server)
     server.add_insecure_port(args.ipPort)
     server.start()
-    print("Site Algo " + args.algoId + ": Server started")
-    print("Site Algo " + args.algoId + ": Listening at " + args.ipPort)
+    print("Site Algo: Server started")
+    print("Site Algo: Listening at " + args.ipPort)
     while True:
         time.sleep(5)
 
@@ -95,4 +76,3 @@ class SiteAlgoServicer(site_algos_grpc.SiteAlgoServicer):
 if __name__ == "__main__":
     serverProcess = multiprocessing.Process(target=serve)
     serverProcess.start()
-    register()

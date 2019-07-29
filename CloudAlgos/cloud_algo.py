@@ -31,11 +31,15 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         # super(CloudAlgoServicer, self).__init__() # Object ... doesn't do anythin
         self.id_to_thread = {}
         self.id_count = 0
-
-    def _create_computation_request(self, req_id, req):
+    # input_req is the request sent by the client_connector
+    def _create_computation_request(self, req_id, input_req, state):
         request = pb.computation_msgs_pb2.MapRequest()
         request.id = req_id
         # TODO: Split cloud algo udf functions from site algos
+        req = {}
+        req["module"] = input_req["module"]
+        req["filter"] = input_req["filter"]
+        req["state"] = state
         request.req = json.dumps(req)
         return request
 
@@ -65,7 +69,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
                 map_results = []
                 choice = choice_fn(state)
                 print("Choice: {}".format(choice))
-                request = self._create_computation_request(req_id, req)               
+                request = self._create_computation_request(req_id, req, state)               
                 print("Created map request")
 
                 result = coord_stub.Map(request) # Computed remotely

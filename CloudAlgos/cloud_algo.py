@@ -17,33 +17,17 @@ sys.path.append("../")
 
 import ProtoBuf as pb
 parser = argparse.ArgumentParser()
-parser.add_argument("-ip", "--ipPort", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
-parser.add_argument("-cip", "--coordinatorIpPort", default="127.0.0.1:50000", help="The ip and port of the cloud coordinator")
+parser.add_argument("-ip", "--ip_port", default="127.0.0.1:70000", help="The ip and port this algorithm is listening to")
+parser.add_argument("-cip", "--coordinator_ip_port", default="127.0.0.1:50000", help="The ip and port of the cloud coordinator")
 args = parser.parse_args()
 
 # Receives ComputeRequest from Coordinator
 class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
-    def __init__(self, ipPort, coordinatorIpPort):        
-        self.ipPort = ipPort
-        self.coordinatorIpPort = coordinatorIpPort
-        
-
-        # super(CloudAlgoServicer, self).__init__() # Object ... doesn't do anythin
-        self.id_to_thread = {}
+    def __init__(self, ip_port, coordinator_ip_port):
+        self.ip_port = ip_port
+        self.coordinator_ip_port = coordinator_ip_port
         self.id_count = 0
-
-    def _create_computation_request(self, req_id, req):
-        request = pb.computation_msgs_pb2.MapRequest()
-        request.id = req_id
-        # TODO: Split cloud algo udf functions from site algos
-        request.req = json.dumps(req)
-        return request
-
-    def _generate_req_id(self):
-        # TODO: actually spawn child processes. thread is currently None
-        self.id_to_thread[self.id_count] = None
-        self.id_count += 1
-        return self.id_count
+        self.live_requests = {}
 
     def Compute(self, request, context):
         print("Cloud-Algo : Got compute call")
@@ -58,7 +42,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         # Generate algo_id
         req_id = self._generate_req_id()
         print("Generated cloud algo id: {}".format(req_id))
-        with grpc.insecure_channel(self.coordinatorIpPort) as channel:
+        with grpc.insecure_channel(self.coordinator_ip_port) as channel:
             coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
             print("Created coordinator stub")
             while not stop:
@@ -81,17 +65,31 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         print("returning response to client connector")
         return res
 
+    def _create_computation_request(self, req_id, req):
+        request = pb.computation_msgs_pb2.MapRequest()
+        request.id = req_id
+        # TODO: Split cloud algo udf functions from site algos
+        request.req = json.dumps(req)
+        return request
+
+    def _generate_req_id(self):
+        # TODO: actually spawn child processes. thread is currently None
+        self.live_requests[self.id_count] = None
+        req_id = self.id_count
+        self.id_count += 1
+        return req_id
+
 # Starts listening for RPC requests at the specified ip and
 # port.
 #
 # No args
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    pb.cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(CloudAlgoServicer(args.ipPort, args.coordinatorIpPort), server)
-    server.add_insecure_port(args.ipPort)
+    pb.cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(CloudAlgoServicer(args.ip_port, args.coordinator_ip_port), server)
+    server.add_insecure_port(args.ip_port)
     server.start()
     print("Cloud Algo : Server started")
-    print("Cloud Algo : Listening at {}".format(args.ipPort))
+    print("Cloud Algo : Listening at {}".format(args.ip_port))
     while True:
         time.sleep(1)
 

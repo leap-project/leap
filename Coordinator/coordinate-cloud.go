@@ -70,7 +70,7 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 	}
 
 	// Determine if there were unavailable sites
-	if len(responses.Responses) == sitesLength {
+	if len(responses.Responses) < sitesLength {
 		return responses, CustomErrors.NewSiteUnavailableError()
 	}
 

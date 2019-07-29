@@ -1,5 +1,6 @@
 import grpc
 import time
+import json
 import multiprocessing
 import argparse
 import concurrent.futures as futures
@@ -69,7 +70,7 @@ class SiteAlgoServicer(site_algos_grpc.SiteAlgoServicer):
         # TODO: Extract map code and run it
 
         res = computation_pb2.MapResponse()
-        res.response = "test result"
+        res.response = json.dumps({"test": "this is a test"})
         return res
 
 if __name__ == "__main__":

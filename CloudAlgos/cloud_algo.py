@@ -52,18 +52,28 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
                 request = self._create_computation_request(req_id, req)               
                 print("Created map request")
 
-                result = coord_stub.Map(request) # Computed remotely
+                results = coord_stub.Map(request) # Computed remotely
                 print("Received map results from cloud coordinator")
-
-                map_results = json.loads(result.response)
-                agg_result = agg_fn[choice](map_results)
+                extracted_responses = self._extract_map_responses(results.responses)
+                print(extracted_responses)
+                print("loaded results")
+                agg_result = agg_fn[choice](extracted_responses)
+                print("done agg")
                 state = update_fn[choice](agg_result, state)
+                print("done update")
                 stop = stop_fn(agg_result, state)
+                print("done stop")
             
             res = pb.computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(post_fn(agg_result, state))
         print("returning response to client connector")
         return res
+
+    def _extract_map_responses(self, pb_responses):
+        responses = []
+        for r in pb_responses:
+            responses.append(r.response)
+        return responses
 
     def _create_computation_request(self, req_id, req):
         request = pb.computation_msgs_pb2.MapRequest()

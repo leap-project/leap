@@ -25,6 +25,8 @@ go get -u github.com/sirupsen/logrus
 go get -u github.com/rifflock/lfshook
 
 apt-get install python3-venv
+# Install pandas to work with redcap data
+pip install pandas
 # Install protobuf for Python
 pip install protobuf
 # Install grpc for Python

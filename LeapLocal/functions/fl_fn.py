@@ -2,6 +2,7 @@ import pdb
 import json
 import inspect
 
+import pandas as pd
 import torch
 import torch.utils.data
 
@@ -13,7 +14,7 @@ class NPDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.data)
     
-    def __getitem__(self, idx):        
+    def __getitem__(self, idx):
         x = self.data[idx]
         y = self.labels[idx]
         return x, y
@@ -35,9 +36,9 @@ def map_fn1(data, state):
     print(data)
     batch_size = state["batch_size"]
     lr = state["lr"]
-    d = 100
-    X = data[:,:d]
-    Y = data[:,d:]
+    d = 2
+    X = data[0]
+    Y = data[1]
     dataset = NPDataset(X, Y)
     model = LinearModel(d, 1)
     criterion = torch.nn.MSELoss()
@@ -55,8 +56,6 @@ def map_fn1(data, state):
         for name, params in model.named_parameters():
             if params.requires_grad:
                 client_grad.append(params.grad.cpu().clone())
-
-
 
     return client_grad
 
@@ -89,6 +88,14 @@ def stop_fn(agg_result, state):
 
 def post_fn(agg_result, state):
     return agg_result
+
+# Formats the raw data into data usable by map_fn
+# ex: Converting types, extracting rows/columns
+def data_prep(data):
+    data = pd.DataFrame(data)
+    X = data[["age", "bmi"]].astype('float').to_numpy()
+    Y = data["grade"].astype('long').to_numpy()
+    return X,Y
 
 state = {
     "i": 0,

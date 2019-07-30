@@ -1,26 +1,28 @@
 import pdb
 import json
 import inspect
+import pandas as pd
 
 # Sum a particular column
-def map_fn(data, state):
+def map_fn1(data, state):
     print(data)
+    data = pd.DataFrame(data)
     result = {
-        "sum": data[state["col"]].sum(),
+        "sum": data[state["col"]].astype('float').sum(),
         "count": len(data)
     }
     return json.dumps(result)
-map_fn1 = map_fn
+
 # Compute variance given mean in state
-def map_fn(data, state):
+def map_fn2(data, state):
+    data = pd.DataFrame(data)
     mean = state["mean"]
-    col = data[state["col"]]
+    col = data[state["col"]].astype('float')
     result = {
         "ss": ((col - mean)**2).sum(),
         "count": len(data)
     }
     return json.dumps(result)
-map_fn2 = map_fn
 map_fn = [map_fn1, map_fn2]
 
 def agg_fn1(map_results):

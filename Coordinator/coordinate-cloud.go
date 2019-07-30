@@ -34,11 +34,7 @@ func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRespo
 
 	results, err := c.getResultsFromSites(req)
 
-	if err != nil {
-		return &results, err
-	}
-
-	return &results, nil
+	return &results, err
 }
 
 // Spawns a goroutine for each site that can support the

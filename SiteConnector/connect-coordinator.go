@@ -33,5 +33,5 @@ func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRe
 	}
 
 	checkErr(sc, err)
-	return res, nil
+	return res, err
 }

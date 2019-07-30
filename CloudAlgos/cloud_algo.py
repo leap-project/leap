@@ -5,21 +5,35 @@ spawn processes responsible for iterative aggregation logic
 1. Generate unique ID for UDF
 2. grpc call to coordinator to get site map results
 """
+import sys
+sys.path.append("../")
 import time
 import argparse
 import multiprocessing
 import grpc
+import ProtoBuf as pb
 import concurrent.futures as futures
 import pdb
 import json
-import sys
-sys.path.append("../")
+import logging
+from pylogrus import PyLogrus, TextFormatter
 
-import ProtoBuf as pb
+# Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:70000", help="The ip and port this algorithm is listening to")
 parser.add_argument("-cip", "--coordinator_ip_port", default="127.0.0.1:50000", help="The ip and port of the cloud coordinator")
 args = parser.parse_args()
+
+# Setup logging tool
+logging.setLoggerClass(PyLogrus)
+logger = logging.getLogger(__name__)  # type: PyLogrus
+logger.setLevel(logging.DEBUG)
+formatter = TextFormatter(datefmt='Z', colorize=True)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+log = logger.withFields({"node": "cloud-algo"})
 
 # Receives ComputeRequest from Coordinator
 class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
@@ -49,7 +63,6 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         return new_id       
 
     def Compute(self, request, context):
-        print("Cloud-Algo : Got compute call")
         # TODO: This logic should eventually be ran in separate thread
         req = json.loads(request.req)
         exec(req["module"], globals())
@@ -66,7 +79,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
                 try:
                     request = self._create_computation_request(req_id, req, state)               
                 except Exception as e:
-                    print(e)
+                    log.error(e)
 
                 results = coord_stub.Map(request) # Computed remotely
                 extracted_responses = self._extract_map_responses(results.responses)
@@ -94,10 +107,10 @@ def serve():
     pb.cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(CloudAlgoServicer(args.ip_port, args.coordinator_ip_port), server)
     server.add_insecure_port(args.ip_port)
     server.start()
-    print("Cloud Algo : Server started")
-    print("Cloud Algo : Listening at {}".format(args.ip_port))
+    log.info("Server started")
+    log.info("Listening at {}".format(args.ip_port))
     while True:
-        time.sleep(1)
+        time.sleep(5)
 
 if __name__ == "__main__":
     serverProcess = multiprocessing.Process(target=serve)

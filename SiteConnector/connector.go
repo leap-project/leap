@@ -125,6 +125,7 @@ func (sc *SiteConnector) Register() {
 	sc.Log.Debug(response)
 }
 
+// TODO: Add request id to checkErr
 // Helper to log errors in a site connector.
 //
 // err: Error returned by a function that should be checked

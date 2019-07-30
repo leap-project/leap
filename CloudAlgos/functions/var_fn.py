@@ -5,7 +5,6 @@ import pandas as pd
 
 # Sum a particular column
 def map_fn1(data, state):
-    print(data)
     data = pd.DataFrame(data)
     result = {
         "sum": data[state["col"]].astype('float').sum(),

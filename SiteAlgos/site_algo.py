@@ -63,16 +63,13 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         req = json.loads(request.req)
 
         exec(req["module"], globals())
-        print("Loaded module in SiteAlgo")
         state = req["state"]
         s_filter = req["filter"]        
         choice = choice_fn(state)
-        print("Choice: {}".format(choice))
 
         data = getRedcapData(redCapUrl, redCapToken, s_filter)
         
         map_result = map_fn[choice](data, state)
-        print("map_result: {}".format(map_result))
 
         res = pb.computation_msgs_pb2.MapResponse()
         res.response = map_result

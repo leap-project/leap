@@ -30,7 +30,7 @@ type ResultFromSite struct {
 // req: Request created by algorithm in the cloud.
 func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponses, error) {
 	c.PendingRequests.Set(req.Id, req.Id)
-	c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received compute request.")
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
 
 	results, err := c.getResultsFromSites(req)
 

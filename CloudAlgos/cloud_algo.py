@@ -31,7 +31,6 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
 
     # input_req is the request sent by the client_connector
     def _create_computation_request(self, req_id, input_req, state):
-        print("Creating computation request")
         request = pb.computation_msgs_pb2.MapRequest()
         request.id = req_id
         # TODO: Split cloud algo udf functions from site algos
@@ -53,46 +52,30 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         print("Cloud-Algo : Got compute call")
         # TODO: This logic should eventually be ran in separate thread
         req = json.loads(request.req)
-        print("Loading module...")
         exec(req["module"], globals())
-        # print("Request in cloud_algo.Compute: {}".format(req))
         state = globals()["state"]
         stop = False
         
         # Generate algo_id
         req_id = self._generate_req_id()
-        print("Generated cloud algo id: {}".format(req_id))
         with grpc.insecure_channel(self.coordinator_ip_port) as channel:
             coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
-            print("Created coordinator stub")
             while not stop:
                 map_results = []
                 choice = choice_fn(state)
-                print("Choice: {}".format(choice))
-                print(req_id)
-                print(req)
-                print(state)
                 try:
                     request = self._create_computation_request(req_id, req, state)               
                 except Exception as e:
                     print(e)
-                print("Created map request")
 
                 results = coord_stub.Map(request) # Computed remotely
-                print("Received map results from cloud coordinator")
                 extracted_responses = self._extract_map_responses(results.responses)
-                print(extracted_responses)
-                print("loaded results")
                 agg_result = agg_fn[choice](extracted_responses)
-                print("done agg")
                 state = update_fn[choice](agg_result, state)
-                print("done update")
                 stop = stop_fn(agg_result, state)
-                print("done stop")
             
             res = pb.computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(post_fn(agg_result, state))
-        print("returning response to client connector")
         return res
 
     def _extract_map_responses(self, pb_responses):

@@ -61,8 +61,7 @@ def client_request():
 
     # Get source code for map, agg, update, etc
     # module = inspect.getsource(count_fn)
-    module = inspect.getsource(var_fn)
-    print("Loaded module in client")
+    module = inspect.getsource(count_fn)
     filter = "[age] > 50 and [bmi] < 25"
     client.send_request(module, filter)
 

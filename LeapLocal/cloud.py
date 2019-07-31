@@ -9,6 +9,7 @@ class Cloud():
     def handle_request(self, req):
         exec(req["module"], globals())
         state = globals()["state"]
+        local_state = prep(state)
         stop = False
         while not stop:
             map_results = []
@@ -23,8 +24,8 @@ class Cloud():
                 site_res = site.local_compute(site_req)
                 map_results.append(site_res)
             
-            agg_result = agg_fn[choice](map_results)
-            state = update_fn[choice](agg_result, state)
-            stop = stop_fn(agg_result, state)
-        return post_fn(agg_result, state)
+            agg_result = agg_fn[choice](map_results, local_state)
+            state = update_fn[choice](agg_result, state, local_state)
+            stop = stop_fn(agg_result, state, local_state)
+        return post_fn(agg_result, state, local_state)
     

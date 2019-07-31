@@ -26,7 +26,7 @@ class Site():
             data = data_prep(data)
             
         map_result = map_fn[choice](data, state)
-        print("map_result: {}".format(map_result))
+        # print("map_result: {}".format(map_result))
         return map_result
 
 

@@ -16,7 +16,7 @@ import (
 // req: Request created by algorithm in the cloud and issued
 //      by coordinator.
 func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponse, error) {
-	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received compute request.")
+	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
 	sc.PendingRequests.Set(req.Id, req.Id)
 	conn, err := grpc.Dial(sc.Conf.AlgoIpPort, grpc.WithInsecure())
 
@@ -33,5 +33,5 @@ func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRe
 	}
 
 	checkErr(sc, err)
-	return res, nil
+	return res, err
 }

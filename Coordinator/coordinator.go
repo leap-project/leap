@@ -112,6 +112,7 @@ func (c *Coordinator) Stop() {
 	c.Stop()
 }
 
+// TODO: Add request id to checkErr
 // Helper to log errors in the coordinator.
 //
 // coord: Coordinator instance

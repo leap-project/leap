@@ -1,22 +1,33 @@
+import sys
+sys.path.append("../")
 import pdb
 import grpc
 import time
 import multiprocessing
 import argparse
 import concurrent.futures as futures
-import sys
 import redcap
 import json
-# TODO: Find way to get rid of this ugly import
-import sys
-sys.path.append("../")
-
 import ProtoBuf as pb
+import logging
+from pylogrus import PyLogrus, TextFormatter
 
+# Parse command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-ip", "--ipPort", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
-parser.add_argument("-cip", "--connectorIpPort", default="127.0.0.1:50001", help="The ip and port of the site connector")
+parser.add_argument("-ip", "--ip_port", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
+parser.add_argument("-cip", "--connector_ip_port", default="127.0.0.1:50001", help="The ip and port of the site connector")
 args = parser.parse_args()
+
+# Setup logging tool
+logging.setLoggerClass(PyLogrus)
+logger = logging.getLogger(__name__)  # type: PyLogrus
+logger.setLevel(logging.DEBUG)
+formatter = TextFormatter(datefmt='Z', colorize=True)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+ch.setFormatter(formatter)
+logger.addHandler(ch)
+log = logger.withFields({"node": "site-algo"})
 
 redCapUrl = "https://rc.bcchr.ca/redcap_demo/api/"
 redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
@@ -40,10 +51,10 @@ def getRedcapData(url, token, filterLogic):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(), server)
-    server.add_insecure_port(args.ipPort)
+    server.add_insecure_port(args.ip_port)
     server.start()
-    print("Site Algo: Server started")
-    print("Site Algo: Listening at " + args.ipPort)
+    log.info("Server started")
+    log.info("Listening at " + args.ip_port)
     while True:
         time.sleep(5)
 
@@ -58,21 +69,18 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
     # context: Boilerplate for grpc containing the context
     #          of the RPC.
     def Map(self, request, context):
-        print("Site-Algo  Got compute call")
+        log.info("Got map request")
         req_id = request.id
         req = json.loads(request.req)
 
         exec(req["module"], globals())
-        print("Loaded module in SiteAlgo")
         state = req["state"]
         s_filter = req["filter"]        
         choice = choice_fn(state)
-        print("Choice: {}".format(choice))
 
         data = getRedcapData(redCapUrl, redCapToken, s_filter)
         
         map_result = map_fn[choice](data, state)
-        print("map_result: {}".format(map_result))
 
         res = pb.computation_msgs_pb2.MapResponse()
         res.response = map_result

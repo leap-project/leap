@@ -10,7 +10,7 @@ import (
 // - ip: Ip and port to listen for connections
 // - id : Id of this site
 //
-// e.g go run *.go -ip=127.0.0.1:50002 -id=0
+// e.g go run connector-main.go -ip=127.0.0.1:50002 -id=0
 
 func main() {
 	config := siteconnector.GetConfig("conn-config.json")

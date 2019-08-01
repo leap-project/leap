@@ -67,6 +67,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         req = json.loads(request.req)
         exec(req["module"], globals())
         state = globals()["state"]
+        local_state = prep(state)
         stop = False
         
         # Generate algo_id
@@ -83,14 +84,14 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
 
                 results = coord_stub.Map(request) # Computed remotely
                 extracted_responses = self._extract_map_responses(results.responses)
-                agg_result = agg_fn[choice](extracted_responses)
-                state = update_fn[choice](agg_result, state)
-                stop = stop_fn(agg_result, state)
+                agg_result = agg_fn[choice](extracted_responses, local_state)
+                state = update_fn[choice](agg_result, state, local_state)
+                stop = stop_fn(agg_result, state, local_state)
             
             res = pb.computation_msgs_pb2.ComputeResponse()
-            res.response = json.dumps(post_fn(agg_result, state))
+            res.response = json.dumps(post_fn(agg_result, state, local_state))
         return res
-
+    
     def _extract_map_responses(self, pb_responses):
         responses = []
         for r in pb_responses:

@@ -79,7 +79,9 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         choice = choice_fn(state)
 
         data = getRedcapData(redCapUrl, redCapToken, s_filter)
-        
+        if 'data_prep' in globals():
+            data = data_prep(data)
+            
         map_result = map_fn[choice](data, state)
 
         res = pb.computation_msgs_pb2.MapResponse()

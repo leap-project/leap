@@ -43,11 +43,13 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.id_count = 0
         self.live_requests = {}
 
+    """ Return new request that is sent to the client
+    TODO: Split cloud algo udf functions from site algos
+    """
     # input_req is the request sent by the client_connector
     def _create_computation_request(self, req_id, input_req, state):
         request = pb.computation_msgs_pb2.MapRequest()
         request.id = req_id
-        # TODO: Split cloud algo udf functions from site algos
         req = {}
         req["module"] = input_req["module"]
         req["filter"] = input_req["filter"]
@@ -55,6 +57,9 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         request.req = json.dumps(req)
         return request
 
+    """ Adds a new entry to self.live_requests mapping id to process
+    Returns the newly generated id
+    """
     def _generate_req_id(self):
         # TODO: actually spawn child processes. thread is currently None
         new_id = self.id_count
@@ -62,13 +67,29 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.id_count += 1
         return new_id       
 
+    """ Coordinates computations across multiple local sites and returns result to client
+    TODO: Propagte name changes for site_state and cloud_state name
+    req["module"]: stringified python module containing
+        * map_fn: a list of map(data, site_state) that returns local computations at each iteration
+        * agg_fn: a list of agg(map_results, cloud_state) used to aggregate results from each site
+        * update_fn: a list of update(agg_result, site_state, cloud_state) used to update the site and cloud states
+        * choice_fn(site_state): selects the appropriate map/agg_fn depending on the state
+        * stop_fn(agg_result, site_state, cloud_state): returns true if stopping criterion is met
+        * post_fn(agg_result, site_state, cloud_state): final processing of the aggregated result to return to client
+        * data_prep(data): converts standard data schema from each site to be compatible with map_fn
+        * prep(site_state): initialization for the cloud
+        * site_state: state that is passed to the sites
+        * cloud_state: state that is only used by the cloud
+    
+    req["filter"]: query filter string to get dataset of interest
+    """
     def Compute(self, request, context):
         # TODO: This logic should eventually be ran in separate thread
         req = json.loads(request.req)
         exec(req["module"], globals())
-        state = globals()["state"]
-        # local_state = prep(state)
-        local_state = state
+        site_state = globals()["site_state"]
+        # local_state = prep(site_state)
+        cloud_state = site_state
         stop = False
         
         # Generate algo_id
@@ -77,25 +98,33 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
             while not stop:
                 map_results = []
-                choice = choice_fn(state)
+                # Choose which map/agg/update_fn to use
+                choice = choice_fn(site_state)
                 try:
-                    request = self._create_computation_request(req_id, req, state)               
+                    request = self._create_computation_request(req_id, req, site_state)               
                 except Exception as e:
                     log.error(e)
 
                 try:
-                    results = coord_stub.Map(request) # Computed remotely
+                    # Get result from each site through coordinator
+                    results = coord_stub.Map(request) 
                 except grpc.RpcError as e:
                     log.error(e.details())
                     return e
 
                 extracted_responses = self._extract_map_responses(results.responses)
-                agg_result = agg_fn[choice](extracted_responses, local_state)
-                state = update_fn[choice](agg_result, state, local_state)
-                stop = stop_fn(agg_result, state, local_state)
+                
+                # Aggregate results from each site
+                agg_result = agg_fn[choice](extracted_responses, cloud_state)
+                
+                # Update the state
+                site_state = update_fn[choice](agg_result, site_state, cloud_state)
+
+                # Decide to stop or continue
+                stop = stop_fn(agg_result, site_state, cloud_state)
             
             res = pb.computation_msgs_pb2.ComputeResponse()
-            res.response = json.dumps(post_fn(agg_result, state, local_state))
+            res.response = json.dumps(post_fn(agg_result, site_state, cloud_state))
         return res
     
     def _extract_map_responses(self, pb_responses):

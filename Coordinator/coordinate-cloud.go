@@ -2,8 +2,7 @@ package coordinator
 
 import (
 	"context"
-	"leap/Concurrent"
-	"leap/CustomErrors"
+	"leap/Errors"
 	pb "leap/ProtoBuf"
 	"time"
 
@@ -11,14 +10,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-type ErrorCounter struct {
-	NumUnavailableSites int32
-	NumUnavailableAlgos int32
-}
-
 type ResultFromSite struct {
-	Err      error
-	Response *pb.MapResponse
+	Response    *pb.MapResponse
+	Err         error
+	SiteId      int32
 }
 
 // Makes a remote procedure call to a site connector with a
@@ -44,33 +39,36 @@ func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRespo
 //
 // req: The compute request to be sent to each site.
 func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, error) {
-	var responses pb.MapResponses
 	ch := make(chan ResultFromSite)
 
 	sitesLength := 0
 
 	// Asynchronously send compute request to each site.
 	for item := range c.SiteConnectors.Iter() {
-		go c.getResultFromSite(req, item, ch)
-		sitesLength++
+		site := item.Value.(SiteConnector)
+			go c.getResultFromSite(req, site, ch)
+			sitesLength++
 	}
 
 	// Append the responses to the asynchronous requests
+	results := []ResultFromSite{}
 	for i := 0; i < sitesLength; i++ {
 		select {
 		case response := <-ch:
-			if response.Err == nil {
-				responses.Responses = append(responses.Responses, response.Response)
-			}
+			results = append(results, response)
 		}
 	}
 
+	unavailableSites := getUnavailableSites(results)
+	mapResponses := getSuccessfulResponses(results)
 	// Determine if there were unavailable sites
-	if len(responses.Responses) < sitesLength {
-		return responses, CustomErrors.NewSiteUnavailableError()
+	if len(unavailableSites) == sitesLength {
+		return mapResponses, Errors.NewSiteUnavailableError()
+	} else if len(unavailableSites) > 0 {
+		c.Log.WithFields(logrus.Fields{"unavailable-sites": unavailableSites}).Warn("Wasn't able to contact all the requested sites")
 	}
-
-	return responses, nil
+	mapResponses.UnavailableSites = unavailableSites
+	return mapResponses, nil
 }
 
 // Sends an RPC carrying the compute request to a site. The
@@ -83,11 +81,8 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 //       site id as key and the ip and port of the site as the
 //       value.
 // ch: The channel where the response is sent to.
-func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site Concurrent.Item, ch chan ResultFromSite) {
-	siteId := site.Key
-	ipPort := site.Value.(string)
-
-	conn, err := grpc.Dial(ipPort, grpc.WithInsecure())
+func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, ch chan ResultFromSite) {
+	conn, err := grpc.Dial(site.ipPort, grpc.WithInsecure())
 	checkErr(c, err)
 	defer conn.Close()
 
@@ -97,12 +92,43 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site Concurrent.Item
 
 	response, err := client.Map(ctx, req)
 
-	// If error, increment appropriate counter and delete unavailable sites and algos
-	if CustomErrors.IsUnavailableError(err) {
-		c.SiteConnectors.Delete(siteId)
-		c.Log.WithFields(logrus.Fields{"site-id": siteId}).Warn("Site is unavailable.")
+	// If site unavailable, update its status to false
+	if Errors.IsUnavailableError(err) {
+		site.statusMux.Lock()
+		site.status = false
+		site.statusMux.Unlock()
+		c.Log.WithFields(logrus.Fields{"site-id": site.id}).Warn("Site is unavailable.")
 		checkErr(c, err)
+	} else {
+		site.statusMux.Lock()
+		site.status = true
+		site.statusMux.Unlock()
 	}
 	// Send response to goroutine waiting for responses
-	ch <- ResultFromSite{Response: response, Err: err}
+	ch <- ResultFromSite{Response: response, Err: err, SiteId: site.id}
 }
+
+func getUnavailableSites(results []ResultFromSite) []int32 {
+	unavailableSites := []int32{}
+	for _, result := range results {
+		if Errors.IsUnavailableError(result.Err) {
+			unavailableSites = append(unavailableSites, result.SiteId)
+		}
+	}
+	return unavailableSites
+}
+
+func getSuccessfulResponses(results []ResultFromSite) pb.MapResponses {
+	successfulResponses := pb.MapResponses{Responses: []*pb.MapResponse{}, UnavailableSites: []int32{}}
+	for _, result := range results {
+		if result.Err == nil {
+			successfulResponses.Responses = append(successfulResponses.Responses, result.Response)
+		}
+	}
+	return successfulResponses
+}
+
+// TODO: Check site connector is unavailable
+// Scenario: Coordinator pings site. Site doesn't respond (but is not actually down)
+//           so site is removed from live sites. Site was not actually down, so it
+//			 doesn't register again. Coordinator doesn't know site conn is available.

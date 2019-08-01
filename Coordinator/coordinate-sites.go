@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// TODO: Do we assume a site can register with another site's id?
 // Registers a site at a coordinator. This allows cloud
 // algorithms to send compute requests to registered site
 // algos.
@@ -20,7 +21,12 @@ func (c *Coordinator) RegisterSite(ctx context.Context, req *pb.SiteRegReq) (*pb
 	siteId := req.SiteId
 	ipPort := req.SiteIpPort
 
-	c.SiteConnectors.Set(siteId, ipPort)
+	site := SiteConnector{
+		id:     siteId,
+		status: true,
+		ipPort: ipPort,
+	}
+	c.SiteConnectors.Set(siteId, site)
 
 	msg := "Site " + strconv.Itoa(int(siteId)) + " registered successfully"
 	response := pb.SiteRegRes{Success: true, Msg: msg}

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"leap/CustomErrors"
+	"leap/Errors"
 	pb "leap/ProtoBuf"
 )
 
@@ -26,10 +26,10 @@ func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRe
 	client := pb.NewSiteAlgoClient(conn)
 	res, err := client.Map(context.Background(), req)
 
-	if CustomErrors.IsUnavailableError(err) {
+	if Errors.IsUnavailableError(err) {
 		sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("Site Algo is unavailable.")
 		checkErr(sc, err)
-		return nil, CustomErrors.NewSiteUnavailableError()
+		return nil, Errors.NewSiteUnavailableError()
 	}
 
 	checkErr(sc, err)

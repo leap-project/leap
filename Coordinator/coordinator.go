@@ -3,15 +3,15 @@ package coordinator
 import (
 	"encoding/json"
 	"flag"
+	"github.com/rifflock/lfshook"
+	"github.com/sirupsen/logrus"
+	"google.golang.org/grpc"
 	"io/ioutil"
 	"leap/Concurrent"
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
-
-	"github.com/rifflock/lfshook"
-	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
+	"sync"
 )
 
 // A struct that holds the ip and port that the coordinator
@@ -33,6 +33,17 @@ type Coordinator struct {
 	// A concurrent map with site id as key and the ip and
 	// port of the site as a value.
 	SiteConnectors *Concurrent.Map
+}
+
+type SiteConnector struct {
+	// Id of a site connector
+	id int32
+	// Status where true = siteconn live and false = siteconn down
+	status bool
+	// Lock for site status
+	statusMux sync.Mutex
+	// Ip and port to contact this site connector
+	ipPort string
 }
 
 // Creates a new coordinator with the configurations given

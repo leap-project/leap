@@ -4,7 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"leap/Coordinator"
-	"leap/CustomErrors"
+	"leap/Errors"
 	pb "leap/ProtoBuf"
 	"testing"
 	"time"
@@ -21,8 +21,8 @@ func TestRegister(t *testing.T) {
 	client := pb.NewCoordinatorClient(conn)
 
 	_, err := client.RegisterCloudAlgo(context.Background(), &request)
-	if  err == nil {
-		t.Errorf("Expected an error, got: %s, want: %s.", err.Error(), CustomErrors.NewSiteAlgoNotRegisteredError().Error())
+	if err == nil {
+		t.Errorf("Expected an error, got: %s, want: %s.", err.Error(), Errors.NewSiteAlgoNotRegisteredError().Error())
 	}
 
 	//listOfSites := Concurrent.NewMap()

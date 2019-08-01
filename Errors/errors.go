@@ -1,4 +1,4 @@
-package CustomErrors
+package Errors
 
 import (
 	"google.golang.org/grpc/codes"
@@ -58,7 +58,6 @@ func IsSiteUnavailableError(err error) bool {
 type CoordinatorUnavailableError struct {
 	message string
 }
-
 
 // Creates a new CoordinatorUnavailableError.
 //

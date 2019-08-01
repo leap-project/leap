@@ -2,6 +2,8 @@ package coordinator
 
 import (
 	"context"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"leap/Errors"
 	pb "leap/ProtoBuf"
 	"time"
@@ -63,7 +65,8 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 	mapResponses := getSuccessfulResponses(results)
 	// Determine if there were unavailable sites
 	if len(unavailableSites) == sitesLength {
-		return mapResponses, Errors.NewSiteUnavailableError()
+		c.Log.WithFields(logrus.Fields{"unavailable-sites": unavailableSites}).Error("Wasn't able to contact any of the registered sites")
+		return mapResponses, status.Error(codes.Unavailable, "Wasn't able to contact any of the registered sites")
 	} else if len(unavailableSites) > 0 {
 		c.Log.WithFields(logrus.Fields{"unavailable-sites": unavailableSites}).Warn("Wasn't able to contact all the requested sites")
 	}

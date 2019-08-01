@@ -111,6 +111,9 @@ func (sc *SiteConnector) Serve() {
 	checkErr(sc, err)
 }
 
+// This function registers a site-connector with a coordinator.
+// The site connectors sends the coordinator its ip, port, and
+// id.
 func (sc *SiteConnector) Register() {
 	conn, err := grpc.Dial(sc.Conf.CoordinatorIpPort, grpc.WithInsecure())
 	checkErr(sc, err)

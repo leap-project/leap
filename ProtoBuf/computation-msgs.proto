@@ -18,28 +18,19 @@ message ComputeResponse {
     repeated int32 unavailable_sites = 2;
 }
 
+// A request for a map computation
 message MapRequest {
     int64 id = 1;
     string req = 2;
 }
 
+// A response from a map computation
 message MapResponse {
     string response = 1;
 }
 
-// The results returned by the algorithms in different sites.
+// The map responses returned by the algorithms in different sites.
 message MapResponses {
     repeated MapResponse responses = 1;
     repeated int32 unavailable_sites = 2;
 }
-
-// An integer result for a compute response.
-message IntResponse {
-    int32 val = 1;
-}
-
-// A string result for a compute response
-message StringResponse {
-    string val = 1;
-}
-

@@ -67,7 +67,8 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         req = json.loads(request.req)
         exec(req["module"], globals())
         state = globals()["state"]
-        local_state = prep(state)
+        # local_state = prep(state)
+        local_state = state
         stop = False
         
         # Generate algo_id
@@ -82,7 +83,12 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
                 except Exception as e:
                     log.error(e)
 
-                results = coord_stub.Map(request) # Computed remotely
+                try:
+                    results = coord_stub.Map(request) # Computed remotely
+                except grpc.RpcError as e:
+                    log.error(e.details())
+                    return e
+
                 extracted_responses = self._extract_map_responses(results.responses)
                 agg_result = agg_fn[choice](extracted_responses, local_state)
                 state = update_fn[choice](agg_result, state, local_state)
@@ -109,7 +115,7 @@ def serve():
     server.add_insecure_port(args.ip_port)
     server.start()
     log.info("Server started")
-    log.info("Listening at {}".format(args.ip_port))
+    log.withFields({"ip-port": args.ip_port}).info("Listening for requests")
     while True:
         time.sleep(5)
 

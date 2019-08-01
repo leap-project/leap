@@ -49,3 +49,5 @@ pip install -e git+https://github.com/sburns/PyCap.git#egg=PyCap
 pip install numpy
 # Logging tool for python
 pip install pylogrus
+# Install Pytorch
+pip install torch

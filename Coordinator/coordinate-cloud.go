@@ -28,6 +28,10 @@ type ResultFromSite struct {
 func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponses, error) {
 	c.PendingRequests.Set(req.Id, req.Id)
 	c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
+	if c.SiteConnectors.Length() == 0 {
+		c.Log.Warn("No sites have been registered.")
+		return nil, status.Error(codes.Unavailable, "There have been no sites registered.")
+	}
 
 	results, err := c.getResultsFromSites(req)
 

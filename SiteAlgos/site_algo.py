@@ -72,16 +72,17 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         req = json.loads(request.req)
 
         exec(req["module"], globals())
+        print("Loaded module")
         site_state = req["site_state"]
         s_filter = req["filter"]        
         choice = choice_fn(site_state)
-
+        print("Choice: {}".format(choice))
         data = getRedcapData(redCapUrl, redCapToken, s_filter)
+        print("Got data")
         if 'data_prep' in globals():
             data = data_prep(data)
-            
+        print("Prepared data")
         map_result = map_fn[choice](data, site_state)
-
         res = pb.computation_msgs_pb2.MapResponse()
         res.response = map_result
         return res

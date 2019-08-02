@@ -19,13 +19,15 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-cip", "--cloud_algos_ip_port", default='127.0.0.1:70000', help="The ip and port of the cloudAlgos")
 args = parser.parse_args()
 
-
+""" Client is responsible for making the rpc call to the cloud algorithm server
+"""
 class Client():
     def __init__(self, ipPort):
         print("Initializing Client")
         self.cloud_algos_ip_port = ipPort
 
-
+    """ Creates protobuf computation request
+    """
     def _create_computation_request(self, u_module, filter):
         request = pb.computation_msgs_pb2.ComputeRequest()
         req = {}
@@ -34,7 +36,21 @@ class Client():
         request.req = json.dumps(req)
         return request
 
-
+    """ RPC call to cloud_algos
+    u_module: stringified python module containing
+        * map_fn: a list of map(data, site_state) that returns local computations at each iteration
+        * agg_fn: a list of agg(map_results, cloud_state) used to aggregate results from each site
+        * update_fn: a list of update(agg_result, site_state, cloud_state) used to update the site and cloud states
+        * choice_fn(site_state): selects the appropriate map/agg_fn depending on the state
+        * stop_fn(agg_result, site_state, cloud_state): returns true if stopping criterion is met
+        * post_fn(agg_result, site_state, cloud_state): final processing of the aggregated result to return to client
+        * data_prep(data): converts standard data schema from each site to be compatible with map_fn
+        * prep(site_state): initialization for the cloud
+        * site_state: state that is passed to the sites
+        * cloud_state: state that is only used by the cloud
+    
+    filter: query filter string to get dataset of interest
+    """
     def send_request(self, u_module, filter):
         print("Sending request from client")
         # Sets up the connection so that we can make RPC calls

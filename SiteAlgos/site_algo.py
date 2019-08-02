@@ -58,6 +58,10 @@ def serve():
 
 # RPC Service for Site Algos
 class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
+    def __init__(self, ip_port, connector_ip_port):
+        self.ip_port = ip_port
+        self.connector_ip_port = connector_ip_port
+        self.live_requests = {}
 
     """ RPC requesting for a computation to be done using
     this algorithm.
@@ -67,6 +71,7 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
     context: Boilerplate for grpc containing the context
              of the RPC."""
     def Map(self, request, context):
+        self.live_requests[request.id] = None
         log.info("Got map request")
         req_id = request.id
         req = json.loads(request.req)
@@ -85,6 +90,7 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         map_result = map_fn[choice](data, site_state)
         res = pb.computation_msgs_pb2.MapResponse()
         res.response = map_result
+        self.live_requests.pop(request.id)
         return res
 
 if __name__ == "__main__":

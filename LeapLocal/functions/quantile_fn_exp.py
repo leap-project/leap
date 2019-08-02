@@ -5,6 +5,7 @@ import numpy as np
 
 # Exponential mechanism as described in:
 # http://dimacs.rutgers.edu/~graham/pubs/slides/privdb-tutorial.pdf
+# https://www.cis.upenn.edu/~aaroth/courses/slides/Lecture3.pdf
 # TODO: Not sure how to handle medians of even numbered lists
 def map_fn1(data, state):
     print(data)

@@ -42,7 +42,6 @@ class Client():
             stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
 
             req = self._create_computation_request(u_module, filter)
-
             result = stub.Compute(req) # Computed remotely
 
             if hasattr(result, "err"):

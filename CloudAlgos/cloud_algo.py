@@ -47,13 +47,13 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     TODO: Split cloud algo udf functions from site algos
     """
     # input_req is the request sent by the client_connector
-    def _create_computation_request(self, req_id, input_req, state):
+    def _create_computation_request(self, req_id, input_req, site_state):
         request = pb.computation_msgs_pb2.MapRequest()
         request.id = req_id
         req = {}
         req["module"] = input_req["module"]
         req["filter"] = input_req["filter"]
-        req["state"] = state
+        req["site_state"] = site_state
         request.req = json.dumps(req)
         return request
 
@@ -88,8 +88,8 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         req = json.loads(request.req)
         exec(req["module"], globals())
         site_state = globals()["site_state"]
-        # local_state = prep(site_state)
-        cloud_state = site_state
+        cloud_state = prep(site_state)
+        # cloud_state = site_state
         stop = False
         
         # Generate algo_id

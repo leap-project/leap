@@ -49,7 +49,7 @@ Assume data is already in local site and available as np
 map requires PyTorch Dataset PyTorch Dataloader
 """
 def map_fn1(data, site_state):
-    batch_size = state["batch_size"]
+    batch_size = site_state["batch_size"]
     lr = site_state["lr"]
     d = site_state["d"]
     X = data[0]

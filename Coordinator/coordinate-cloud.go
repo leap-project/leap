@@ -19,12 +19,12 @@ type ResultFromSite struct {
 }
 
 // Makes a remote procedure call to a site connector with a
-// query and returns the results of computing the query on
-// multiple site algorithms.
+// map request and returns the results of computing the map
+// function on multiple sites.
 //
 // ctx: Carries value and cancellation signals across API
 //      boundaries.
-// req: Request created by algorithm in the cloud.
+// req: Map request containing user defined functions.
 func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponses, error) {
 	c.PendingRequests.Set(req.Id, req.Id)
 	c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
@@ -38,10 +38,10 @@ func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRespo
 	return &results, err
 }
 
-// Spawns a goroutine for each site that can support the
-// algorithm in the request. The responses are then received
-// through a channel and appended to the results. The results
-// are returned to the calling algorithm in the cloud.
+// Spawns a goroutine that sends a request to each site. The
+// responses are then received through a channel and appended
+// to the results. The results are returned to the calling
+// algorithm in the cloud.
 //
 // req: The compute request to be sent to each site.
 func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, error) {
@@ -67,6 +67,7 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 
 	unavailableSites := getUnavailableSites(results)
 	mapResponses := getSuccessfulResponses(results)
+
 	// Determine if there were unavailable sites
 	if len(unavailableSites) == sitesLength {
 		c.Log.WithFields(logrus.Fields{"unavailable-sites": unavailableSites}).Error("Wasn't able to contact any of the registered sites")
@@ -80,8 +81,7 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 
 // Sends an RPC carrying the compute request to a site. The
 // response is then sent through a channel to the function
-// waiting for the responses. If the site is unavailable,
-// it is removed from the map of available algos.
+// waiting for the responses.
 //
 // req: The compute request to be sent to a site.
 // site: An item from the SiteConnector map that contains the
@@ -111,10 +111,16 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 		site.status = true
 		site.statusMux.Unlock()
 	}
+
 	// Send response to goroutine waiting for responses
 	ch <- ResultFromSite{Response: response, Err: err, SiteId: site.id}
 }
 
+// Given a list of results from different sites, filter and
+// return only the error responses from sites that were
+// unavailable.
+//
+// results: A list of results from different sites.
 func getUnavailableSites(results []ResultFromSite) []int32 {
 	unavailableSites := []int32{}
 	for _, result := range results {
@@ -125,6 +131,11 @@ func getUnavailableSites(results []ResultFromSite) []int32 {
 	return unavailableSites
 }
 
+// Given a list of results from different sites, filter and
+// return only the resonses from sites that do not contain
+// an error.
+//
+// results: A list of results from different sites.
 func getSuccessfulResponses(results []ResultFromSite) pb.MapResponses {
 	successfulResponses := pb.MapResponses{Responses: []*pb.MapResponse{}, UnavailableSites: []int32{}}
 	for _, result := range results {
@@ -134,8 +145,3 @@ func getSuccessfulResponses(results []ResultFromSite) pb.MapResponses {
 	}
 	return successfulResponses
 }
-
-// TODO: Check site connector is unavailable
-// Scenario: Coordinator pings site. Site doesn't respond (but is not actually down)
-//           so site is removed from live sites. Site was not actually down, so it
-//			 doesn't register again. Coordinator doesn't know site conn is available.

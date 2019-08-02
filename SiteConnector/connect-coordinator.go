@@ -10,13 +10,12 @@ import (
 	pb "leap/ProtoBuf"
 )
 
-// Invokes algorithm in site and returns the result of per-
-// forming the algorithm on the given query to the coordinator.
+// Invokes map function in site and returns the result of run-
+// ning the function on the local data.
 //
 // ctx: Carries value and cancellation signals across API
 //      boundaries.
-// req: Request created by algorithm in the cloud and issued
-//      by coordinator.
+// req: Map request containing user defined functions.
 func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponse, error) {
 	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
 	sc.PendingRequests.Set(req.Id, req.Id)

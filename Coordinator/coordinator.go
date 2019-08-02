@@ -47,7 +47,7 @@ type SiteConnector struct {
 }
 
 // Creates a new coordinator with the configurations given
-// as the parameter.
+// from the config struct.
 //
 // config: The ip and port configuration of the coordinator.
 func NewCoordinator(config Config) *Coordinator {

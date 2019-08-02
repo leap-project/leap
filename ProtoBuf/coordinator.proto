@@ -21,13 +21,3 @@ service Coordinator {
     rpc Map (MapRequest) returns (MapResponses) {}
 
 }
-
-message SitesUnavailableError {
-    string msg = 1;
-    repeated int32 unavailable_sites = 2;
-}
-
-message SitesUnavailableWarning {
-    string msg = 1;
-    repeated int32 unavailable_sites = 2;
-}

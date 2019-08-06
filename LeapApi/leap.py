@@ -12,6 +12,8 @@ import LeapApi.codes as codes
 
 # TODO: Deal with imports. Right now, we assume the local sites and cloud have all necessary imports.
 
+
+
 class Leap():
 
     # Constructor that takes in a code representing one of
@@ -30,21 +32,24 @@ class Leap():
 
     # Returns an instance of the Leap class that will count
     # the number of selected records.
+    @staticmethod
     def Count(self):
         return Leap(codes.COUNT)
-
     # Returns an instance of the Leap class that will compute
     # a summation of selected records.
+    @staticmethod
     def Sum(self):
         return Leap(codes.SUM)
 
     # Returns an instance of the Leap class that will compute
     # the variance of selected records.
+    @staticmethod
     def Variance(self):
         return Leap(codes.VARIANCE)
 
     # Returns an instance of the Leap class that can fit a
     # federated learning model.
+    @staticmethod
     def FederatedLearning(self):
         return FedLearn(codes.FEDERATED_LEARNING)
 

@@ -3,6 +3,11 @@
 # set their own user defined functions or use one of the func-
 # tions available in LEAP
 
+import sys
+sys.path.append("../")
+import json
+import grpc
+import ProtoBuf as pb
 import LeapApi.codes as codes
 
 class Leap():
@@ -95,6 +100,42 @@ class Leap():
     # postprocessing_fn: User defined postprocessing function.
     def set_postprocessing_fn(self, postprocessing_fn):
         self.__postprocessing_fn = postprocessing_fn
+
+    def get_result(self, filter):
+        request = self.__create_computation_request("")
+
+        # Sets up the connection so that we can make RPC calls
+        with grpc.insecure_channel("127.0.0.1:70000") as channel:
+            stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
+
+            # Computed remotely
+            result = stub.Compute(request)
+
+            if hasattr(result, "err"):
+                print(result.err)
+
+            result = json.loads(result.response)
+
+
+            print("Received response")
+            print(result)
+        return result
+
+    # Uses protobuf to create a computation request.
+    def __create_computation_request(self, filter):
+        request = pb.computation_msgs_pb2.ComputeRequest()
+        req = {}
+        req["map_fn"] = self.__map_fn
+        req["agg_fn"] = self.__agg_fn
+        req["choice_fn"] = self.__choice_fn
+        req["update_fn"] = self.__update_fn
+        req["stop_fn"] = self.__stop_fn
+        req["dataprep_fn"] = self.__data_prep_fn
+        req["setup_fn"] = self.__setup_fn
+        req["post_fn"] = self.__postprocessing_fn
+        req["filter"] = filter
+        request.req = json.dumps(req)
+        return request
 
 
 # Federated Learning class that extends the main Leap class.

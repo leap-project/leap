@@ -18,6 +18,9 @@ import json
 import logging
 from pylogrus import PyLogrus, TextFormatter
 
+import env_manager
+
+
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:70000", help="The ip and port this algorithm is listening to")
@@ -86,7 +89,21 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         with grpc.insecure_channel(self.coordinator_ip_port) as channel:
             coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
             # TODO: This logic should eventually be ran in separate thread
+
+
+            # # Find what type of request this is (udf | predefined | predefined.custom)
+            # env_manager = EnvironmentManger()
+            # env_manager.set_env()
+            # ### What set_env looks like
+            # global torch
+            # import torch
+
+            # import CloudAlgos.fl_fn as fl_fn
+            # map_fn = fl_fn.map_fn
+            # global["map_fn"] = map_fn
             
+
+
             post_result = self._compute_logic(request, coord_stub)
             
             res = pb.computation_msgs_pb2.ComputeResponse()
@@ -139,6 +156,10 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             responses.append(r.response)
         return responses
 
+    def dummy(self):
+        env = env_manager.CloudUDFEnvironment()
+        env.set_env(globals())
+        pdb.set_trace()
 
 # Starts listening for RPC requests at the specified ip and
 # port.
@@ -155,6 +176,10 @@ def serve():
         time.sleep(5)
 
 if __name__ == "__main__":
+    algo_servicer = CloudAlgoServicer(args.ip_port, args.coordinator_ip_port)
+    algo_servicer.dummy()
+    pdb.set_trace()
+
     serverProcess = multiprocessing.Process(target=serve)
     serverProcess.start()
 

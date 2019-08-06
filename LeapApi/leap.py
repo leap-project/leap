@@ -10,6 +10,8 @@ import grpc
 import ProtoBuf as pb
 import LeapApi.codes as codes
 
+# TODO: Deal with imports. Right now, we assume the local sites and cloud have all necessary imports.
+
 class Leap():
 
     # Constructor that takes in a code representing one of
@@ -22,8 +24,9 @@ class Leap():
         self.__update_fn = None
         self.__stop_fn = None
         self.__data_prep_fn = None
-        self.__setup_fn = None
         self.__postprocessing_fn = None
+        self.__site_state = None
+        self.__cloud_state = None
 
     # Returns an instance of the Leap class that will count
     # the number of selected records.
@@ -87,13 +90,6 @@ class Leap():
     def set_data_prep_fn(self, data_prep_fn):
         self.__data_prep_fn = data_prep_fn
 
-    # Sets the setup function of the algorithm to be a user
-    # defined setup function.
-    #
-    # setup_fn: User defined setup function.
-    def set_setup_fn(self, setup_fn):
-        self.__setup_fn = setup_fn
-
     # Sets the postprocessing function of the algorithm to be
     # a user defined postprocessing function.
     #
@@ -101,6 +97,23 @@ class Leap():
     def set_postprocessing_fn(self, postprocessing_fn):
         self.__postprocessing_fn = postprocessing_fn
 
+    # Sets the initial state of the local site.
+    #
+    # site_state: The initial state of the site.
+    def set_site_state(self, site_state):
+        self.__site_state = site_state
+
+    # Sets the initial state of the cloud algo.
+    #
+    # cloud_state: The initial state of the cloud algo.
+    def set_cloud_state(self, cloud_state):
+        self.__cloud_state = cloud_state
+
+    # Gets the result of performing the selected algorithm
+    # on the filtered data.
+    #
+    # filter: A SQL string filter to select the data to perform
+    #         a computation.
     def get_result(self, filter):
         request = self.__create_computation_request("")
 
@@ -122,6 +135,9 @@ class Leap():
         return result
 
     # Uses protobuf to create a computation request.
+    #
+    # filter: The SQL string filter that is passed as an
+    #         argument to the request.
     def __create_computation_request(self, filter):
         request = pb.computation_msgs_pb2.ComputeRequest()
         req = {}

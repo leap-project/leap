@@ -48,7 +48,7 @@ port.
 No args"""
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(), server)
+    pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(args.ip_port, args.connector_ip_port), server)
     server.add_insecure_port(args.ip_port)
     server.start()
     log.info("Server started")
@@ -95,6 +95,7 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
             data = data_prep(data)
         print("Prepared data")
         map_result = map_fn[choice](data, site_state)
+        print("map_result: {}".format(map_result))
         return map_result
 
     def get_data(self, req):

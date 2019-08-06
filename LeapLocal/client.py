@@ -11,7 +11,7 @@ class Client():
         self.cloud = cloud        
     
     def send_request(self, u_module):
-        filter = "" # select everything
+        filter = "[age] > 50 and [bmi] < 25" # select everything
 
         request = CloudRequest()
         req = {}

@@ -156,11 +156,6 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             responses.append(r.response)
         return responses
 
-    def dummy(self):
-        env = env_manager.CloudUDFEnvironment()
-        env.set_env(globals())
-        pdb.set_trace()
-
 # Starts listening for RPC requests at the specified ip and
 # port.
 #
@@ -176,10 +171,6 @@ def serve():
         time.sleep(5)
 
 if __name__ == "__main__":
-    algo_servicer = CloudAlgoServicer(args.ip_port, args.coordinator_ip_port)
-    algo_servicer.dummy()
-    pdb.set_trace()
-
     serverProcess = multiprocessing.Process(target=serve)
     serverProcess.start()
 

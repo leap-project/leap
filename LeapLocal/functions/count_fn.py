@@ -3,7 +3,7 @@ import json
 import inspect
 
 # Sum a particular column
-def map_fn1(data, site_state):
+def map_fn1(data, state):
     result = {
         "count": len(data)
     }
@@ -11,7 +11,7 @@ def map_fn1(data, site_state):
 
 map_fn = [map_fn1]
 
-def agg_fn1(map_results, cloud_state):
+def agg_fn1(map_results):
     s = 0   
     for result in map_results:
         result = json.loads(result)
@@ -24,25 +24,25 @@ agg_fn = [agg_fn1]
 def choice_fn(site_state):
     return 0
 
-def update_fn1(agg_result, site_state, cloud_state):
-    site_state["i"] += 1
-    return site_state
+def update_fn1(agg_result, state):
+    state["i"] += 1
+    return state
 
 update_fn = [update_fn1]
 
-def stop_fn(agg_result, site_state, cloud_state):
-    return site_state["i"] == 1
+def dataprep_fn(data):
+    return data
 
-def post_fn(agg_result, site_state, cloud_state):
+def stop_fn(agg_result, state):
+    return state["i"] == 1
+
+def postprocessing_fn(agg_result, state):
     return agg_result
 
-def init_site_state():
-    site_state = {
+def init_state_fn():
+    state = {
         "i": 0,
     }
-    return site_state
+    return state
 
-def init_cloud_state():
-    cloud_state = {}
-    return cloud_state
 

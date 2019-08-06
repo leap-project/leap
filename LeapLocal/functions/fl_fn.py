@@ -48,10 +48,10 @@ class AverageMeter(object):
 Assume data is already in local site and available as np
 map requires PyTorch Dataset PyTorch Dataloader
 """
-def map_fn1(data, state):
-    batch_size = state["batch_size"]
-    lr = state["lr"]
-    d = state["d"]
+def map_fn1(data, site_state):
+    batch_size = site_state["batch_size"]
+    lr = site_state["lr"]
+    d = site_state["d"]
     X = data[0]
     Y = data[1]
     dataset = NPDataset(X, Y)
@@ -59,18 +59,17 @@ def map_fn1(data, state):
     criterion = torch.nn.MSELoss()
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
 
-    if 'loss_history' in state:
-        print("loss: {}".format(state["loss_history"][-1]))
+    if 'loss_history' in site_state:
+        print("loss: {}".format(site_state["loss_history"][-1]))
 
     # Update model with new weights
-    if 'model_weights' in state:
-        model_weights = state["model_weights"]
+    if 'model_weights' in site_state:
+        model_weights = site_state["model_weights"]
         for i, (name, params) in enumerate(model.named_parameters()):
             params.data = torch.tensor(model_weights[i])
 
     # Accumulate gradients
     loss_meter = AverageMeter()
-
     for i, (X, Y) in enumerate(dataloader):
         X = X.float()
         Y = Y.float()
@@ -78,13 +77,9 @@ def map_fn1(data, state):
         loss = criterion(output, Y)
         loss_meter.update(loss.item())
         loss.backward()
-        if i == state["iters_per_epoch"]:
+        if i == site_state["iters_per_epoch"]:
             break
-            # optimizer.step()
-            # optimizer.zero_grad()
-            # print("Loss: {}".format(loss))
-
-
+    # Store gradient as list
     client_grad = []
     for name, params in model.named_parameters():
         if params.requires_grad:
@@ -100,7 +95,7 @@ def map_fn1(data, state):
 
 map_fn = [map_fn1]
 
-def agg_fn1(map_results, local_state):
+def agg_fn1(map_results, cloud_state):
     first_result = json.loads(map_results[0])
     agg_grad = first_result['grads']    
     loss_meter = AverageMeter()
@@ -122,19 +117,19 @@ def agg_fn1(map_results, local_state):
 agg_fn = [agg_fn1]
 
 # Returns which map/agg fn to run
-def choice_fn(state):
+def choice_fn(site_state):
     return 0
 
-def update_fn1(agg_result, state, local_state):
-    state["i"] += 1
-    if "loss_history" in state:
-        state["loss_history"].append(agg_result["loss"])
+def update_fn1(agg_result, site_state, cloud_state):
+    site_state["i"] += 1
+    if "loss_history" in site_state:
+        site_state["loss_history"].append(agg_result["loss"])
     else:
-        state["loss_history"] = [agg_result["loss"]]
+        site_state["loss_history"] = [agg_result["loss"]]
     
     # update model weights
-    model = local_state["model"]
-    optimizer = local_state["optimizer"]
+    model = cloud_state["model"]
+    optimizer = cloud_state["optimizer"]
     agg_grad = agg_result["grad"]
     for i, (name, params) in enumerate(model.named_parameters()):
         if params.requires_grad:
@@ -145,15 +140,15 @@ def update_fn1(agg_result, state, local_state):
     for name, params in model.named_parameters():
         model_weights.append(params.cpu().tolist())
 
-    state["model_weights"] = model_weights
-    return state
+    site_state["model_weights"] = model_weights
+    return site_state
 
 update_fn = [update_fn1]
 
-def stop_fn(agg_result, state, local_state):
-    return state["i"] == state["max_iters"]
+def stop_fn(agg_result, site_state, cloud_state):
+    return site_state["i"] == site_state["max_iters"]
 
-def post_fn(agg_result, state, local_state):
+def post_fn(agg_result, site_state, cloud_state):
     return agg_result
 
 # Formats the raw data into data usable by map_fn
@@ -164,10 +159,10 @@ def data_prep(data):
     Y = data["grade"].astype('long').to_numpy()
     return X,Y
 
-# Initializes local variables (not passed to the site) and updates state in cloud_api
-def prep(state):
-    d = state["d"]
-    lr = state["lr"]
+# Initializes local variables (not passed to the site) and updates site_state in cloud_api
+def prep(site_state):
+    d = site_state["d"]
+    lr = site_state["lr"]
     model = LinearModel(d, 1)
     optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
@@ -176,18 +171,18 @@ def prep(state):
     for name, params in model.named_parameters():
         if params.requires_grad:
             model_weights.append(params.cpu().tolist())
-    state["model_weights"] = model_weights
-    local_state = {
+    site_state["model_weights"] = model_weights
+    cloud_state = {
         "model": model,
         "optimizer": optimizer
     }
-    return local_state
+    return cloud_state
 
-state = {
+site_state = {
     "i": 0,
     "d":2,
     "iters_per_epoch":1,
-    "max_iters":100,
+    "max_iters":5,
     "batch_size":1,
     "lr":1e-5
 }

@@ -11,8 +11,6 @@ def map_fn1(data, site_state):
     }
     return json.dumps(result)
 
-
-
 map_fn = [map_fn1]
 
 def agg_fn1(map_results):

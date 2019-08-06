@@ -2,22 +2,23 @@ import pdb
 import utils
 import json
 
+class CloudRequest():
+    def __init__(self):
+        self.req = None
+
 class Client():
     def __init__(self, cloud):
         self.cloud = cloud        
     
     def send_request(self, u_module):
-        q_selector = {} # select everything
+        filter = "" # select everything
 
+        request = CloudRequest()
         req = {}
         req["module"] = u_module 
+        req["filter"] = filter
+        request.req = json.dumps(req)
 
-        result = self.cloud.handle_request(req)
+        result = self.cloud.Compute(request)
         print("Result: {}".format(result))
         return result
-    
-
-    def send_fl_request(self):
-        pass
-    
-

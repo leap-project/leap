@@ -2,30 +2,30 @@ import pdb
 import json
 import utils
 
-class Cloud():
-    def __init__(self, sites):
-        self.sites = sites
+from CloudAlgos.cloud_algo import CloudAlgoServicer
 
-    def handle_request(self, req):
-        exec(req["module"], globals())
-        state = globals()["state"]
-        local_state = prep(state)
-        stop = False
-        while not stop:
-            map_results = []
-            choice = choice_fn(state)
+# data template for site request
+class SiteRequest():
+    def __init__(self):
+        self.id = None
+        self.req = None
 
-            site_req = {
-                "module": req["module"],
-                "state": json.dumps(state)
-            }
-            site_req = json.dumps(site_req)
-            for site in self.sites:
-                site_res = site.local_compute(site_req)
-                map_results.append(site_res)
-            
-            agg_result = agg_fn[choice](map_results, local_state)
-            state = update_fn[choice](agg_result, state, local_state)
-            stop = stop_fn(agg_result, state, local_state)
-        return post_fn(agg_result, state, local_state)
-    
+class LocalCloudAlgoServicer(CloudAlgoServicer):
+    def __init__(self, coord):
+        self.coord = coord
+        self.id_count = 0
+        self.live_requests = {}
+
+    def _create_computation_request(self, req_id, input_req, site_state):
+        request = SiteRequest()
+        request.id = req_id
+        req = {}
+        req["module"] = input_req["module"]
+        req["filter"] = input_req["filter"]
+        req["site_state"] = site_state
+        request.req = json.dumps(req)
+        return request
+
+    def Compute(self, request):
+        post_result = self._compute_logic(request, self.coord)
+        return json.dumps(post_result)

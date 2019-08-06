@@ -68,24 +68,33 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
              of the RPC."""
     def Map(self, request, context):
         log.info("Got map request")
+        
+        map_result = self.map_logic(request)        
+        res = pb.computation_msgs_pb2.MapResponse()
+        res.response = map_result
+        return res
+    
+    def map_logic(self, request):
         req_id = request.id
         req = json.loads(request.req)
-
         exec(req["module"], globals())
         print("Loaded module")
         site_state = req["site_state"]
-        s_filter = req["filter"]        
+                
         choice = choice_fn(site_state)
         print("Choice: {}".format(choice))
-        data = getRedcapData(redCapUrl, redCapToken, s_filter)
+        data = self.get_data(req)
         print("Got data")
         if 'data_prep' in globals():
             data = data_prep(data)
         print("Prepared data")
         map_result = map_fn[choice](data, site_state)
-        res = pb.computation_msgs_pb2.MapResponse()
-        res.response = map_result
-        return res
+        return map_result
+
+    def get_data(self, req):
+        s_filter = req["filter"]
+        data = getRedcapData(redCapUrl, redCapToken, s_filter)
+        return data
 
 if __name__ == "__main__":
     serverProcess = multiprocessing.Process(target=serve)

@@ -1,6 +1,10 @@
+import sys
+sys.path.append("../")
+
 from client import Client
-from cloud import Cloud
-from localsite import Site
+from cloud import LocalCloudAlgoServicer
+from localsite import LocalSiteAlgoServicer
+from coordinator import LocalCoordinator
 
 import textwrap
 import pdb
@@ -42,12 +46,14 @@ def fl_exp(client):
 
 if __name__=="__main__":  
     sites = []
-    sites.append(Site(0))
+    sites.append(LocalSiteAlgoServicer(0))
     
-    cloud = Cloud(sites)
+    coordinator = LocalCoordinator(sites)
 
+    cloud = LocalCloudAlgoServicer(coordinator)
+    
     client = Client(cloud)
     
-    fl_exp(client)
+    count_exp(client)
     pdb.set_trace()
     

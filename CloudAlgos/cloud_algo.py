@@ -68,7 +68,6 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         return new_id       
 
     """ Coordinates computations across multiple local sites and returns result to client
-    TODO: Propagte name changes for site_state and cloud_state name
     req["module"]: stringified python module containing
         * map_fn: a list of map(data, site_state) that returns local computations at each iteration
         * agg_fn: a list of agg(map_results, cloud_state) used to aggregate results from each site
@@ -80,53 +79,60 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         * prep(site_state): initialization for the cloud
         * site_state: state that is passed to the sites
         * cloud_state: state that is only used by the cloud
-    
+
     req["filter"]: query filter string to get dataset of interest
     """
     def Compute(self, request, context):
-        # TODO: This logic should eventually be ran in separate thread
+        with grpc.insecure_channel(self.coordinator_ip_port) as channel:
+            coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
+            # TODO: This logic should eventually be ran in separate thread
+            
+            post_result = self._compute_logic(request, coord_stub)
+            
+            res = pb.computation_msgs_pb2.ComputeResponse()
+            res.response = json.dumps(post_result)
+        return res
+
+    def _compute_logic(self, request, coord_stub):
         req = json.loads(request.req)
         exec(req["module"], globals())
-        site_state = globals()["site_state"]
-        cloud_state = prep(site_state)
+        site_state = init_site_state()
+        cloud_state = init_cloud_state()
         # cloud_state = site_state
-        stop = False
         
         # Generate algo_id
         req_id = self._generate_req_id()
-        with grpc.insecure_channel(self.coordinator_ip_port) as channel:
-            coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
-            while not stop:
-                map_results = []
-                # Choose which map/agg/update_fn to use
-                choice = choice_fn(site_state)
-                try:
-                    request = self._create_computation_request(req_id, req, site_state)               
-                except Exception as e:
-                    log.error(e)
 
-                try:
-                    # Get result from each site through coordinator
-                    results = coord_stub.Map(request) 
-                except grpc.RpcError as e:
-                    log.error(e.details())
-                    return e
+        stop = False
+        while not stop:
+            map_results = []
+            # Choose which map/agg/update_fn to use
+            choice = choice_fn(site_state)
+            try:
+                site_request = self._create_computation_request(req_id, req, site_state)               
+            except Exception as e:
+                log.error(e)
 
-                extracted_responses = self._extract_map_responses(results.responses)
-                
-                # Aggregate results from each site
-                agg_result = agg_fn[choice](extracted_responses, cloud_state)
-                
-                # Update the state
-                site_state = update_fn[choice](agg_result, site_state, cloud_state)
+            try:
+                # Get result from each site through coordinator
+                results = coord_stub.Map(site_request) 
+            except grpc.RpcError as e:
+                log.error(e.details())
+                return e
 
-                # Decide to stop or continue
-                stop = stop_fn(agg_result, site_state, cloud_state)
+            extracted_responses = self._extract_map_responses(results.responses)
             
-            res = pb.computation_msgs_pb2.ComputeResponse()
-            res.response = json.dumps(post_fn(agg_result, site_state, cloud_state))
-        return res
-    
+            # Aggregate results from each site
+            agg_result = agg_fn[choice](extracted_responses, cloud_state)
+            
+            # Update the state
+            site_state = update_fn[choice](agg_result, site_state, cloud_state)
+
+            # Decide to stop or continue
+            stop = stop_fn(agg_result, site_state, cloud_state)
+        post_result = post_fn(agg_result, site_state, cloud_state)
+        return post_result
+
     def _extract_map_responses(self, pb_responses):
         responses = []
         for r in pb_responses:

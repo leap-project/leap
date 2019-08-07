@@ -23,26 +23,24 @@ def predefined_count_exp(cloud):
     module = functions.count_fn
     local_leap.send_request()
 
-# def count_exp_dp(client):
-#     client.send_request(inspect.getsource(functions.count_fn_dp))
+def udf_count_exp(cloud):
+    selector = "[age] > 50 and [bmi] < 25"
+    leap_udf = leap_fn.UDF()
+    leap_udf.selector = selector
+    module = functions.count_fn
+    leap_udf.map_fns = module.map_fns
+    leap_udf.update_fns = module.update_fns
+    leap_udf.agg_fns = module.agg_fns
+    leap_udf.choice_fn = module.choice_fn
+    leap_udf.stop_fn = module.stop_fn
+    leap_udf.dataprep_fn = module.dataprep_fn
+    leap_udf.postprocessing_fn = module.postprocessing_fn
+    leap_udf.init_state_fn = module.init_state_fn
+    
+    local_leap = leap.LocalLeap(leap_udf, cloud)
+    module = functions.count_fn
+    local_leap.send_request()
 
-# def sum_exp(client):
-#     client.send_request(inspect.getsource(functions.sum_fn))
-
-# def mean_exp(client):    
-#     client.send_request(inspect.getsource(functions.mean_fn))
-
-# def var_exp(client):
-#     client.send_request(inspect.getsource(functions.var_fn))
-
-# def quantile_exp(client):
-#     client.send_request(inspect.getsource(functions.quantile_fn))
-
-# def quantile_exp_dp(client):
-#     client.send_request(inspect.getsource(functions.quantile_fn_exp))
-
-# def fl_exp(client):
-#     client.send_request(inspect.getsource(functions.fl_fn))
 
 if __name__=="__main__":  
     sites = []
@@ -52,6 +50,6 @@ if __name__=="__main__":
 
     cloud = LocalCloudAlgoServicer(coordinator)
 
-    predefined_count_exp(cloud)
+    udf_count_exp(cloud)
     pdb.set_trace()
     

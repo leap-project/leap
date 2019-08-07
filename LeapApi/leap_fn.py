@@ -57,6 +57,11 @@ class UDF(LeapFunction):
     def __init__(self):
         super().__init__()
     
+    def create_request(self):
+        req = super().create_request()
+        req["leap_type"] = codes.UDF
+        return req
+        
     def validate(self):
         pass
     

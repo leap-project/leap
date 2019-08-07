@@ -12,7 +12,7 @@ import logging
 from pylogrus import PyLogrus, TextFormatter
 
 import Utils.env_manager as env_manager
-
+import LeapApi.codes as codes
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
@@ -64,6 +64,9 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         self.connector_ip_port = connector_ip_port
         self.live_requests = {}
 
+    def _get_response_obj(self):
+        return pb.computation_msgs_pb2.MapResponse()
+
     """ RPC requesting for a computation to be done using
     this algorithm.
     
@@ -75,11 +78,16 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         self.live_requests[request.id] = None
         log.info("Got map request")
         
-        env = env_manager.SiteUDFEnvironment()
-        env.set_env(globals(), request)        
+        req = json.loads(request.req)
+        leap_type = req["leap_type"]
+        if leap_type == codes.UDF:
+            env = env_manager.SiteUDFEnvironment()
+        elif leap_type == codes.PREDEFINED:
+            env = env_manager.SitePredefinedEnvironment()   
+        env.set_env(globals(), req)        
 
         map_result = self.map_logic(request)        
-        res = pb.computation_msgs_pb2.MapResponse()
+        res = self._get_response_obj()
         res.response = map_result
         self.live_requests.pop(request.id)
         return res
@@ -99,7 +107,7 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         return map_result
 
     def get_data(self, req):
-        s_filter = req["filter"]
+        s_filter = req["selector"]
         data = getRedcapData(redCapUrl, redCapToken, s_filter)
         return data
 

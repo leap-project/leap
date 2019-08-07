@@ -22,6 +22,7 @@ import copy
 import sys
 sys.path.append("../")
 import Utils.env_manager as env_manager
+import LeapApi.codes as codes
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -71,6 +72,15 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.id_count += 1
         return new_id       
 
+
+    def _get_coord_stub(self):
+        with grpc.insecure_channel(self.coordinator_ip_port) as channel:
+            coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
+            return coord_stub
+
+    def _get_response_obj(self):
+        return pb.computation_msgs_pb2.ComputeResponse()
+
     """ Coordinates computations across multiple local sites and returns result to client
     req["module"]: stringified python module containing
         * map_fn: a list of map(data, site_state) that returns local computations at each iteration
@@ -88,27 +98,25 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     """
     def Compute(self, request, context):
         log.info("received request")
-        with grpc.insecure_channel(self.coordinator_ip_port) as channel:
-            coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
-            # TODO: Find what type of request this is (udf | predefined | predefined.custom)
-            # TODO: minimize json loading
-            req = json.loads(request.req)
-            algo_code = req["algo_code"]
-            leap_type = req["leap_type"]
+        coord_stub = self._get_coord_stub()
 
-            if leap_type == 1:
-                env = env_manager.CloudUDFEnvironment()
-            elif leap_type == 2:
-                env = env_manager.CloudPredefinedEnvironment()
-            elif leap_type == 3:
-                env = env_manager.CloudFLEnvironment()
-            
-            env.set_env(globals(), req)        
+        # TODO: Find what type of request this is (udf | predefined | predefined.custom)
+        # TODO: minimize json loading
+        req = json.loads(request.req)
+        algo_code = req["algo_code"]
+        leap_type = req["leap_type"]
+        if leap_type == codes.UDF:
+            env = env_manager.CloudUDFEnvironment()
+        elif leap_type == codes.PREDEFINED:
+            env = env_manager.CloudPredefinedEnvironment()
+        # elif leap_type == codes.FEDERATED_LEARNING:
+            # env = env_manager.CloudFLEnvironment()
+        env.set_env(globals(), req)        
 
-            post_result = self._compute_logic(request, coord_stub)
-            
-            res = pb.computation_msgs_pb2.ComputeResponse()
-            res.response = json.dumps(post_result)
+        post_result = self._compute_logic(request, coord_stub)
+        
+        res = self._get_response_obj()
+        res.response = json.dumps(post_result)
         return res
 
     def _compute_logic(self, request, coord_stub):

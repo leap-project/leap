@@ -6,6 +6,7 @@ from pylogrus import PyLogrus, TextFormatter
 import json
 
 import LeapLocal.functions as leap_fn
+import Utils.env_utils as env_utils
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -51,15 +52,10 @@ class SitePredefinedEnvironment(SiteEnvironment):
         algo_code = req["algo_code"]
         module = getattr(leap_fn, algo_code)
         # TODO: Run only the parts that are needed from module
-        exec(module, context)
-        if req["choice_fn"] != "":
-            exec(req["choice_fn"], context)
-        if req["dataprep_fn"] != "":
-            exec(req["dataprep_fn"], context)
-        if req["map_fns"] != "":
-            exec(req["map_fns"], globals())
-            map_fn = update_fns()
-            context["map_fn"] = update_fn
+        env_utils.load_fn("choice_fn", req, module, context)
+        env_utils.load_fn("dataprep_fn", req, module, context)
+        env_utils.load_from_fn_generator("map_fns", "map_fn", req, module, context)
+
 
 class CloudEnvironment(Environment):
     def __init__(self):
@@ -102,24 +98,12 @@ class CloudPredefinedEnvironment(CloudEnvironment):
         # Responsible for loading predefined functions if not exists in request
         algo_code = req["algo_code"]
         module = getattr(leap_fn, algo_code)
-        exec(module, context)
-        # Overwrite individual fns
-        if req["init_state_fn"] != "":
-            exec(req["init_state_fn"], context)
-        if req["choice_fn"] != "":
-            exec(req["choice_fn"], context)
-        if req["stop_fn"] != "":
-            exec(req["stop_fn"], context)
-        if req["postprocessing_fn"] != "":
-            exec(req["postprocessing_fn"], context)
-
-        if req["update_fns"] != "":
-            exec(req["update_fns"], globals())
-            update_fn = update_fns()
-            context["update_fn"] = update_fn
-        if req["agg_fn"] != "":
-            exec(req["agg_fn"], globals())
-            agg_fn = agg_fns()
-            context["agg_fn"] = agg_fn
         
+        env_utils.load_fn("init_state_fn", req, module, context)
+        env_utils.load_fn("choice_fn", req, module, context)
+        env_utils.load_fn("stop_fn", req, module, context)
+        env_utils.load_fn("postprocessing_fn", req, module, context)
+
+        env_utils.load_from_fn_generator("update_fns", "update_fn", req, module, context)
+        env_utils.load_from_fn_generator("agg_fns", "agg_fn", req, module, context)
         

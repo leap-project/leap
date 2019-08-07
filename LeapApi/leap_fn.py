@@ -18,7 +18,7 @@ class LeapFunction():
 
     # Constructor that takes in a code representing one of
     # the available algorithms in Leap.
-    def __init__(self, is_local=False):
+    def __init__(self):
         self.map_fns = None
         self.agg_fns = None
         self.update_fns = None
@@ -27,6 +27,31 @@ class LeapFunction():
         self.dataprep_fn = None
         self.postprocessing_fn = None
         self.init_state_fn = None
+        self.selector = None
+
+    def create_request(self):
+        req = {}
+        map_fns = leap_utils.fn_to_string(self.map_fns)
+        agg_fns = leap_utils.fn_to_string(self.agg_fns)
+        update_fns = leap_utils.fn_to_string(self.update_fns)
+        choice_fn = leap_utils.fn_to_string(self.choice_fn)
+        stop_fn = leap_utils.fn_to_string(self.stop_fn)
+        dataprep_fn = leap_utils.fn_to_string(self.dataprep_fn)
+        postprocessing_fn = leap_utils.fn_to_string(self.postprocessing_fn)
+        init_state_fn = leap_utils.fn_to_string(self.init_state_fn)
+
+        req["map_fns"] = map_fns
+        req["agg_fns"] = agg_fns
+        req["update_fns"] = update_fns
+        req["choice_fn"] = choice_fn
+        req["stop_fn"] = stop_fn
+        req["dataprep_fn"] = dataprep_fn
+        req["postprocessing_fn"] = postprocessing_fn
+        req["init_state_fn"] = init_state_fn
+        req["selector"] = self.selector
+
+        return req
+
 
 class UDF(LeapFunction):
     def __init__(self):
@@ -43,12 +68,11 @@ class PredefinedFunction(LeapFunction):
     def validate(self):
         pass
 
-    # Takes a json request and adds custom attributes    
-    def modify_req(self, filter, req):
+    def create_request(self):
+        req = super().create_request()
         req["algo_code"] = self.algo_code
         req["leap_type"] = codes.PREDEFINED
         return req
-
 
 # Federated Learning class that extends the main Leap class.
 class FedLearnFunction(PredefinedFunction):

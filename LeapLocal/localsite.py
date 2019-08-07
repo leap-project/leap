@@ -10,14 +10,11 @@ class SiteResponse():
 
 class LocalSiteAlgoServicer(SiteAlgoServicer):
     def __init__(self, site_id):
+        self.live_requests = {}
         self.site_id = site_id
 
-    # Return: f(q(data)) where data corresponds the data for data_id
-    def Map(self, request):
-        map_result = self.map_logic(request)
-        site_response = SiteResponse()
-        site_response.response = map_result
-        return site_response
+    def _get_response_obj(self):
+        return SiteResponse()
 
     # def _load_data(self, data_id):
     #     if data_id == 0:

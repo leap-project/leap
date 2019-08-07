@@ -15,7 +15,7 @@ class LocalCoordinator():
     def Map(self, site_request):
         agg_result = []
         for site in self.sites:
-            site_response = site.Map(site_request)
+            site_response = site.Map(site_request, None)
             agg_result.append(site_response)
         coord_response = CoordinatorResponse()
         coord_response.responses = agg_result

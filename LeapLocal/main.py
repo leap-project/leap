@@ -1,25 +1,27 @@
 import sys
 sys.path.append("../")
 
-from local_leap import LocalLeap
 from cloud import LocalCloudAlgoServicer
 from localsite import LocalSiteAlgoServicer
 from coordinator import LocalCoordinator
 import LeapApi.leap as leap
+import LeapApi.leap_fn as leap_fn
 
 import textwrap
 import pdb
 import inspect
 
-import LeapLocal.functions as leap_fn
+import LeapLocal.functions as functions
 
 
 
-def predefined_count_exp(client):
-    filter = "[age] > 50 and [bmi] < 25"
-    leap_udf = leap.PredefinedFunction(leap.codes.COUNT_ALGO)
-    module = leap_fn.count_fn
-    local_leap_udf.send_request(filter)
+def predefined_count_exp(cloud):
+    selector = "[age] > 50 and [bmi] < 25"
+    leap_predef = leap_fn.PredefinedFunction(leap.codes.COUNT_ALGO)
+    leap_predef.selector = selector
+    local_leap = leap.LocalLeap(leap_predef, cloud)
+    module = functions.count_fn
+    local_leap.send_request()
 
 # def count_exp_dp(client):
 #     client.send_request(inspect.getsource(functions.count_fn_dp))
@@ -49,9 +51,7 @@ if __name__=="__main__":
     coordinator = LocalCoordinator(sites)
 
     cloud = LocalCloudAlgoServicer(coordinator)
-    
-    client = LocalLeap(cloud)
 
-    predefined_count_exp(client)
+    predefined_count_exp(cloud)
     pdb.set_trace()
     

@@ -28,15 +28,13 @@ class Leap(ABC):
     # # Gets the result of performing the selected algorithm
     # # on the filtered data.
     # #
-    # # filter: A SQL string filter to select the data to perform
-    # #         a computation.
-    def send_request(self, filter):
-        request = self._create_computation_request(filter)
+    def send_request(self):
+        request = self._create_computation_request()
             
         compute_stub = self._get_compute_stub()
 
         # Computed remotely
-        result = compute_stub.Compute(request)
+        result = compute_stub.Compute(request, None)
         
         result = json.loads(result.response)
 
@@ -47,12 +45,10 @@ class Leap(ABC):
 
     # Uses protobuf to create a computation request.
     #
-    # filter: The SQL string filter that is passed as an
-    #         argument to the request.
-    def _create_computation_request(self, filter):
+    def _create_computation_request(self):
         request = self._create_request_obj()
 
-        req = self.leap_function.create_request(filter)
+        req = self.leap_function.create_request()
         request.req = json.dumps(req)
         return request
 

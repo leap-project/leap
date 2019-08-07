@@ -3,12 +3,13 @@ import json
 import utils
 
 from CloudAlgos.cloud_algo import CloudAlgoServicer
-
+from LeapLocal.localsite import SiteResponse
 # data template for site request
 class SiteRequest():
     def __init__(self):
         self.id = None
         self.req = None
+
 
 class LocalCloudAlgoServicer(CloudAlgoServicer):
     def __init__(self, coord):
@@ -24,6 +25,9 @@ class LocalCloudAlgoServicer(CloudAlgoServicer):
         request.req = json.dumps(req)
         return request
 
-    def Compute(self, request):
-        post_result = self._compute_logic(request, self.coord)
-        return json.dumps(post_result)
+    def _get_coord_stub(self):
+        return self.coord
+
+    def _get_response_obj(self):
+        return SiteResponse()
+

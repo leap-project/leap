@@ -17,6 +17,7 @@ import pdb
 import json
 import logging
 from pylogrus import PyLogrus, TextFormatter
+import copy
 
 import env_manager
 
@@ -50,13 +51,11 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     TODO: Split cloud algo udf functions from site algos
     """
     # input_req is the request sent by the client_connector
-    def _create_computation_request(self, req_id, input_req, site_state):
+    def _create_computation_request(self, req_id, req, state):
         request = pb.computation_msgs_pb2.MapRequest()
         request.id = req_id
-        req = {}
-        req["module"] = input_req["module"]
-        req["filter"] = input_req["filter"]
-        req["site_state"] = site_state
+        req = req.copy()
+        req["state"] = state
         request.req = json.dumps(req)
         return request
 
@@ -86,23 +85,16 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     req["filter"]: query filter string to get dataset of interest
     """
     def Compute(self, request, context):
+        log.info("received request")
         with grpc.insecure_channel(self.coordinator_ip_port) as channel:
             coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
             # TODO: This logic should eventually be ran in separate thread
-
-
-            # # Find what type of request this is (udf | predefined | predefined.custom)
-            # env_manager = EnvironmentManger()
-            # env_manager.set_env()
-            # ### What set_env looks like
-            # global torch
-            # import torch
-
-            # import CloudAlgos.fl_fn as fl_fn
-            # map_fn = fl_fn.map_fn
-            # global["map_fn"] = map_fn
             
 
+            # TODO: Find what type of request this is (udf | predefined | predefined.custom)
+
+            env = env_manager.CloudUDFEnvironment()
+            env.set_env(globals(), request)        
 
             post_result = self._compute_logic(request, coord_stub)
             
@@ -111,12 +103,9 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         return res
 
     def _compute_logic(self, request, coord_stub):
+        state = init_state_fn()
         req = json.loads(request.req)
-        exec(req["module"], globals())
-        site_state = init_site_state()
-        cloud_state = init_cloud_state()
-        # cloud_state = site_state
-        
+
         # Generate algo_id
         req_id = self._generate_req_id()
 
@@ -124,9 +113,9 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         while not stop:
             map_results = []
             # Choose which map/agg/update_fn to use
-            choice = choice_fn(site_state)
+            choice = choice_fn(state)
             try:
-                site_request = self._create_computation_request(req_id, req, site_state)               
+                site_request = self._create_computation_request(req_id, req, state)               
             except Exception as e:
                 log.error(e)
 
@@ -140,14 +129,14 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             extracted_responses = self._extract_map_responses(results.responses)
             
             # Aggregate results from each site
-            agg_result = agg_fn[choice](extracted_responses, cloud_state)
+            agg_result = agg_fn[choice](extracted_responses)
             
             # Update the state
-            site_state = update_fn[choice](agg_result, site_state, cloud_state)
+            state = update_fn[choice](agg_result, state)
 
             # Decide to stop or continue
-            stop = stop_fn(agg_result, site_state, cloud_state)
-        post_result = post_fn(agg_result, site_state, cloud_state)
+            stop = stop_fn(agg_result, state)
+        post_result = postprocessing_fn(agg_result, state)
         return post_result
 
     def _extract_map_responses(self, pb_responses):

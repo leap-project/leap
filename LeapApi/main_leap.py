@@ -2,17 +2,16 @@ import sys
 sys.path.append("../")
 import LeapApi.leap as leap
 import pdb
-
+import json
 import LeapLocal.functions as leap_fn
 
 def main():
     leap_udf = leap.UDF()
     module = leap_fn.count_fn
-    leap_udf.map_fn = module.map_fn
-    leap_udf.update_fn = module.update_fn
-    leap_udf.agg_fn = module.agg_fn
+    leap_udf.get_map_fn = module.get_map_fn
+    leap_udf.get_update_fn = module.get_update_fn
+    leap_udf.get_agg_fn = module.get_agg_fn
     leap_udf.choice_fn = module.choice_fn
-    leap_udf.update_fn = module.update_fn
     leap_udf.stop_fn = module.stop_fn
     leap_udf.dataprep_fn = module.dataprep_fn
     leap_udf.postprocessing_fn = module.postprocessing_fn

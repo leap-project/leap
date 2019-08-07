@@ -20,10 +20,10 @@ class Leap():
     # Constructor that takes in a code representing one of
     # the available algorithms in Leap.
     def __init__(self):
-        self.map_fn = []
-        self.agg_fn = []
+        self.get_map_fn = None
+        self.get_agg_fn = None
+        self.get_update_fn = None
         self.choice_fn = None
-        self.update_fn = []
         self.stop_fn = None
         self.dataprep_fn = None
         self.postprocessing_fn = None
@@ -35,7 +35,7 @@ class Leap():
     # filter: A SQL string filter to select the data to perform
     #         a computation.
     def send_request(self, filter):
-        request = self.__create_computation_request("")
+        request = self._create_computation_request("")
 
         # Sets up the connection so that we can make RPC calls
         with grpc.insecure_channel("127.0.0.1:70000") as channel:
@@ -58,28 +58,29 @@ class Leap():
     #
     # filter: The SQL string filter that is passed as an
     #         argument to the request.
-    def __create_computation_request(self, filter):
+    def _create_computation_request(self, filter):
         request = pb.computation_msgs_pb2.ComputeRequest()
 
         req = {}
-        map_fn = [inspect.getsource(m_fn) for m_fn in self.map_fn]
-        agg_fn = [inspect.getsource(a_fn) for a_fn in self.agg_fn]
-        update_fn = [inspect.getsource(u_fn) for u_fn in self.update_fn]
+        get_map_fn = inspect.getsource(self.get_map_fn)
+        get_agg_fn = inspect.getsource(self.get_agg_fn)
+        get_update_fn = inspect.getsource(self.get_update_fn)
         choice_fn = inspect.getsource(self.choice_fn)
         stop_fn = inspect.getsource(self.stop_fn)
         dataprep_fn = inspect.getsource(self.dataprep_fn)
         postprocessing_fn = inspect.getsource(self.postprocessing_fn)
         init_state_fn = inspect.getsource(self.init_state_fn)
 
-        req["map_fn"] = map_fn
-        req["agg_fn"] = agg_fn
-        req["update_fn"] = update_fn
+        req["get_map_fn"] = get_map_fn
+        req["get_agg_fn"] = get_agg_fn
+        req["get_update_fn"] = get_update_fn
         req["choice_fn"] = choice_fn
         req["stop_fn"] = stop_fn
         req["dataprep_fn"] = dataprep_fn
         req["postprocessing_fn"] = postprocessing_fn
         req["init_state_fn"] = init_state_fn
 
+        req["filter"] = filter
         request.req = json.dumps(req)
         return request
 

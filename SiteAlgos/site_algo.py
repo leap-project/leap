@@ -12,6 +12,8 @@ import ProtoBuf as pb
 import logging
 from pylogrus import PyLogrus, TextFormatter
 
+import CloudAlgos.env_manager as env_manager
+
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
@@ -74,6 +76,9 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         self.live_requests[request.id] = None
         log.info("Got map request")
         
+        env = env_manager.SiteUDFEnvironment()
+        env.set_env(globals(), request)        
+
         map_result = self.map_logic(request)        
         res = pb.computation_msgs_pb2.MapResponse()
         res.response = map_result
@@ -83,18 +88,18 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
     def map_logic(self, request):
         req_id = request.id
         req = json.loads(request.req)
-        exec(req["module"], globals())
-        print("Loaded module")
-        site_state = req["site_state"]
+
+        state = req["state"]
                 
-        choice = choice_fn(site_state)
+        choice = choice_fn(state)
         print("Choice: {}".format(choice))
         data = self.get_data(req)
         print("Got data")
-        if 'data_prep' in globals():
-            data = data_prep(data)
+        if 'dataprep_fn' in globals():
+            data = dataprep_fn(data)
+            
         print("Prepared data")
-        map_result = map_fn[choice](data, site_state)
+        map_result = map_fn[choice](data, state)
         print("map_result: {}".format(map_result))
         return map_result
 

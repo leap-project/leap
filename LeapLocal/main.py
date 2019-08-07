@@ -1,48 +1,46 @@
 import sys
 sys.path.append("../")
 
-from client import Client
+from local_leap import LocalLeap
 from cloud import LocalCloudAlgoServicer
 from localsite import LocalSiteAlgoServicer
 from coordinator import LocalCoordinator
+import LeapApi.leap as leap
 
 import textwrap
 import pdb
 import inspect
 
-import functions.sum_fn 
-import functions.mean_fn
-import functions.count_fn
-import functions.count_fn_dp
-import functions.var_fn
-import functions.quantile_fn
-import functions.quantile_fn_exp
-import functions.fl_fn
+import LeapLocal.functions as leap_fn
 
 
-def count_exp(client):
-    client.send_request(inspect.getsource(functions.count_fn))
 
-def count_exp_dp(client):
-    client.send_request(inspect.getsource(functions.count_fn_dp))
+def predefined_count_exp(client):
+    filter = "[age] > 50 and [bmi] < 25"
+    leap_udf = leap.PredefinedFunction(leap.codes.COUNT_ALGO)
+    module = leap_fn.count_fn
+    local_leap_udf.send_request(filter)
 
-def sum_exp(client):
-    client.send_request(inspect.getsource(functions.sum_fn))
+# def count_exp_dp(client):
+#     client.send_request(inspect.getsource(functions.count_fn_dp))
 
-def mean_exp(client):    
-    client.send_request(inspect.getsource(functions.mean_fn))
+# def sum_exp(client):
+#     client.send_request(inspect.getsource(functions.sum_fn))
 
-def var_exp(client):
-    client.send_request(inspect.getsource(functions.var_fn))
+# def mean_exp(client):    
+#     client.send_request(inspect.getsource(functions.mean_fn))
 
-def quantile_exp(client):
-    client.send_request(inspect.getsource(functions.quantile_fn))
+# def var_exp(client):
+#     client.send_request(inspect.getsource(functions.var_fn))
 
-def quantile_exp_dp(client):
-    client.send_request(inspect.getsource(functions.quantile_fn_exp))
+# def quantile_exp(client):
+#     client.send_request(inspect.getsource(functions.quantile_fn))
 
-def fl_exp(client):
-    client.send_request(inspect.getsource(functions.fl_fn))
+# def quantile_exp_dp(client):
+#     client.send_request(inspect.getsource(functions.quantile_fn_exp))
+
+# def fl_exp(client):
+#     client.send_request(inspect.getsource(functions.fl_fn))
 
 if __name__=="__main__":  
     sites = []
@@ -52,8 +50,8 @@ if __name__=="__main__":
 
     cloud = LocalCloudAlgoServicer(coordinator)
     
-    client = Client(cloud)
-    
-    count_exp(client)
+    client = LocalLeap(cloud)
+
+    predefined_count_exp(client)
     pdb.set_trace()
     

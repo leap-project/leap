@@ -16,13 +16,11 @@ class LocalCloudAlgoServicer(CloudAlgoServicer):
         self.id_count = 0
         self.live_requests = {}
 
-    def _create_computation_request(self, req_id, input_req, site_state):
+    def _create_computation_request(self, req_id, req, state):
         request = SiteRequest()
         request.id = req_id
-        req = {}
-        req["module"] = input_req["module"]
-        req["filter"] = input_req["filter"]
-        req["site_state"] = site_state
+        req = req.copy()
+        req["state"] = state
         request.req = json.dumps(req)
         return request
 

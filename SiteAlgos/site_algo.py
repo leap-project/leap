@@ -1,6 +1,5 @@
 import sys
 sys.path.append("../")
-import pdb
 import grpc
 import time
 import multiprocessing
@@ -12,7 +11,7 @@ import ProtoBuf as pb
 import logging
 from pylogrus import PyLogrus, TextFormatter
 
-import CloudAlgos.env_manager as env_manager
+import Utils.env_manager as env_manager
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()

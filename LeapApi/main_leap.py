@@ -21,6 +21,6 @@ def main():
     filter = ""
     # make request
     leap_udf.send_request(filter)
-    pdb.set_trace()
+
 if __name__ == "__main__":
     main()

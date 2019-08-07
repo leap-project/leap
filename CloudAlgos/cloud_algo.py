@@ -19,8 +19,9 @@ import logging
 from pylogrus import PyLogrus, TextFormatter
 import copy
 
-import env_manager
-
+import sys
+sys.path.append("../")
+import Utils.env_manager as env_manager
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()

@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"io/ioutil"
-	"leap/Concurrent"
+	"leap/Utils"
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
@@ -29,10 +29,10 @@ type Coordinator struct {
 	Log *logrus.Entry
 	// A concurrent map with request id as key and value. It re-
 	// presents the client requests that are being computed.
-	PendingRequests *Concurrent.Map
+	PendingRequests *Utils.Map
 	// A concurrent map with site id as key and the ip and
 	// port of the site as a value.
-	SiteConnectors *Concurrent.Map
+	SiteConnectors *Utils.Map
 }
 
 type SiteConnector struct {
@@ -53,8 +53,8 @@ type SiteConnector struct {
 func NewCoordinator(config Config) *Coordinator {
 	return &Coordinator{Conf: config,
 		Log:             logrus.WithFields(logrus.Fields{"node": "coordinator"}),
-		PendingRequests: Concurrent.NewMap(),
-		SiteConnectors:  Concurrent.NewMap(),
+		PendingRequests: Utils.NewMap(),
+		SiteConnectors:  Utils.NewMap(),
 	}
 }
 

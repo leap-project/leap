@@ -4,7 +4,7 @@ import (
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"leap/Errors"
+	"leap/Utils"
 	pb "leap/ProtoBuf"
 	"time"
 
@@ -100,7 +100,7 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 	response, err := client.Map(ctx, req)
 
 	// If site unavailable, update its status to false
-	if Errors.IsUnavailableError(err) {
+	if Utils.IsUnavailableError(err) {
 		site.statusMux.Lock()
 		site.status = false
 		site.statusMux.Unlock()
@@ -124,7 +124,7 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 func getUnavailableSites(results []ResultFromSite) []int32 {
 	unavailableSites := []int32{}
 	for _, result := range results {
-		if Errors.IsUnavailableError(result.Err) {
+		if Utils.IsUnavailableError(result.Err) {
 			unavailableSites = append(unavailableSites, result.SiteId)
 		}
 	}

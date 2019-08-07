@@ -1,4 +1,4 @@
-package Concurrent
+package Utils
 
 import (
 	"sync"

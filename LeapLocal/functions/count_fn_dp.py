@@ -5,7 +5,6 @@ import numpy as np
 
 # Sum a particular column
 def map_fn1(data, state):
-    print(data)
     COUNT_SENSITIVITY = 1
     epsilon = state["epsilon"]
     delta = state["delta"]

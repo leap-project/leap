@@ -4,7 +4,6 @@ import inspect
 
 # Sum a particular column
 def map_fn1(data, state):
-    print(data)
     result = {
         "sum": data[state["col"]].sum(),
         "count": len(data)

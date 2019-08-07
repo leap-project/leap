@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"io/ioutil"
-	"leap/Concurrent"
+	"leap/Utils"
 	pb "leap/ProtoBuf"
 	"net"
 	"os"
@@ -23,7 +23,7 @@ type SiteConnector struct {
 	// Logging tool
 	Log *logrus.Entry
 	// List of pending requests in this site
-	PendingRequests *Concurrent.Map
+	PendingRequests *Utils.Map
 }
 
 // A struct that holds the ip and port that the site connector
@@ -44,7 +44,7 @@ type Config struct {
 func NewSiteConnector(config Config) *SiteConnector {
 	return &SiteConnector{Conf: config,
 		Log:             logrus.WithFields(logrus.Fields{"node": "site-connector", "site-id": config.SiteId}),
-		PendingRequests: Concurrent.NewMap()}
+		PendingRequests: Utils.NewMap()}
 }
 
 // Parses user flags and creates config using the given flags.
@@ -125,6 +125,12 @@ func (sc *SiteConnector) Register() {
 
 	siteRegReq := pb.SiteRegReq{SiteId: sc.Conf.SiteId, SiteIpPort: sc.Conf.IpPort}
 	response, err := client.RegisterSite(ctx, &siteRegReq)
+	checkErr(sc, err)
+	if err == nil && response.Success {
+		sc.Log.Info("Successfully registered site with coordinator.")
+	} else {
+		sc.Log.Warn("Was not able to register site with coordinator.")
+	}
 	sc.Log.Debug(response)
 }
 

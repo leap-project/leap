@@ -19,8 +19,9 @@ import logging
 from pylogrus import PyLogrus, TextFormatter
 import copy
 
-import env_manager
-
+import sys
+sys.path.append("../")
+import Utils.env_manager as env_manager
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
@@ -39,7 +40,8 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 log = logger.withFields({"node": "cloud-algo"})
 
-# Receives ComputeRequest from Coordinator
+
+# GRPC service for cloud algos
 class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     def __init__(self, ip_port, coordinator_ip_port):
         self.ip_port = ip_port
@@ -88,9 +90,6 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         log.info("received request")
         with grpc.insecure_channel(self.coordinator_ip_port) as channel:
             coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
-            # TODO: This logic should eventually be ran in separate thread
-            
-
             # TODO: Find what type of request this is (udf | predefined | predefined.custom)
 
             env = env_manager.CloudUDFEnvironment()

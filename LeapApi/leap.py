@@ -11,18 +11,16 @@ import ProtoBuf as pb
 import LeapApi.codes as codes
 import inspect
 import pdb
+
 # TODO: Deal with imports. Right now, we assume the local sites and cloud have all necessary imports.
-
-
-
 class Leap():
 
     # Constructor that takes in a code representing one of
     # the available algorithms in Leap.
     def __init__(self):
-        self.get_map_fn = None
-        self.get_agg_fn = None
-        self.get_update_fn = None
+        self.map_fns = None
+        self.agg_fns = None
+        self.update_fns = None
         self.choice_fn = None
         self.stop_fn = None
         self.dataprep_fn = None
@@ -35,7 +33,7 @@ class Leap():
     # filter: A SQL string filter to select the data to perform
     #         a computation.
     def send_request(self, filter):
-        request = self._create_computation_request("")
+        request = self._create_computation_request(filter)
 
         # Sets up the connection so that we can make RPC calls
         with grpc.insecure_channel("127.0.0.1:70000") as channel:
@@ -62,18 +60,18 @@ class Leap():
         request = pb.computation_msgs_pb2.ComputeRequest()
 
         req = {}
-        get_map_fn = inspect.getsource(self.get_map_fn)
-        get_agg_fn = inspect.getsource(self.get_agg_fn)
-        get_update_fn = inspect.getsource(self.get_update_fn)
+        map_fns = inspect.getsource(self.map_fns)
+        agg_fns = inspect.getsource(self.agg_fns)
+        update_fns = inspect.getsource(self.update_fns)
         choice_fn = inspect.getsource(self.choice_fn)
         stop_fn = inspect.getsource(self.stop_fn)
         dataprep_fn = inspect.getsource(self.dataprep_fn)
         postprocessing_fn = inspect.getsource(self.postprocessing_fn)
         init_state_fn = inspect.getsource(self.init_state_fn)
 
-        req["get_map_fn"] = get_map_fn
-        req["get_agg_fn"] = get_agg_fn
-        req["get_update_fn"] = get_update_fn
+        req["map_fns"] = map_fns
+        req["agg_fns"] = agg_fns
+        req["update_fns"] = update_fns
         req["choice_fn"] = choice_fn
         req["stop_fn"] = stop_fn
         req["dataprep_fn"] = dataprep_fn

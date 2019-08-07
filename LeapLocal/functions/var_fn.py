@@ -3,7 +3,7 @@ import json
 import inspect
 import pandas as pd
 
-def get_map_fn():
+def map_fns():
     # Sum a particular column
     def map_fn1(data, state):
         data = pd.DataFrame(data)
@@ -11,7 +11,6 @@ def get_map_fn():
             "sum": data[state["col"]].astype('float').sum(),
             "count": len(data)
         }
-        print("map_fn1 result: {}".format(result))
         return json.dumps(result)
 
     # Compute variance given mean in state
@@ -23,11 +22,10 @@ def get_map_fn():
             "ss": ((col - mean)**2).sum(),
             "count": len(data)
         }
-        print("map_fn2 result: {}".format(result))
         return json.dumps(result)
     return [map_fn1, map_fn2]
 
-def get_agg_fn():
+def agg_fns():
     def agg_fn1(map_results):
         s = 0
         c = 0.0
@@ -47,7 +45,7 @@ def get_agg_fn():
         return ss/c
     return [agg_fn1, agg_fn2]
 
-def get_update_fn():
+def update_fns():
     def update_fn1(agg_result, state):
         state["i"] += 1
         state["mean"] = agg_result

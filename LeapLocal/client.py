@@ -20,5 +20,4 @@ class Client():
         request.req = json.dumps(req)
 
         result = self.cloud.Compute(request)
-        print("Result: {}".format(result))
         return result

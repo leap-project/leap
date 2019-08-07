@@ -3,7 +3,6 @@ import json
 
 # Welford's algorithm to compute variance of a particular column
 def map_fn(data, state):
-    print(data)
     state = json.loads(state)
     samples = data[state["col"]]
     M = state["M"]

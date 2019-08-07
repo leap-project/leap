@@ -79,9 +79,9 @@ class DistributedLeap(Leap):
         super().__init__(leap_function)
     
     def _get_compute_stub(self):
-             # Sets up the connection so that we can make RPC calls
-        with grpc.insecure_channel("127.0.0.1:70000") as channel:
-            stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
+        # Sets up the connection so that we can make RPC calls
+        channel = grpc.insecure_channel("127.0.0.1:70000")
+        stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
         return stub
 
     def _create_request_obj(self):

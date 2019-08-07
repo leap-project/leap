@@ -85,7 +85,7 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         elif leap_type == codes.PREDEFINED:
             env = env_manager.SitePredefinedEnvironment()   
         env.set_env(globals(), req)        
-
+        log.info("Loaded environment")
         map_result = self.map_logic(request)        
         res = self._get_response_obj()
         res.response = map_result

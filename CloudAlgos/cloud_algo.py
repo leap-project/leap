@@ -74,9 +74,10 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
 
 
     def _get_coord_stub(self):
-        with grpc.insecure_channel(self.coordinator_ip_port) as channel:
-            coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
-            return coord_stub
+        channel = grpc.insecure_channel(self.coordinator_ip_port)
+        coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
+        return coord_stub
+            
 
     def _get_response_obj(self):
         return pb.computation_msgs_pb2.ComputeResponse()
@@ -103,7 +104,6 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         # TODO: Find what type of request this is (udf | predefined | predefined.custom)
         # TODO: minimize json loading
         req = json.loads(request.req)
-        algo_code = req["algo_code"]
         leap_type = req["leap_type"]
         if leap_type == codes.UDF:
             env = env_manager.CloudUDFEnvironment()

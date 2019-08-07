@@ -91,15 +91,11 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         state = req["state"]
                 
         choice = choice_fn(state)
-        print("Choice: {}".format(choice))
         data = self.get_data(req)
-        print("Got data")
         if 'dataprep_fn' in globals():
             data = dataprep_fn(data)
-            
-        print("Prepared data")
+
         map_result = map_fn[choice](data, state)
-        print("map_result: {}".format(map_result))
         return map_result
 
     def get_data(self, req):

@@ -11,7 +11,6 @@ def map_fns():
             "sum": data[state["col"]].astype('float').sum(),
             "count": len(data)
         }
-        print("map_fn1 result: {}".format(result))
         return json.dumps(result)
 
     # Compute variance given mean in state
@@ -23,7 +22,6 @@ def map_fns():
             "ss": ((col - mean)**2).sum(),
             "count": len(data)
         }
-        print("map_fn2 result: {}".format(result))
         return json.dumps(result)
     return [map_fn1, map_fn2]
 

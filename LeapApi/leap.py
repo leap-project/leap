@@ -11,9 +11,8 @@ import ProtoBuf as pb
 import LeapApi.codes as codes
 import inspect
 import pdb
+
 # TODO: Deal with imports. Right now, we assume the local sites and cloud have all necessary imports.
-
-
 class Leap():
 
     # Constructor that takes in a code representing one of

@@ -5,7 +5,6 @@ import numpy as np
 
 # Sum a particular column
 def map_fn1(data, state):
-    print(data)
     col = data[state["col"]]
     result = {
         "quantile": col.quantile(state["quantile"])

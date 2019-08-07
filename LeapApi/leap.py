@@ -33,7 +33,7 @@ class Leap():
     # filter: A SQL string filter to select the data to perform
     #         a computation.
     def send_request(self, filter):
-        request = self._create_computation_request("")
+        request = self._create_computation_request(filter)
 
         # Sets up the connection so that we can make RPC calls
         with grpc.insecure_channel("127.0.0.1:70000") as channel:

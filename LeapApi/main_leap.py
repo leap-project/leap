@@ -7,7 +7,7 @@ import LeapLocal.functions as leap_fn
 
 def main():
     leap_udf = leap.UDF()
-    module = leap_fn.var_fn
+    module = leap_fn.count_fn
 
     leap_udf.map_fns = module.map_fns
     leap_udf.update_fns = module.update_fns
@@ -18,7 +18,7 @@ def main():
     leap_udf.postprocessing_fn = module.postprocessing_fn
     leap_udf.init_state_fn = module.init_state_fn
 
-    filter = ""
+    filter = "[age] > 50 and [bmi] < 25"
     # make request
     leap_udf.send_request(filter)
 

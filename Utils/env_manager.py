@@ -36,8 +36,8 @@ class SiteUDFEnvironment(SiteEnvironment):
         self.logger.info("Loading custom cloud environment variables")
         req = json.loads(request.req)
 
-        exec(req["get_map_fn"], globals())
-        context["map_fn"] = get_map_fn()
+        exec(req["map_fns"], globals())
+        context["map_fn"] = map_fns()
 
         exec(req["choice_fn"], context)
         exec(req["dataprep_fn"], context)
@@ -68,10 +68,10 @@ class CloudUDFEnvironment(CloudEnvironment):
         exec(req["stop_fn"], context)
         exec(req["postprocessing_fn"], context)
         
-        exec(req["get_update_fn"], globals())
-        exec(req["get_agg_fn"], globals())
-        update_fn = get_update_fn()
-        agg_fn = get_agg_fn()
+        exec(req["update_fns"], globals())
+        exec(req["agg_fns"], globals())
+        update_fn = update_fns()
+        agg_fn = agg_fns()
         context["update_fn"] = update_fn
         context["agg_fn"] = agg_fn
         self.logger.info("Loaded custom cloud environment variables")

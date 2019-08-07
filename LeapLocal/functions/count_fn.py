@@ -2,7 +2,7 @@ import pdb
 import json
 import inspect
 
-def get_map_fn():
+def map_fns():
     # Sum a particular column
     def map_fn1(data, state):
         result = {
@@ -11,7 +11,7 @@ def get_map_fn():
         return json.dumps(result)
     return [map_fn1]
 
-def get_agg_fn():
+def agg_fns():
     def agg_fn1(map_results):
         s = 0   
         for result in map_results:
@@ -21,7 +21,7 @@ def get_agg_fn():
    
     return [agg_fn1]
 
-def get_update_fn():
+def update_fns():
     def update_fn1(agg_result, state):
         state["i"] += 1
         return state

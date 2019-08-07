@@ -91,9 +91,19 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         with grpc.insecure_channel(self.coordinator_ip_port) as channel:
             coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
             # TODO: Find what type of request this is (udf | predefined | predefined.custom)
+            # TODO: minimize json loading
+            req = json.loads(request.req)
+            algo_code = req["algo_code"]
+            leap_type = req["leap_type"]
 
-            env = env_manager.CloudUDFEnvironment()
-            env.set_env(globals(), request)        
+            if leap_type == 1:
+                env = env_manager.CloudUDFEnvironment()
+            elif leap_type == 2:
+                env = env_manager.CloudPredefinedEnvironment()
+            elif leap_type == 3:
+                env = env_manager.CloudFLEnvironment()
+            
+            env.set_env(globals(), req)        
 
             post_result = self._compute_logic(request, coord_stub)
             

@@ -25,8 +25,10 @@ class SiteEnvironment(Environment):
     def __init__(self):
         self.logger = logger.withFields({"node": "site-env"})
 
-    def set_env(self, contxt, request):
+    def set_env(self, context, request):
         self.logger.info("Loaded base cloud environment variables")
+        import pandas as pd
+        globals()["pd"] = pd
 
 class SiteUDFEnvironment(SiteEnvironment):
     def set_env(self, context, request):

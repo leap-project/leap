@@ -2,8 +2,6 @@ import pdb
 import json
 import inspect
 
-
-
 def get_map_fn():
     # Sum a particular column
     def map_fn1(data, state):

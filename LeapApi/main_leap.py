@@ -7,7 +7,8 @@ import LeapLocal.functions as leap_fn
 
 def main():
     leap_udf = leap.UDF()
-    module = leap_fn.count_fn
+    module = leap_fn.var_fn
+
     leap_udf.get_map_fn = module.get_map_fn
     leap_udf.get_update_fn = module.get_update_fn
     leap_udf.get_agg_fn = module.get_agg_fn

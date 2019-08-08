@@ -50,6 +50,41 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.id_count = 0
         self.live_requests = {}
 
+    """ Coordinates computations across multiple local sites and returns result to client
+       req["module"]: stringified python module containing
+           * map_fn: a list of map(data, site_state) that returns local computations at each iteration
+           * agg_fn: a list of agg(map_results, cloud_state) used to aggregate results from each site
+           * update_fn: a list of update(agg_result, site_state, cloud_state) used to update the site and cloud states
+           * choice_fn(site_state): selects the appropriate map/agg_fn depending on the state
+           * stop_fn(agg_result, site_state, cloud_state): returns true if stopping criterion is met
+           * post_fn(agg_result, site_state, cloud_state): final processing of the aggregated result to return to client
+           * data_prep(data): converts standard data schema from each site to be compatible with map_fn
+           * prep(site_state): initialization for the cloud
+           * site_state: state that is passed to the sites
+           * cloud_state: state that is only used by the cloud
+    
+       req["filter"]: query filter string to get dataset of interest
+       """
+    def Compute(self, request, context):
+        log.info("Received a computation request.")
+        coord_stub = self._get_coord_stub()
+        req = json.loads(request.req)
+
+        leap_type = req["leap_type"]
+        if leap_type == codes.UDF:
+            env = env_manager.CloudUDFEnvironment()
+        elif leap_type == codes.PREDEFINED:
+            env = env_manager.CloudPredefinedEnvironment()
+        elif leap_type == codes.FEDERATED_LEARNING:
+            env = env_manager.CloudFLEnvironment()
+        env.set_env(globals(), req)
+
+        result = self._compute_logic(req, coord_stub)
+
+        res = pb.computation_msgs_pb2.ComputeResponse()
+        res.response = json.dumps(result)
+        return res
+
     """ Return new request that is sent to the client
     TODO: Split cloud algo udf functions from site algos
     """
@@ -72,56 +107,13 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.id_count += 1
         return new_id       
 
-
     def _get_coord_stub(self):
         channel = grpc.insecure_channel(self.coordinator_ip_port)
         coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
         return coord_stub
-            
 
-    def _get_response_obj(self):
-        return pb.computation_msgs_pb2.ComputeResponse()
-
-    """ Coordinates computations across multiple local sites and returns result to client
-    req["module"]: stringified python module containing
-        * map_fn: a list of map(data, site_state) that returns local computations at each iteration
-        * agg_fn: a list of agg(map_results, cloud_state) used to aggregate results from each site
-        * update_fn: a list of update(agg_result, site_state, cloud_state) used to update the site and cloud states
-        * choice_fn(site_state): selects the appropriate map/agg_fn depending on the state
-        * stop_fn(agg_result, site_state, cloud_state): returns true if stopping criterion is met
-        * post_fn(agg_result, site_state, cloud_state): final processing of the aggregated result to return to client
-        * data_prep(data): converts standard data schema from each site to be compatible with map_fn
-        * prep(site_state): initialization for the cloud
-        * site_state: state that is passed to the sites
-        * cloud_state: state that is only used by the cloud
-
-    req["filter"]: query filter string to get dataset of interest
-    """
-    def Compute(self, request, context):
-        log.info("received request")
-        coord_stub = self._get_coord_stub()
-
-        # TODO: Find what type of request this is (udf | predefined | predefined.custom)
-        # TODO: minimize json loading
-        req = json.loads(request.req)
-        leap_type = req["leap_type"]
-        if leap_type == codes.UDF:
-            env = env_manager.CloudUDFEnvironment()
-        elif leap_type == codes.PREDEFINED:
-            env = env_manager.CloudPredefinedEnvironment()
-        # elif leap_type == codes.FEDERATED_LEARNING:
-            # env = env_manager.CloudFLEnvironment()
-        env.set_env(globals(), req)        
-
-        post_result = self._compute_logic(request, coord_stub)
-        
-        res = self._get_response_obj()
-        res.response = json.dumps(post_result)
-        return res
-
-    def _compute_logic(self, request, coord_stub):
+    def _compute_logic(self, req, coord_stub):
         state = init_state_fn()
-        req = json.loads(request.req)
 
         # Generate algo_id
         req_id = self._generate_req_id()
@@ -132,22 +124,22 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
             try:
-                site_request = self._create_computation_request(req_id, req, state)               
+                site_request = self._create_computation_request(req_id, req, state)
             except Exception as e:
                 log.error(e)
 
             try:
                 # Get result from each site through coordinator
-                results = coord_stub.Map(site_request) 
+                results = coord_stub.Map(site_request)
             except grpc.RpcError as e:
                 log.error(e.details())
                 return e
 
             extracted_responses = self._extract_map_responses(results.responses)
-            
+
             # Aggregate results from each site
             agg_result = agg_fn[choice](extracted_responses)
-            
+
             # Update the state
             state = update_fn[choice](agg_result, state)
 

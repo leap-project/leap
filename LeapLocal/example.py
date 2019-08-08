@@ -8,7 +8,7 @@ import LeapApi.leap as leap
 import LeapApi.leap_fn as leap_fn
 import torch
 
-import LeapLocal.functions as functions
+import CloudAlgo.functions as functions
 
 
 def predefined_count_exp(cloud):
@@ -65,5 +65,5 @@ if __name__=="__main__":
 
     cloud = LocalCloudAlgoServicer(coordinator)
 
-    fed_learn_exp(cloud)
+    predefined_count_exp(cloud)
     

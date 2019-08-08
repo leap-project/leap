@@ -4,7 +4,7 @@ import pdb
 import LeapApi.leap as leap
 import LeapApi.leap_fn as leap_fn
 import LeapApi.codes as codes
-import LeapLocal.functions as functions
+import CloudAlgo.functions as functions
 
 import torch
 
@@ -42,15 +42,28 @@ def udf_count_exp():
     dist_leap.send_request()
 
 def fed_learn_exp():
+    module = functions.fl_fn
     selector = "[age] > 50 and [bmi] < 25"
     leap_fed_learn = leap_fn.FedLearnFunction()
     leap_fed_learn.selector = selector
-    leap_fed_learn.model = LinearModel(2, 1)
-    leap_fed_learn.optimizer = torch.optim.SGD(leap_fed_learn.model.paramteters(), lr=1e-5)
-    leap_fed_learn.criterion = torch.nn.MSELoss()
+    leap_fed_learn.get_model = module.get_model
+    leap_fed_learn.get_optimizer = module.get_optimizer
+    leap_fed_learn.get_criterion = module.get_criterion
+    leap_fed_learn.get_dataloader = module.get_dataloader
+    hyperparams = {
+        "lr": 1e-5,
+        "d_x": 2, # input dimension
+        "d_y": 1, # output dimension
+        "batch_size": 1,
+        "max_iters": 20,
+        "iters_per_epoch":1
+    }
+    leap_fed_learn.hyperparams = hyperparams
+    local_leap = leap.DistributedLeap(leap_fed_learn)
+    local_leap.send_request()
 
 def main():
-    fed_learn_exp()
+    predef_count_exp()
 
 if __name__ == "__main__":
     main()

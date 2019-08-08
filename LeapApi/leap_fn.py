@@ -85,9 +85,23 @@ class PredefinedFunction(LeapFunction):
 class FedLearnFunction(PredefinedFunction):
     def __init__(self):
         super().__init__(codes.FEDERATED_LEARNING_ALGO)
-        self.optimizer = None
-        self.model = None
-        self.criterion = None
+        self.get_optimizer = None
+        self.get_model = None
+        self.get_criterion = None
+        self.hyperparams = None
+        self.get_dataloader = None
     
+    def create_request(self):
+        req = super().create_request()
+
+        req["get_optimizer"] = leap_utils.fn_to_string(self.get_optimizer)
+        req["get_criterion"] = leap_utils.fn_to_string(self.get_criterion)
+        req["get_model"] = leap_utils.fn_to_string(self.get_model)
+        req["get_dataloader"] = leap_utils.fn_to_string(self.get_dataloader)
+        req["hyperparams"] = json.dumps(self.hyperparams)
+        req["leap_type"] = codes.FEDERATED_LEARNING
+        req["algo_code"] = self.algo_code
+        return req
+
     def validate(self):
         pass

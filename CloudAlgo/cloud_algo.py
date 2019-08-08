@@ -76,7 +76,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         elif leap_type == codes.PREDEFINED:
             env = env_manager.CloudPredefinedEnvironment()
         elif leap_type == codes.FEDERATED_LEARNING:
-            env = env_manager.CloudFLEnvironment()
+            env = env_manager.CloudFedereatedLearningEnvironment()
         env.set_env(globals(), req)
 
         result = self._compute_logic(req, coord_stub)

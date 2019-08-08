@@ -4,8 +4,9 @@ import pdb
 import logging
 from pylogrus import PyLogrus, TextFormatter
 import json
+import inspect 
 
-import LeapLocal.functions as leap_fn
+import CloudAlgo.functions as leap_fn
 import Utils.env_utils as env_utils
 
 # Setup logging tool
@@ -54,24 +55,44 @@ class SitePredefinedEnvironment(SiteEnvironment):
         env_utils.load_fn("choice_fn", req, module, context)
         env_utils.load_fn("dataprep_fn", req, module, context)
         env_utils.load_from_fn_generator("map_fns", "map_fn", req, module, context)
-
+        
         self.logger.info("Loaded site environment variables for predefined function.")
 
 
 class SiteFederatedLearningEnvironment(SitePredefinedEnvironment):
     def set_env(self, context, req):
-        super().set_env(context, req)
         algo_code = req["algo_code"]
         module = getattr(leap_fn, algo_code)
 
+        ### Fn specific imports
         import torch
-        import torch.utils.data
+        globals()["torch"] = torch
         context["torch"] = torch
-        context["torch.utils.data"] = torch.utils.data
+        import pandas as pd
+        context["pd"] = pd        
+        context["AverageMeter"] = leap_fn.fl_fn.AverageMeter
 
-        env_utils.load_fn("model", req, module, context)
-        env_utils.load_fn("criterion", req, module, context)
+        hyperparams = json.loads(req["hyperparams"])
+        context["hyperparams"] = hyperparams
+        ###
+        exec(req["get_model"], globals())
+        model = get_model(hyperparams)
+        context["model"] = model
+
+        exec(req["get_optimizer"], globals())
+        optimizer = get_optimizer(model.parameters(), hyperparams)
+        context["optimizer"] = optimizer
+
+        exec(req["get_criterion"], globals())
+        criterion = get_criterion(hyperparams)
+        context["criterion"] = criterion
+        
+        exec(req["get_dataloader"], globals())
+        # dataloader = get_dataloader(hyperparams)        
+        context["get_dataloader"] = get_dataloader
+
         self.logger.info("Loaded site environment variables for federated learning.")
+        super().set_env(context, req)
 
 
 class CloudEnvironment(Environment):
@@ -120,10 +141,23 @@ class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
     def set_env(self, context, req):
         super().set_env(context, req)
         import torch
-        import torch.utils.data
+        globals()["torch"] = torch
         context["torch"] = torch
-        context["torch.utils.data"] = torch.utils.data
+        context["AverageMeter"] = leap_fn.fl_fn.AverageMeter
 
-        env_utils.load_fn("optimizer", req, module, context)
-        env_utils.load_fn("model", req, module, context)
-        env_utils.load_fn("criterion", req, module, context)
+        hyperparams = json.loads(req["hyperparams"])
+        context["hyperparams"] = hyperparams
+        
+        # pass in context as second argument so that get_model has access to context variables
+        exec(req["get_model"], globals()) 
+        model = get_model(hyperparams)
+        context["model"] = model
+
+        exec(req["get_optimizer"], globals())
+        optimizer = get_optimizer(model.parameters(), hyperparams)
+        context["optimizer"] = optimizer
+
+        exec(req["get_criterion"], globals())
+        criterion = get_criterion(hyperparams)
+        context["criterion"] = criterion
+        

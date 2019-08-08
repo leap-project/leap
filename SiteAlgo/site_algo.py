@@ -10,6 +10,7 @@ import json
 import ProtoBuf as pb
 import logging
 from pylogrus import PyLogrus, TextFormatter
+import pdb
 
 import Utils.env_manager as env_manager
 import LeapApi.codes as codes
@@ -83,7 +84,9 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         if leap_type == codes.UDF:
             env = env_manager.SiteUDFEnvironment()
         elif leap_type == codes.PREDEFINED:
-            env = env_manager.SitePredefinedEnvironment()   
+            env = env_manager.SitePredefinedEnvironment()  
+        elif leap_type == codes.FEDERATED_LEARNING:
+            env = env_manager.SiteFederatedLearningEnvironment() 
         env.set_env(globals(), req)        
         log.info("Loaded environment")
         map_result = self.map_logic(request)        
@@ -102,7 +105,6 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         data = self.get_data(req)
         if 'dataprep_fn' in globals():
             data = dataprep_fn(data)
-
         map_result = map_fn[choice](data, state)
         return map_result
 

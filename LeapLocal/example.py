@@ -1,26 +1,29 @@
 import sys
+import pdb
 sys.path.append("../")
-
 from cloud import LocalCloudAlgoServicer
 from localsite import LocalSiteAlgoServicer
 from coordinator import LocalCoordinator
 import LeapApi.leap as leap
 import LeapApi.leap_fn as leap_fn
-
-import textwrap
-import pdb
-import inspect
+import torch
 
 import LeapLocal.functions as functions
 
+class LinearModel(torch.nn.Module):
+    def __init__(self, d, len_y):
+        super(LinearModel, self).__init__()
+        self.linear = torch.nn.Linear(d, len_y)
 
+    def forward(self, x):
+        out = self.linear(x)
+        return out
 
 def predefined_count_exp(cloud):
     selector = "[age] > 50 and [bmi] < 25"
     leap_predef = leap_fn.PredefinedFunction(leap.codes.COUNT_ALGO)
     leap_predef.selector = selector
     local_leap = leap.LocalLeap(leap_predef, cloud)
-    module = functions.count_fn
     local_leap.send_request()
 
 def udf_count_exp(cloud):
@@ -41,6 +44,16 @@ def udf_count_exp(cloud):
     module = functions.count_fn
     local_leap.send_request()
 
+def fed_learn_exp(cloud):
+    selector = "[age] > 50 and [bmi] < 25"
+    leap_fed_learn = leap_fn.FedLearnFunction()
+    leap_fed_learn.selector = selector
+    leap_fed_learn.model = LinearModel(2, 1)
+    leap_fed_learn.optimizer = torch.optim.SGD(leap_fed_learn.model.parameters(), lr=1e-5)
+    leap_fed_learn.criterion = torch.nn.MSELoss()
+
+    local_leap = leap.LocalLeap(leap_fed_learn, cloud)
+    local_leap.send_request()
 
 if __name__=="__main__":  
     sites = []
@@ -50,6 +63,5 @@ if __name__=="__main__":
 
     cloud = LocalCloudAlgoServicer(coordinator)
 
-    udf_count_exp(cloud)
-    pdb.set_trace()
+    fed_learn_exp(cloud)
     

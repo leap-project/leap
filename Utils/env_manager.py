@@ -25,7 +25,7 @@ class Environment():
 
 class SiteEnvironment(Environment):
     def __init__(self):
-        self.logger = logger.withFields({"node": "site-env"})
+        self.logger = logger.withFields({"node": "site-algo"})
 
     def set_env(self, context, req):
         import pandas as pd
@@ -76,7 +76,7 @@ class SiteFederatedLearningEnvironment(SitePredefinedEnvironment):
 
 class CloudEnvironment(Environment):
     def __init__(self):
-        self.logger = logger.withFields({"node": "cloud-env"})
+        self.logger = logger.withFields({"node": "cloud-algo"})
 
     def set_env(self, context, req):
         import json

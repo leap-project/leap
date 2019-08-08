@@ -1,11 +1,21 @@
 import sys
 sys.path.append("../")
 import pdb
-import json
 import LeapApi.leap as leap
 import LeapApi.leap_fn as leap_fn
 import LeapApi.codes as codes
 import LeapLocal.functions as functions
+
+import torch
+
+class LinearModel(torch.nn.Module):
+    def __init__(self, d, len_y):
+        super(LinearModel, self).__init__()
+        self.linear = torch.nn.Linear(d, len_y)
+
+    def forward(self, x):
+        out = self.linear(x)
+        return out
 
 def predef_count_exp():
     leap_udf = leap_fn.PredefinedFunction(codes.COUNT_ALGO)
@@ -31,11 +41,16 @@ def udf_count_exp():
     dist_leap = leap.DistributedLeap(leap_udf)
     dist_leap.send_request()
 
+def fed_learn_exp():
+    selector = "[age] > 50 and [bmi] < 25"
+    leap_fed_learn = leap_fn.FedLearnFunction()
+    leap_fed_learn.selector = selector
+    leap_fed_learn.model = LinearModel(2, 1)
+    leap_fed_learn.optimizer = torch.optim.SGD(leap_fed_learn.model.paramteters(), lr=1e-5)
+    leap_fed_learn.criterion = torch.nn.MSELoss()
+
 def main():
-    udf_count_exp()
-
-
-    # make request
+    fed_learn_exp()
 
 if __name__ == "__main__":
     main()

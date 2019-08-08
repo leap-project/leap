@@ -2,7 +2,7 @@ import pdb
 import json
 import utils
 
-from CloudAlgos.cloud_algo import CloudAlgoServicer
+from CloudAlgo.cloud_algo import CloudAlgoServicer
 from LeapLocal.localsite import SiteResponse
 # data template for site request
 class SiteRequest():

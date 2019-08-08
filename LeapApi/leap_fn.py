@@ -64,7 +64,8 @@ class UDF(LeapFunction):
         
     def validate(self):
         pass
-    
+
+
 class PredefinedFunction(LeapFunction):
     def __init__(self, algo_code):
         super().__init__()
@@ -79,10 +80,11 @@ class PredefinedFunction(LeapFunction):
         req["leap_type"] = codes.PREDEFINED
         return req
 
+
 # Federated Learning class that extends the main Leap class.
 class FedLearnFunction(PredefinedFunction):
-    def __init__(self, algo_id):
-        super().__init__(algo_id)
+    def __init__(self):
+        super().__init__(codes.FEDERATED_LEARNING_ALGO)
         self.optimizer = None
         self.model = None
         self.criterion = None

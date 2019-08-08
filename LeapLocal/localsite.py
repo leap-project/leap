@@ -3,7 +3,7 @@ import pandas as pd
 import json
 import numpy as np
 
-from SiteAlgos.site_algo import SiteAlgoServicer
+from SiteAlgo.site_algo import SiteAlgoServicer
 class SiteResponse():
     def __init__(self):
         self.response = None

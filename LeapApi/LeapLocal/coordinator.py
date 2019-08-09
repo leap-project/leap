@@ -1,5 +1,5 @@
 import pdb
-from localsite import SiteResponse
+from .localsite import SiteResponse
 """ Local implementation of coordinator
 Delegates compute request to local sites
 """

@@ -1,6 +1,5 @@
 import pdb
 import json
-import utils
 
 from CloudAlgo.cloud_algo import CloudAlgoServicer
 from LeapLocal.localsite import SiteResponse

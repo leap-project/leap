@@ -4,7 +4,13 @@ import pdb
 import LeapApi.leap as leap
 import LeapApi.leap_fn as leap_fn
 import LeapApi.codes as codes
-import CloudAlgo.functions as functions
+import CloudAlgo.functions as cloud_functions
+import LeapApi.LeapLocal.functions as leap_functions
+
+
+from LeapApi.LeapLocal.cloud import LocalCloudAlgoServicer
+from LeapApi.LeapLocal.localsite import LocalSiteAlgoServicer
+from LeapApi.LeapLocal.coordinator import LocalCoordinator
 
 import torch
 
@@ -26,7 +32,7 @@ def predef_count_exp():
 
 def udf_count_exp():
     leap_udf = leap_fn.UDF()
-    module = functions.count_fn
+    module = cloud_functions.count_fn
     leap_udf.map_fns = module.map_fns
     leap_udf.update_fns = module.update_fns
     leap_udf.agg_fns = module.agg_fns
@@ -42,7 +48,7 @@ def udf_count_exp():
     dist_leap.send_request()
 
 def fed_learn_exp():
-    module = functions.fl_fn
+    module = leap_functions.fl_fn
     selector = "[age] > 50 and [bmi] < 25"
     leap_fed_learn = leap_fn.FedLearnFunction()
     leap_fed_learn.selector = selector
@@ -59,11 +65,24 @@ def fed_learn_exp():
         "iters_per_epoch":1
     }
     leap_fed_learn.hyperparams = hyperparams
-    local_leap = leap.DistributedLeap(leap_fed_learn)
+    return leap_fed_learn
+
+def distributed():
+    leap_exp_fn = fed_learn_exp()
+    dist_leap = leap.DistributedLeap(leap_exp_fn)
+    dist_leap.send_request()
+
+def local():
+    sites = []
+    sites.append(LocalSiteAlgoServicer(0))    
+    coordinator = LocalCoordinator(sites)
+    cloud = LocalCloudAlgoServicer(coordinator)
+
+    leap_exp_fn = fed_learn_exp()
+    local_leap = leap.LocalLeap(leap_exp_fn, cloud)
     local_leap.send_request()
 
-def main():
-    predef_count_exp()
 
 if __name__ == "__main__":
-    main()
+    # local()
+    distributed()

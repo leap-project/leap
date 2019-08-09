@@ -14,21 +14,12 @@ from LeapApi.LeapLocal.coordinator import LocalCoordinator
 
 import torch
 
-class LinearModel(torch.nn.Module):
-    def __init__(self, d, len_y):
-        super(LinearModel, self).__init__()
-        self.linear = torch.nn.Linear(d, len_y)
-
-    def forward(self, x):
-        out = self.linear(x)
-        return out
 
 def predef_count_exp():
-    leap_udf = leap_fn.PredefinedFunction(codes.COUNT_ALGO)
+    leap_predef = leap_fn.PredefinedFunction(codes.COUNT_ALGO)
     selector = "[age] > 50 and [bmi] < 25"
-    leap_udf.selector = selector
-    dist_leap = leap.DistributedLeap(leap_udf)
-    dist_leap.send_request()
+    leap_predef.selector = selector
+    return leap_predef
 
 def udf_count_exp():
     leap_udf = leap_fn.UDF()
@@ -44,8 +35,7 @@ def udf_count_exp():
 
     selector = "[age] > 50 and [bmi] < 25"
     leap_udf.selector = selector
-    dist_leap = leap.DistributedLeap(leap_udf)
-    dist_leap.send_request()
+    return leap_udf
 
 def fed_learn_exp():
     module = leap_functions.fl_fn
@@ -78,11 +68,11 @@ def local():
     coordinator = LocalCoordinator(sites)
     cloud = LocalCloudAlgoServicer(coordinator)
 
-    leap_exp_fn = fed_learn_exp()
+    leap_exp_fn = predef_count_exp()
     local_leap = leap.LocalLeap(leap_exp_fn, cloud)
     local_leap.send_request()
 
 
 if __name__ == "__main__":
-    # local()
-    distributed()
+    local()
+    # distributed()

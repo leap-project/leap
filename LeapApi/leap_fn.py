@@ -64,6 +64,21 @@ class UDF(LeapFunction):
         pass
 
 
+class PrivateLaplaceUDF(UDF):
+    def __init__(self):
+        super().__init__()
+        self.leap_type = codes.LAPLACE_UDF
+
+    def validate(self):
+        pass
+
+
+class PrivateExponentialUDF(UDF):
+    def __init__(self):
+        super().__init__()
+        self.leap_type = codes.EXPONENTIAL_UDF
+
+
 class PredefinedFunction(LeapFunction):
     def __init__(self, algo_code):
         super().__init__()

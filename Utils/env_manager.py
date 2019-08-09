@@ -123,6 +123,11 @@ class CloudUDFEnvironment(CloudEnvironment):
         context["update_fn"] = update_fn
         context["agg_fn"] = agg_fn
         self.logger.withFields({"request-id": req_id}).info("Loaded cloud environment variables for udf function.")
+
+class CloudPrivateUDF(CloudUDFEnvironment):
+    def set_env(self, context, req, req_id):
+        super().set_env(context, req, req)
+        self.logger.withFields({"request-id": req_id}).info("Loaded cloud environment variables for  private udf function.")
         
 
 class CloudPredefinedEnvironment(CloudEnvironment):

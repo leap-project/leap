@@ -28,7 +28,7 @@ class Leap(ABC):
     # # Gets the result of performing the selected algorithm
     # # on the filtered data.
     # #
-    def send_request(self):
+    def get_result(self):
         request = self._create_computation_request()
             
         compute_stub = self._get_compute_stub()
@@ -37,10 +37,6 @@ class Leap(ABC):
         result = compute_stub.Compute(request, None)
         
         result = json.loads(result.response)
-
-
-        print("Received response")
-        print(result)
         return result
 
     # Uses protobuf to create a computation request.

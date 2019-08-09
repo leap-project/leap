@@ -61,6 +61,9 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 	for i := 0; i < sitesLength; i++ {
 		select {
 		case response := <-ch:
+			if response.Err != nil {
+				c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Error(response.Err)
+			}
 			results = append(results, response)
 		}
 	}

@@ -76,24 +76,28 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
     context: Boilerplate for grpc containing the context
              of the RPC."""
     def Map(self, request, context):
-        self.live_requests[request.id] = None
-        log.info("Got map request")
-        
-        req = json.loads(request.req)
-        leap_type = req["leap_type"]
-        if leap_type == codes.UDF:
-            env = env_manager.SiteUDFEnvironment()
-        elif leap_type == codes.PREDEFINED:
-            env = env_manager.SitePredefinedEnvironment()  
-        elif leap_type == codes.FEDERATED_LEARNING:
-            env = env_manager.SiteFederatedLearningEnvironment() 
-        env.set_env(globals(), req)        
-        log.info("Loaded environment")
-        map_result = self.map_logic(request)        
-        res = self._get_response_obj()
-        res.response = map_result
-        self.live_requests.pop(request.id)
-        return res
+        try:
+            self.live_requests[request.id] = None
+            log.info("Got map request")
+
+            req = json.loads(request.req)
+            leap_type = req["leap_type"]
+            if leap_type == codes.UDF:
+                env = env_manager.SiteUDFEnvironment()
+            elif leap_type == codes.PREDEFINED:
+                env = env_manager.SitePredefinedEnvironment()
+            elif leap_type == codes.FEDERATED_LEARNING:
+                env = env_manager.SiteFederatedLearningEnvironment()
+            env.set_env(globals(), req)
+            log.info("Loaded environment")
+            map_result = self.map_logic(request)
+            res = self._get_response_obj()
+            res.response = map_result
+            self.live_requests.pop(request.id)
+            return  res
+        except BaseException as e:
+            log.error(e)
+            raise e
     
     def map_logic(self, request):
         req_id = request.id

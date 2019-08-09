@@ -60,7 +60,7 @@ def fed_learn_exp():
 def distributed():
     leap_exp_fn = fed_learn_exp()
     dist_leap = leap.DistributedLeap(leap_exp_fn)
-    dist_leap.send_request()
+    print(dist_leap.get_result())
 
 def local():
     sites = []
@@ -70,7 +70,7 @@ def local():
 
     leap_exp_fn = fed_learn_exp()
     local_leap = leap.LocalLeap(leap_exp_fn, cloud)
-    local_leap.send_request()
+    print(local_leap.get_result())
 
 
 if __name__ == "__main__":

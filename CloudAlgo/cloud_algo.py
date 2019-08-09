@@ -87,10 +87,10 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             res.response = json.dumps(result)
         except grpc.RpcError as e:
             log.error(e.details())
-            return e
+            raise e
         except BaseException as e:
             log.error(e)
-            return e
+            raise e
         return res
 
     """ Return new request that is sent to the client

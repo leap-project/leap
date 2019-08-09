@@ -31,8 +31,10 @@ func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRe
 		sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("Site Algo is unavailable.")
 		checkErr(sc, err)
 		return nil, status.Error(codes.Unavailable, "Site algo is unavailable")
+	} else if err != nil {
+		sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Error(err)
+		return nil, err
 	}
 
-	checkErr(sc, err)
 	return res, err
 }

@@ -68,7 +68,7 @@ def local():
     coordinator = LocalCoordinator(sites)
     cloud = LocalCloudAlgoServicer(coordinator)
 
-    leap_exp_fn = predef_count_exp()
+    leap_exp_fn = fed_learn_exp()
     local_leap = leap.LocalLeap(leap_exp_fn, cloud)
     local_leap.send_request()
 

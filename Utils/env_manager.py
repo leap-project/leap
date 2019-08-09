@@ -29,8 +29,6 @@ class SiteEnvironment(Environment):
         self.logger = logger.withFields({"node": "site-algo"})
 
     def set_env(self, context, req):
-        import pandas as pd
-        globals()["pd"] = pd
         self.logger.info("Loaded base site environment variables")
 
 
@@ -38,7 +36,7 @@ class SiteUDFEnvironment(SiteEnvironment):
     def set_env(self, context, req):
         super().set_env(context, req)
 
-        exec(req["map_fns"], globals())
+        exec(req["map_fns"], context, globals())
         context["map_fn"] = map_fns()
         exec(req["choice_fn"], context)
         exec(req["dataprep_fn"], context)
@@ -52,9 +50,9 @@ class SitePredefinedEnvironment(SiteEnvironment):
         algo_code = req["algo_code"]
         module = getattr(leap_fn, algo_code)
 
-        env_utils.load_fn("choice_fn", req, module, context)
-        env_utils.load_fn("dataprep_fn", req, module, context)
-        env_utils.load_from_fn_generator("map_fns", "map_fn", req, module, context)
+        env_utils.load_fn("choice_fn", req, context, module=module)
+        env_utils.load_fn("dataprep_fn", req, context, module=module)
+        env_utils.load_from_fn_generator("map_fns", "map_fn", req, context, module=module)
         
         self.logger.info("Loaded site environment variables for predefined function.")
 
@@ -75,21 +73,14 @@ class SiteFederatedLearningEnvironment(SitePredefinedEnvironment):
         hyperparams = json.loads(req["hyperparams"])
         context["hyperparams"] = hyperparams
         ###
-        exec(req["get_model"], globals())
-        model = get_model(hyperparams)
-        context["model"] = model
 
-        exec(req["get_optimizer"], globals())
-        optimizer = get_optimizer(model.parameters(), hyperparams)
-        context["optimizer"] = optimizer
 
-        exec(req["get_criterion"], globals())
-        criterion = get_criterion(hyperparams)
-        context["criterion"] = criterion
-        
-        exec(req["get_dataloader"], globals())
-        # dataloader = get_dataloader(hyperparams)        
-        context["get_dataloader"] = get_dataloader
+        env_utils.load_fn("get_dataloader", req, context)
+        env_utils.load_from_fn_generator("get_model", "model", req, context, gen_fn_args=[hyperparams])
+        params = context["model"].parameters()
+        env_utils.load_from_fn_generator("get_optimizer", "optimizer", req, context, gen_fn_args=[params, hyperparams])
+        env_utils.load_from_fn_generator("get_criterion", "criterion", req, context, gen_fn_args=[hyperparams])
+
 
         self.logger.info("Loaded site environment variables for federated learning.")
         super().set_env(context, req)
@@ -113,8 +104,8 @@ class CloudUDFEnvironment(CloudEnvironment):
         exec(req["choice_fn"], context)
         exec(req["stop_fn"], context)
         exec(req["postprocessing_fn"], context)
-        exec(req["update_fns"], globals())
-        exec(req["agg_fns"], globals())
+        exec(req["update_fns"], context, globals())
+        exec(req["agg_fns"], context, globals())
         update_fn = update_fns()
         agg_fn = agg_fns()
         context["update_fn"] = update_fn
@@ -128,13 +119,13 @@ class CloudPredefinedEnvironment(CloudEnvironment):
         algo_code = req["algo_code"]
         module = getattr(leap_fn, algo_code)
         
-        env_utils.load_fn("init_state_fn", req, module, context)
-        env_utils.load_fn("choice_fn", req, module, context)
-        env_utils.load_fn("stop_fn", req, module, context)
-        env_utils.load_fn("postprocessing_fn", req, module, context)
+        env_utils.load_fn("init_state_fn", req, context, module=module)
+        env_utils.load_fn("choice_fn", req, context, module=module)
+        env_utils.load_fn("stop_fn", req, context, module=module)
+        env_utils.load_fn("postprocessing_fn", req, context, module=module)
 
-        env_utils.load_from_fn_generator("update_fns", "update_fn", req, module, context)
-        env_utils.load_from_fn_generator("agg_fns", "agg_fn", req, module, context)
+        env_utils.load_from_fn_generator("update_fns", "update_fn", req, context, module=module)
+        env_utils.load_from_fn_generator("agg_fns", "agg_fn", req, context, module=module)
         self.logger.info("Loaded cloud environment variables for predefined function.")
 
 class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
@@ -144,20 +135,14 @@ class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
         globals()["torch"] = torch
         context["torch"] = torch
         context["AverageMeter"] = leap_fn.fl_fn.AverageMeter
-
         hyperparams = json.loads(req["hyperparams"])
         context["hyperparams"] = hyperparams
         
         # pass in context as second argument so that get_model has access to context variables
-        exec(req["get_model"], globals()) 
-        model = get_model(hyperparams)
-        context["model"] = model
 
-        exec(req["get_optimizer"], globals())
-        optimizer = get_optimizer(model.parameters(), hyperparams)
-        context["optimizer"] = optimizer
+        env_utils.load_from_fn_generator("get_model", "model", req, context, gen_fn_args=[hyperparams])
+        params = context["model"].parameters()
+        env_utils.load_from_fn_generator("get_optimizer", "optimizer", req, context, gen_fn_args=[params, hyperparams])
+        env_utils.load_from_fn_generator("get_criterion", "criterion", req, context, gen_fn_args=[hyperparams])
 
-        exec(req["get_criterion"], globals())
-        criterion = get_criterion(hyperparams)
-        context["criterion"] = criterion
         

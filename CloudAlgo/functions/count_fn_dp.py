@@ -13,14 +13,17 @@ def map_fns():
         epsilon = privacy_params["epsilon"]
         delta = privacy_params["delta"]
 
+        count = len(data)
+        count = leap_privacy.laplace(count, epsilon, delta, COUNT_SENSITIVITY).item()
+        
+        # if delta == 0:
+        #     noise = np.random.laplace(loc = 0, scale = COUNT_SENSITIVITY/float(epsilon), size = (1,1))
+        # else:
+        #     sigma = (COUNT_SENSITIVITY/(epsilon))*np.sqrt(2*np.log(1.25/delta))
+        #     noise = np.random.normal(0.0, sigma, 1)
 
-        if delta == 0:
-            noise = np.random.laplace(loc = 0, scale = COUNT_SENSITIVITY/float(epsilon), size = (1,1))
-        else:
-            sigma = (COUNT_SENSITIVITY/(epsilon))*np.sqrt(2*np.log(1.25/delta))
-            noise = np.random.normal(0.0, sigma, 1)
+        # count = len(data) + noise.item()
 
-        count = len(data) + noise.item()
         result = {
             "count": count
         }

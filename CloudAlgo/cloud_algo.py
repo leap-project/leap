@@ -66,8 +66,8 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
        req["filter"]: query filter string to get dataset of interest
        """
     def Compute(self, request, context):
-        log.info("Received a computation request.")
-
+        req_id = self._generate_req_id()
+        log.withFields({"request-id": req_id}).info("Received a computation request.")
         try:
             coord_stub = self._get_coord_stub()
             req = json.loads(request.req)
@@ -79,17 +79,17 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
                 env = env_manager.CloudPredefinedEnvironment()
             elif leap_type == codes.FEDERATED_LEARNING:
                 env = env_manager.CloudFedereatedLearningEnvironment()
-            env.set_env(globals(), req)
+            env.set_env(globals(), req, req_id)
 
-            result = self._compute_logic(req, coord_stub)
+            result = self._compute_logic(req, coord_stub, req_id)
 
             res = pb.computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(result)
         except grpc.RpcError as e:
-            log.error(e.details())
+            log.withFields({"request-id": req_id}).error(e.details())
             raise e
         except BaseException as e:
-            log.error(e)
+            log.withFields({"request-id": req_id}).error(e)
             raise e
         return res
 
@@ -109,7 +109,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     Returns the newly generated id
     """
     def _generate_req_id(self):
-        # TODO: actually spawn child processes. thread is currently None
+        # TODO: Sandbox each request to isolate environments.
         new_id = self.id_count
         self.live_requests[self.id_count] = None
         self.id_count += 1
@@ -120,11 +120,10 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
         return coord_stub
 
-    def _compute_logic(self, req, coord_stub):
+    def _compute_logic(self, req, coord_stub, req_id):
         state = init_state_fn()
 
         # Generate algo_id
-        req_id = self._generate_req_id()
 
         stop = False
         while not stop:

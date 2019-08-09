@@ -27,9 +27,8 @@ type ResultFromSite struct {
 // req: Map request containing user defined functions.
 func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponses, error) {
 	c.PendingRequests.Set(req.Id, req.Id)
-	c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
 	if c.SiteConnectors.Length() == 0 {
-		c.Log.Warn("No sites have been registered.")
+		c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("No sites have been registered.")
 		return nil, status.Error(codes.Unavailable, "There have been no sites registered.")
 	}
 
@@ -73,10 +72,11 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 
 	// Determine if there were unavailable sites
 	if len(unavailableSites) == sitesLength {
-		c.Log.WithFields(logrus.Fields{"unavailable-sites": unavailableSites}).Error("Wasn't able to contact any of the registered sites")
+		c.Log.WithFields(logrus.Fields{"unavailable-sites": unavailableSites,
+			"request-id": req.Id}).Error("Wasn't able to contact any of the registered sites")
 		return mapResponses, status.Error(codes.Unavailable, "Wasn't able to contact any of the registered sites")
 	} else if len(unavailableSites) > 0 {
-		c.Log.WithFields(logrus.Fields{"unavailable-sites": unavailableSites}).Warn("Wasn't able to contact all the requested sites")
+		c.Log.WithFields(logrus.Fields{"unavailable-sites": unavailableSites, "request-id": req.Id}).Warn("Wasn't able to contact all the requested sites")
 	}
 	mapResponses.UnavailableSites = unavailableSites
 	return mapResponses, nil
@@ -107,7 +107,7 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 		site.statusMux.Lock()
 		site.status = false
 		site.statusMux.Unlock()
-		c.Log.WithFields(logrus.Fields{"site-id": site.id}).Warn("Site is unavailable.")
+		c.Log.WithFields(logrus.Fields{"site-id": site.id, "request-id": req.Id}).Warn("Site is unavailable.")
 	} else {
 		site.statusMux.Lock()
 		site.status = true

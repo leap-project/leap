@@ -75,6 +75,8 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             leap_type = req["leap_type"]
             if leap_type == codes.UDF:
                 env = env_manager.CloudUDFEnvironment()
+            elif leap_type == codes.LAPLACE_UDF:
+                env = env_manager.CloudUDFEnvironment() # LaplaceUDF does not change cloud api logic
             elif leap_type == codes.PREDEFINED:
                 env = env_manager.CloudPredefinedEnvironment()
             elif leap_type == codes.PRIVATE_PREDEFINED:

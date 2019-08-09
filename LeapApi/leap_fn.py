@@ -65,9 +65,21 @@ class UDF(LeapFunction):
 
 
 class PrivateLaplaceUDF(UDF):
-    def __init__(self):
+    # target_attribute is the field in map result that we want to make private
+    # TODO: Make this scalable to multiple fields
+    def __init__(self, epsilon, delta, target_attribute):
         super().__init__()
         self.leap_type = codes.LAPLACE_UDF
+        self.epsilon = epsilon
+        self.delta = delta
+        self.target_attribute = target_attribute
+    
+    def create_request(self):
+        req = super().create_request()
+        req["epsilon"] = self.epsilon
+        req["delta"] = self.delta
+        req["target_attribute"] = self.target_attribute
+        return req
 
     def validate(self):
         pass

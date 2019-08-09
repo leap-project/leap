@@ -15,6 +15,24 @@ def laplace(result, epsilon, delta, sensitivity):
 
     return result + noise
 
+""" Dynamically computes sensitivity for a given map function
+"""
+def dynamic_laplace(epsilon, delta, target_attribute, map_fn, D, state):
+    sensitivity = -1
+    D_result = map_fn(D, state)[target_attribute]
+    for i,y in enumerate(D):
+        # For every (n-1)subset dataset
+        D_prime = D[:i] + D[i+1:]
+        D_prime_result = map_fn(D_prime, state)[target_attribute]
+        candidate_sensitvity = abs(D_result - D_prime_result)
+        if candidate_sensitvity > sensitivity: 
+            sensitivity = candidate_sensitvity
+    
+    private_result = laplace(D_result, epsilon, delta, sensitivity).item()
+    result = {}
+    result[target_attribute] = private_result
+    return json.dumps(result)
+
 """ Returns differentially private result through the exponential mechanism
 http://dimacs.rutgers.edu/~graham/pubs/slides/privdb-tutorial.pdf
 https://www.cis.upenn.edu/~aaroth/courses/slides/Lecture3.pdf
@@ -24,6 +42,7 @@ D: Dataset
 out_range: candidate output values to sample from
 score_fn(Dataset, output): returns how good output is for Dataset
 sensitivity:    sensitivity of the score function for dataset D
+TODO: Note that sensitivity is computed on filtered dataset instead of entire dataset
 """
 def exponential(epsilon, delta, D, out_range, score_fn, sensitivity=None):
     sample_pr = np.zeros(len(out_range))

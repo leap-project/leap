@@ -45,7 +45,6 @@ class SiteUDFEnvironment(SiteEnvironment):
 
         self.logger.withFields({"request-id": req_id}).info("Loaded site environment variables for udf function.")
 
-
 class SitePredefinedEnvironment(SiteEnvironment):
     def set_env(self, context, req, req_id):
         super().set_env(context, req, req_id)
@@ -57,6 +56,7 @@ class SitePredefinedEnvironment(SiteEnvironment):
         env_utils.load_from_fn_generator("map_fns", "map_fn", req, context, module=module)
         
         self.logger.withFields({"request-id": req_id}).info("Loaded site environment variables for predefined function.")
+
 
 class SitePrivatePredefinedEnvironment(SitePredefinedEnvironment):
     def set_env(self, context, req, req_id):
@@ -151,7 +151,7 @@ class CloudPrivatePredefinedEnvironment(CloudPredefinedEnvironment):
         import CloudAlgo.functions.privacy as leap_privacy
         context["leap_privacy"] = leap_privacy
         ###
-        
+
         epsilon = req["epsilon"]
         delta = req["delta"]
         privacy_params = {

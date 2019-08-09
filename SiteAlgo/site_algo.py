@@ -14,6 +14,8 @@ import pdb
 
 import Utils.env_manager as env_manager
 import LeapApi.codes as codes
+
+import CloudAlgo.functions.privacy as leap_privacy
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
@@ -84,6 +86,8 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
             leap_type = req["leap_type"]
             if leap_type == codes.UDF:
                 env = env_manager.SiteUDFEnvironment()
+            elif leap_type == codes.LAPLACE_UDF:
+                env = env_manager.SiteUDFEnvironment()
             elif leap_type == codes.PREDEFINED:
                 env = env_manager.SitePredefinedEnvironment()
             elif leap_type == codes.PRIVATE_PREDEFINED:
@@ -111,7 +115,17 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         data = self.get_data(req)
         if 'dataprep_fn' in globals():
             data = dataprep_fn(data)
-        map_result = map_fn[choice](data, state)
+        
+        # Adding logic for private udf functions
+        leap_type = req["leap_type"]
+        if leap_type == codes.LAPLACE_UDF or leap_type == codes.EXPONENTIAL_UDF:
+            # Compute sensitivity: maximum difference in score function
+            epsilon = req["epsilon"]
+            delta = req["delta"]
+            target_attribute = req["target_attribute"]
+            map_result = leap_privacy.dynamic_laplace(epsilon, delta, target_attribute, map_fn[choice], data, state)
+        else:
+            map_result = map_fn[choice](data, state)
         return map_result
 
     def get_data(self, req):

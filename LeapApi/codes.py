@@ -1,6 +1,7 @@
 ### Algo Code ###
 COUNT_ALGO = "count_fn"
-PRIVATE_COUNT_ALGO = "count_fn_dp"
+PRIVATE_SITE_COUNT_ALGO = "count_fn_site_dp" # Adds privacy at site layer
+PRIVATE_CLOUD_COUNT_ALGO = "count_fn_cloud_dp" # Adds privacy at cloud layer
 SUM_ALGO = "sum_fn"
 VARIANCE_ALGO = "var_fn"
 FEDERATED_LEARNING_ALGO = "fl_fn"

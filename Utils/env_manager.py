@@ -147,6 +147,11 @@ class CloudPredefinedEnvironment(CloudEnvironment):
 
 class CloudPrivatePredefinedEnvironment(CloudPredefinedEnvironment):
     def set_env(self, context, req, req_id):
+        ### Privacy specific imports 
+        import CloudAlgo.functions.privacy as leap_privacy
+        context["leap_privacy"] = leap_privacy
+        ###
+        
         epsilon = req["epsilon"]
         delta = req["delta"]
         privacy_params = {

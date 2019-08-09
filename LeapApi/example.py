@@ -21,8 +21,14 @@ def predef_count_exp():
     leap_predef.selector = selector
     return leap_predef
 
-def predef_private_count_exp():
-    leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_COUNT_ALGO, epsilon=1, delta=0)
+def predef_private_site_count_exp():
+    leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_SITE_COUNT_ALGO, epsilon=1, delta=0)
+    selector = "[age] > 50 and [bmi] < 25"
+    leap_predef.selector = selector
+    return leap_predef
+
+def predef_private_cloud_count_exp():
+    leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_CLOUD_COUNT_ALGO, epsilon=1, delta=0)
     selector = "[age] > 50 and [bmi] < 25"
     leap_predef.selector = selector
     return leap_predef
@@ -74,7 +80,7 @@ def local():
     coordinator = LocalCoordinator(sites)
     cloud = LocalCloudAlgoServicer(coordinator)
 
-    leap_exp_fn = predef_private_count_exp()
+    leap_exp_fn = predef_private_cloud_count_exp()
     local_leap = leap.LocalLeap(leap_exp_fn, cloud)
     print(local_leap.get_result())
 

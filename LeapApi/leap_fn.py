@@ -86,10 +86,41 @@ class PrivateLaplaceUDF(UDF):
 
 
 class PrivateExponentialUDF(UDF):
-    def __init__(self):
+    def __init__(self, epsilon, delta, target_attribute):
         super().__init__()
         self.leap_type = codes.EXPONENTIAL_UDF
+        self.epsilon = epsilon
+        self.delta = delta
+        self.target_attribute = target_attribute
+        self.score_fns = None
 
+    def create_request(self):
+        req = {}
+        score_fns = leap_utils.fn_to_string(self.score_fns)
+        agg_fns = leap_utils.fn_to_string(self.agg_fns)
+        update_fns = leap_utils.fn_to_string(self.update_fns)
+        choice_fn = leap_utils.fn_to_string(self.choice_fn)
+        stop_fn = leap_utils.fn_to_string(self.stop_fn)
+        dataprep_fn = leap_utils.fn_to_string(self.dataprep_fn)
+        postprocessing_fn = leap_utils.fn_to_string(self.postprocessing_fn)
+        init_state_fn = leap_utils.fn_to_string(self.init_state_fn)
+
+        req["score_fns"] = score_fns
+        req["agg_fns"] = agg_fns
+        req["update_fns"] = update_fns
+        req["choice_fn"] = choice_fn
+        req["stop_fn"] = stop_fn
+        req["dataprep_fn"] = dataprep_fn
+        req["postprocessing_fn"] = postprocessing_fn
+        req["init_state_fn"] = init_state_fn
+        req["selector"] = self.selector
+        req["leap_type"] = self.leap_type
+        
+
+        req["epsilon"] = self.epsilon
+        req["delta"] = self.delta
+        req["target_attribute"] = self.target_attribute
+        return req
 
 class PredefinedFunction(LeapFunction):
     def __init__(self, algo_code):

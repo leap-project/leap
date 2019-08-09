@@ -52,6 +52,25 @@ def udf_private_count_exp():
     leap_udf.selector = selector
     return leap_udf 
 
+def udf_private_quantile_exp():
+    epsilon = 1
+    delta = 0
+    target_attribute = "quantile"
+    leap_udf = leap_fn.PrivateExponentialUDF(epsilon, delta, target_attribute)
+    module = cloud_functions.quantile_fn_site_dp
+    leap_udf.score_fns = module.score_fns
+    leap_udf.update_fns = module.update_fns
+    leap_udf.agg_fns = module.agg_fns
+    leap_udf.choice_fn = module.choice_fn
+    leap_udf.stop_fn = module.stop_fn
+    leap_udf.dataprep_fn = module.dataprep_fn
+    leap_udf.postprocessing_fn = module.postprocessing_fn
+    leap_udf.init_state_fn = module.init_state_fn
+
+    selector = "[age] > 50 and [bmi] < 25"
+    leap_udf.selector = selector
+    return leap_udf 
+
 def udf_count_exp():
     leap_udf = leap_fn.UDF()
     module = cloud_functions.count_fn
@@ -99,7 +118,7 @@ def local():
     coordinator = LocalCoordinator(sites)
     cloud = LocalCloudAlgoServicer(coordinator)
 
-    leap_exp_fn = udf_private_count_exp()
+    leap_exp_fn = udf_private_quantile_exp()
     local_leap = leap.LocalLeap(leap_exp_fn, cloud)
     print(local_leap.get_result())
 

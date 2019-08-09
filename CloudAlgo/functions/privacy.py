@@ -2,6 +2,7 @@ import pdb
 import json
 import inspect
 import numpy as np
+import pandas as pd 
 
 """ Returns differentially private result through the laplace mechanism
 Adds noise from laplace distribution to result such that result is epsilon, delta dp
@@ -16,6 +17,7 @@ def laplace(result, epsilon, delta, sensitivity):
     return result + noise
 
 """ Dynamically computes sensitivity for a given map function
+TODO: Note that sensitivity is computed on filtered dataset instead of entire dataset
 """
 def dynamic_laplace(epsilon, delta, target_attribute, map_fn, D, state):
     sensitivity = -1
@@ -44,23 +46,30 @@ score_fn(Dataset, output): returns how good output is for Dataset
 sensitivity:    sensitivity of the score function for dataset D
 TODO: Note that sensitivity is computed on filtered dataset instead of entire dataset
 """
-def exponential(epsilon, delta, D, out_range, score_fn, sensitivity=None):
+def exponential(epsilon, delta, target_attribute, score_fn, D, state, sensitivity=None):
+    col = D[state["col"]]
+    # TODO: Think about if other output ranges are possible and how to define it in api
+    out_range = col
+
     sample_pr = np.zeros(len(out_range))
     # Expensive computation of the sensitivity
     if sensitivity is None:
         sensitivity = -1
-        for i,y in enumerate(D):
-            D_prime = D[:i] + D[i+1:]
-            for y in out_range:
-                q_d = score_fn(D, y)
-                q_d_prime = score_fn(D_prime, y)
+        for i,row in enumerate(D):
+            D_prime = pd.concat([D[:i], D[i+1:]])
+            # Iterate only out range that is not removed
+            for y in pd.concat([out_range[:i], out_range[i+1:]]):
+                q_d = score_fn(D, state, y)
+                q_d_prime = score_fn(D_prime, state, y)
                 candidate_sensitvity = abs(q_d - q_d_prime)
                 if candidate_sensitvity > sensitivity: 
                     sensitivity = candidate_sensitvity
 
     for i,y in enumerate(out_range):
-        sample_pr[i] = np.exp(epsilon*score_fn(D, y / (2*sensitivity)))
+        sample_pr[i] = np.exp(epsilon*score_fn(D, state, y) / (2*sensitivity))
     sample_pr = sample_pr / sample_pr.sum()
     
     sample = np.random.choice(out_range, 1, p=sample_pr).item()
-    return sample
+    result = {}
+    result[target_attribute] = sample
+    return json.dumps(result)

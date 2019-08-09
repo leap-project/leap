@@ -31,6 +31,8 @@ class SiteEnvironment(Environment):
     def set_env(self, context, req, req_id):
         import numpy as np
         context["np"] = np
+        import pandas as pd
+        context["pd"] = pd
         self.logger.withFields({"request-id": req_id}).info("Loaded base site environment variables")
 
 
@@ -44,6 +46,20 @@ class SiteUDFEnvironment(SiteEnvironment):
         exec(req["dataprep_fn"], context)
 
         self.logger.withFields({"request-id": req_id}).info("Loaded site environment variables for udf function.")
+
+class SiteExponentialUDFEnvironment(SiteUDFEnvironment):
+    def set_env(self, context, req, req_id):
+        super(SiteUDFEnvironment, self).set_env(context, req, req_id)
+
+        # super().super().set_env(context, req, req_id)
+
+        exec(req["score_fns"], context, globals())
+        context["score_fn"] = score_fns()
+        exec(req["choice_fn"], context)
+        exec(req["dataprep_fn"], context)
+
+        self.logger.withFields({"request-id": req_id}).info("Loaded site environment variables for udf function.")
+
 
 class SitePredefinedEnvironment(SiteEnvironment):
     def set_env(self, context, req, req_id):

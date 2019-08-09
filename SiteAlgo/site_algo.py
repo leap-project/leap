@@ -88,6 +88,8 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
                 env = env_manager.SiteUDFEnvironment()
             elif leap_type == codes.LAPLACE_UDF:
                 env = env_manager.SiteUDFEnvironment()
+            elif leap_type == codes.EXPONENTIAL_UDF:
+                env = env_manager.SiteExponentialUDFEnvironment()
             elif leap_type == codes.PREDEFINED:
                 env = env_manager.SitePredefinedEnvironment()
             elif leap_type == codes.PRIVATE_PREDEFINED:
@@ -118,12 +120,17 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         
         # Adding logic for private udf functions
         leap_type = req["leap_type"]
-        if leap_type == codes.LAPLACE_UDF or leap_type == codes.EXPONENTIAL_UDF:
+        if leap_type == codes.LAPLACE_UDF:
             # Compute sensitivity: maximum difference in score function
             epsilon = req["epsilon"]
             delta = req["delta"]
             target_attribute = req["target_attribute"]
             map_result = leap_privacy.dynamic_laplace(epsilon, delta, target_attribute, map_fn[choice], data, state)
+        elif leap_type == codes.EXPONENTIAL_UDF:
+            epsilon = req["epsilon"]
+            delta = req["delta"]
+            target_attribute = req["target_attribute"]
+            map_result = leap_privacy.exponential(epsilon, delta, target_attribute, score_fn[choice], data, state)
         else:
             map_result = map_fn[choice](data, state)
         return map_result

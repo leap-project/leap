@@ -105,7 +105,6 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 		site.status = false
 		site.statusMux.Unlock()
 		c.Log.WithFields(logrus.Fields{"site-id": site.id}).Warn("Site is unavailable.")
-		checkErr(c, err)
 	} else {
 		site.statusMux.Lock()
 		site.status = true

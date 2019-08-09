@@ -67,22 +67,30 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
        """
     def Compute(self, request, context):
         log.info("Received a computation request.")
-        coord_stub = self._get_coord_stub()
-        req = json.loads(request.req)
 
-        leap_type = req["leap_type"]
-        if leap_type == codes.UDF:
-            env = env_manager.CloudUDFEnvironment()
-        elif leap_type == codes.PREDEFINED:
-            env = env_manager.CloudPredefinedEnvironment()
-        elif leap_type == codes.FEDERATED_LEARNING:
-            env = env_manager.CloudFedereatedLearningEnvironment()
-        env.set_env(globals(), req)
+        try:
+            coord_stub = self._get_coord_stub()
+            req = json.loads(request.req)
 
-        result = self._compute_logic(req, coord_stub)
+            leap_type = req["leap_type"]
+            if leap_type == codes.UDF:
+                env = env_manager.CloudUDFEnvironment()
+            elif leap_type == codes.PREDEFINED:
+                env = env_manager.CloudPredefinedEnvironment()
+            elif leap_type == codes.FEDERATED_LEARNING:
+                env = env_manager.CloudFedereatedLearningEnvironment()
+            env.set_env(globals(), req)
 
-        res = pb.computation_msgs_pb2.ComputeResponse()
-        res.response = json.dumps(result)
+            result = self._compute_logic(req, coord_stub)
+
+            res = pb.computation_msgs_pb2.ComputeResponse()
+            res.response = json.dumps(result)
+        except grpc.RpcError as e:
+            log.error(e.details())
+            return e
+        except BaseException as e:
+            log.error(e)
+            return e
         return res
 
     """ Return new request that is sent to the client
@@ -123,17 +131,10 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             map_results = []
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
-            try:
-                site_request = self._create_computation_request(req_id, req, state)
-            except Exception as e:
-                log.error(e)
+            site_request = self._create_computation_request(req_id, req, state)
 
-            try:
                 # Get result from each site through coordinator
-                results = coord_stub.Map(site_request)
-            except grpc.RpcError as e:
-                log.error(e.details())
-                return e
+            results = coord_stub.Map(site_request)
 
             extracted_responses = self._extract_map_responses(results.responses)
 

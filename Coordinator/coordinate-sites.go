@@ -33,6 +33,7 @@ func (c *Coordinator) RegisterSite(ctx context.Context, req *pb.SiteRegReq) (*pb
 		c.SiteConnectors.Set(siteId, site)
 		msg := "Site " + strconv.Itoa(int(siteId)) + " registered successfully"
 		response := pb.SiteRegRes{Success: true, Msg: msg}
+		c.Log.WithFields(logrus.Fields{"site-id": req.SiteId}).Info("Site successfully registered.")
 		return &response, nil
 	}
 }

@@ -127,7 +127,7 @@ func (sc *SiteConnector) Register() {
 	response, err := client.RegisterSite(ctx, &siteRegReq)
 	checkErr(sc, err)
 	if err == nil && response.Success {
-		sc.Log.Info("Successfully registered site with coordinator.")
+		sc.Log.Info("Site successfully registerd.")
 	} else {
 		sc.Log.Warn("Was not able to register site with coordinator.")
 	}

@@ -51,7 +51,7 @@ def fed_learn_exp():
         "d_x": 2, # input dimension
         "d_y": 1, # output dimension
         "batch_size": 1,
-        "max_iters": 20,
+        "max_iters": 7,
         "iters_per_epoch":1
     }
     leap_fed_learn.hyperparams = hyperparams
@@ -74,5 +74,5 @@ def local():
 
 
 if __name__ == "__main__":
-    local()
-    # distributed()
+    #local()
+    distributed()

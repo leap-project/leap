@@ -26,14 +26,6 @@ class AverageMeter(object):
 def map_fns():
     # Expects model, dataloader, optimizer, criterion to be predefined
     def map_fn1(data, state):
-        # batch_size = state["batch_size"]
-        # lr = state["lr"]
-        # d = state["d"]
-        # X = data[0]
-        # Y = data[1]
-        # dataset = NPDataset(X, Y)
-        # model = LinearModel(d, 1)
-        # criterion = torch.nn.MSELoss()
         dataloader = get_dataloader(hyperparams, data)
         if 'loss_history' in state:
             print("loss: {}".format(state["loss_history"][-1]))
@@ -135,25 +127,6 @@ def stop_fn(agg_result, state):
 
 def postprocessing_fn(agg_result, state):
     return agg_result
-
-# Initializes local variables (not passed to the site) and updates site_state in cloud_api
-# def prep(site_state):
-#     # d = site_state["d"]
-#     # lr = site_state["lr"]
-#     # model = LinearModel(d, 1)
-#     # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
-#
-#     model_weights = []
-#     # Get model weights
-#     for name, params in model.named_parameters():
-#         if params.requires_grad:
-#             model_weights.append(params.cpu().tolist())
-#     site_state["model_weights"] = model_weights
-#     cloud_state = {
-#         "model": model,
-#         "optimizer": optimizer
-#     }
-#     return cloud_state
 
 def init_state_fn():
     state = {

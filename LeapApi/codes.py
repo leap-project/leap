@@ -5,6 +5,7 @@ PRIVATE_CLOUD_COUNT_ALGO = "count_fn_cloud_dp" # Adds privacy at cloud layer
 SUM_ALGO = "sum_fn"
 VARIANCE_ALGO = "var_fn"
 FEDERATED_LEARNING_ALGO = "fl_fn"
+QUANTILE_ALGO = "quantile_fn"
 
 ### Leap Types ###
 UDF = 1

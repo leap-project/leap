@@ -67,7 +67,8 @@ def udf_private_quantile_exp():
     leap_udf.postprocessing_fn = module.postprocessing_fn
     leap_udf.init_state_fn = module.init_state_fn
 
-    selector = "[age] > 50 and [bmi] < 25"
+    # selector = "[age] > 50 and [bmi] < 25"
+    selector = ""
     leap_udf.selector = selector
     return leap_udf 
 
@@ -86,6 +87,12 @@ def udf_count_exp():
     selector = "[age] > 50 and [bmi] < 25"
     leap_udf.selector = selector
     return leap_udf
+
+def quantile_exp():
+    leap_predef = leap_fn.PredefinedFunction(codes.QUANTILE_ALGO)
+    selector = ""
+    leap_predef.selector = selector
+    return leap_predef
 
 def fed_learn_exp():
     module = leap_functions.fl_fn

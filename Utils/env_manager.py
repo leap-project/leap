@@ -131,15 +131,17 @@ class CloudPredefinedEnvironment(CloudEnvironment):
 class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
     def set_env(self, context, req):
         super().set_env(context, req)
+
+        ### Function specific imports
         import torch
         globals()["torch"] = torch
         context["torch"] = torch
         context["AverageMeter"] = leap_fn.fl_fn.AverageMeter
         hyperparams = json.loads(req["hyperparams"])
         context["hyperparams"] = hyperparams
-        
-        # pass in context as second argument so that get_model has access to context variables
+        ###
 
+        # pass in context as second argument so that get_model has access to context variables
         env_utils.load_from_fn_generator("get_model", "model", req, context, gen_fn_args=[hyperparams])
         params = context["model"].parameters()
         env_utils.load_from_fn_generator("get_optimizer", "optimizer", req, context, gen_fn_args=[params, hyperparams])

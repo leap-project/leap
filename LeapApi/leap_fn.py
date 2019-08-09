@@ -28,6 +28,7 @@ class LeapFunction():
         self.postprocessing_fn = None
         self.init_state_fn = None
         self.selector = None
+        self.leap_type = None
 
     def create_request(self):
         req = {}
@@ -49,6 +50,7 @@ class LeapFunction():
         req["postprocessing_fn"] = postprocessing_fn
         req["init_state_fn"] = init_state_fn
         req["selector"] = self.selector
+        req["leap_type"] = self.leap_type
 
         return req
 
@@ -56,11 +58,7 @@ class LeapFunction():
 class UDF(LeapFunction):
     def __init__(self):
         super().__init__()
-    
-    def create_request(self):
-        req = super().create_request()
-        req["leap_type"] = codes.UDF
-        return req
+        self.leap_type = codes.UDF
         
     def validate(self):
         pass
@@ -70,6 +68,7 @@ class PredefinedFunction(LeapFunction):
     def __init__(self, algo_code):
         super().__init__()
         self.algo_code = algo_code
+        self.leap_type = codes.PREDEFINED
 
     def validate(self):
         pass
@@ -77,7 +76,22 @@ class PredefinedFunction(LeapFunction):
     def create_request(self):
         req = super().create_request()
         req["algo_code"] = self.algo_code
-        req["leap_type"] = codes.PREDEFINED
+        return req
+
+class PrivatePredefinedFunction(PredefinedFunction):
+    def __init__(self, algo_code, epsilon, delta):
+        super().__init__(algo_code)
+        self.epsilon = epsilon
+        self.delta = delta
+        self.leap_type = codes.PRIVATE_PREDEFINED
+
+    def validate(self):
+        pass
+
+    def create_request(self):
+        req = super().create_request()
+        req["epsilon"] = self.epsilon
+        req["delta"] = self.delta
         return req
 
 
@@ -90,6 +104,7 @@ class FedLearnFunction(PredefinedFunction):
         self.get_criterion = None
         self.hyperparams = None
         self.get_dataloader = None
+        self.leap_type = codes.FEDERATED_LEARNING
     
     def create_request(self):
         req = super().create_request()
@@ -99,7 +114,6 @@ class FedLearnFunction(PredefinedFunction):
         req["get_model"] = leap_utils.fn_to_string(self.get_model)
         req["get_dataloader"] = leap_utils.fn_to_string(self.get_dataloader)
         req["hyperparams"] = json.dumps(self.hyperparams)
-        req["leap_type"] = codes.FEDERATED_LEARNING
         req["algo_code"] = self.algo_code
         return req
 

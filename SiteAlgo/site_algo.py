@@ -86,6 +86,8 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
                 env = env_manager.SiteUDFEnvironment()
             elif leap_type == codes.PREDEFINED:
                 env = env_manager.SitePredefinedEnvironment()
+            elif leap_type == codes.PRIVATE_PREDEFINED:
+                env = env_manager.SitePrivatePredefinedEnvironment()
             elif leap_type == codes.FEDERATED_LEARNING:
                 env = env_manager.SiteFederatedLearningEnvironment()
             env.set_env(globals(), req, request.id)

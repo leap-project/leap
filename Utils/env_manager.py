@@ -29,6 +29,8 @@ class SiteEnvironment(Environment):
         self.logger = logger.withFields({"node": "site-algo"})
 
     def set_env(self, context, req, req_id):
+        import numpy as np
+        context["np"] = np
         self.logger.withFields({"request-id": req_id}).info("Loaded base site environment variables")
 
 
@@ -55,6 +57,17 @@ class SitePredefinedEnvironment(SiteEnvironment):
         env_utils.load_from_fn_generator("map_fns", "map_fn", req, context, module=module)
         
         self.logger.withFields({"request-id": req_id}).info("Loaded site environment variables for predefined function.")
+
+class SitePrivatePredefinedEnvironment(SitePredefinedEnvironment):
+    def set_env(self, context, req, req_id):
+        epsilon = req["epsilon"]
+        delta = req["delta"]
+        privacy_params = {
+            "epsilon": epsilon,
+            "delta": delta
+        }
+        context["privacy_params"] = privacy_params
+        super().set_env(context, req, req_id)
 
 
 class SiteFederatedLearningEnvironment(SitePredefinedEnvironment):
@@ -90,6 +103,8 @@ class CloudEnvironment(Environment):
     def set_env(self, context, req, req_id):
         import json
         context["json"] = json
+        import numpy as np
+        context["np"] = np
         self.logger.withFields({"request-id": req_id}).info("Loaded base cloud environment variables.")
 
 
@@ -124,6 +139,19 @@ class CloudPredefinedEnvironment(CloudEnvironment):
         env_utils.load_from_fn_generator("update_fns", "update_fn", req, context, module=module)
         env_utils.load_from_fn_generator("agg_fns", "agg_fn", req, context, module=module)
         self.logger.withFields({"request-id": req_id}).info("Loaded cloud environment variables for predefined function.")
+
+
+class CloudPrivatePredefinedEnvironment(CloudPredefinedEnvironment):
+    def set_env(self, context, req, req_id):
+        epsilon = req["epsilon"]
+        delta = req["delta"]
+        privacy_params = {
+            "epsilon": epsilon,
+            "delta": delta
+        }
+        context["privacy_params"] = privacy_params
+        super().set_env(context, req, req_id)
+
 
 class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
     def set_env(self, context, req, req_id):

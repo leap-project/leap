@@ -77,6 +77,8 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
                 env = env_manager.CloudUDFEnvironment()
             elif leap_type == codes.PREDEFINED:
                 env = env_manager.CloudPredefinedEnvironment()
+            elif leap_type == codes.PRIVATE_PREDEFINED:
+                env = env_manager.CloudPrivatePredefinedEnvironment()
             elif leap_type == codes.FEDERATED_LEARNING:
                 env = env_manager.CloudFedereatedLearningEnvironment()
             env.set_env(globals(), req, req_id)

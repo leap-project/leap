@@ -21,6 +21,12 @@ def predef_count_exp():
     leap_predef.selector = selector
     return leap_predef
 
+def predef_private_count_exp():
+    leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_COUNT_ALGO, epsilon=1, delta=0)
+    selector = "[age] > 50 and [bmi] < 25"
+    leap_predef.selector = selector
+    return leap_predef
+
 def udf_count_exp():
     leap_udf = leap_fn.UDF()
     module = cloud_functions.count_fn
@@ -58,7 +64,7 @@ def fed_learn_exp():
     return leap_fed_learn
 
 def distributed():
-    leap_exp_fn = fed_learn_exp()
+    leap_exp_fn = predef_private_count_exp()
     dist_leap = leap.DistributedLeap(leap_exp_fn)
     print(dist_leap.get_result())
 
@@ -68,11 +74,11 @@ def local():
     coordinator = LocalCoordinator(sites)
     cloud = LocalCloudAlgoServicer(coordinator)
 
-    leap_exp_fn = fed_learn_exp()
+    leap_exp_fn = predef_private_count_exp()
     local_leap = leap.LocalLeap(leap_exp_fn, cloud)
     print(local_leap.get_result())
 
 
 if __name__ == "__main__":
-    #local()
-    distributed()
+    local()
+    #distributed()

@@ -1,3 +1,6 @@
+// The coordinator grpc services that get exposed to the
+// sites.
+
 package coordinator
 
 import (

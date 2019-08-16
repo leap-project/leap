@@ -1,5 +1,6 @@
-import inspect
+# General utils file for python programs in Leap.
 
+import inspect
 
 # Transforms a function to an empty string if its value is None,
 # else it returns the stringified source code for this function.

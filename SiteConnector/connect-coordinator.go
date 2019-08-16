@@ -1,3 +1,6 @@
+// The site connector grpc service that gets exposed to
+// the coordinator.
+
 package siteconnector
 
 import (

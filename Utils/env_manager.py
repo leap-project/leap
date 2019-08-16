@@ -1,11 +1,10 @@
-""" Responsible for loading global variables in cloud_algos and site_algos
-"""
+# This file contains the code for loading variables and functions
+# into the appropriate context.
+
 import pdb
 import logging
 from pylogrus import PyLogrus, TextFormatter
 import json
-import inspect 
-
 import CloudAlgo.functions as leap_fn
 import Utils.env_utils as env_utils
 

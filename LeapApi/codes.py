@@ -1,4 +1,7 @@
-### Algo Code ###
+# This file contains the code for the different algorithms in
+# Leap and the different types of functions that are available.
+
+# Algo Code
 COUNT_ALGO = "count_fn"
 PRIVATE_SITE_COUNT_ALGO = "count_fn_site_dp" # Adds privacy at site layer
 PRIVATE_CLOUD_COUNT_ALGO = "count_fn_cloud_dp" # Adds privacy at cloud layer
@@ -7,7 +10,7 @@ VARIANCE_ALGO = "var_fn"
 FEDERATED_LEARNING_ALGO = "fl_fn"
 QUANTILE_ALGO = "quantile_fn"
 
-### Leap Types ###
+# Leap Types
 UDF = 1
 LAPLACE_UDF = 2
 EXPONENTIAL_UDF = 3

@@ -1,3 +1,6 @@
+// The coordinator grpc service that gets exposed to the
+// cloud algos.
+
 package coordinator
 
 import (

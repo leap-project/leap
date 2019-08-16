@@ -1,14 +1,17 @@
+# The class that defines a local coordinator in Leap.
+
 import pdb
 from .localsite import SiteResponse
-""" Local implementation of coordinator
-Delegates compute request to local sites
-"""
+
 
 class CoordinatorResponse():
+
     def __init__(self):
         self.responses = []
 
+
 class LocalCoordinator():
+
     def __init__(self, sites):
         self.sites = sites
     

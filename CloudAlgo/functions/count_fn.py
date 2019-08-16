@@ -1,6 +1,7 @@
-import pdb
+# An algorithm that counts the number of elements returned
+# form the selector.
+
 import json
-import inspect
 
 def map_fns():
     # Sum a particular column

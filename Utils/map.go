@@ -1,3 +1,5 @@
+// An implementation of a thread safe map in go.
+
 package Utils
 
 import (

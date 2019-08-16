@@ -1,3 +1,5 @@
+// The main file for defining what a site connector looks like.
+
 package siteconnector
 
 import (

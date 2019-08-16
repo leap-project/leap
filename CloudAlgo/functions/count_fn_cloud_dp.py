@@ -1,9 +1,9 @@
-import pdb
-import json
-import inspect
-import numpy as np
+# An algorithm that counts the number of elements returned
+# from the database and makes the output differentially private
+# in the cloud.
 
-# Sum a particular column
+import json
+
 
 def map_fns():
 

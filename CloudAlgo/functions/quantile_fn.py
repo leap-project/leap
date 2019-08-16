@@ -1,6 +1,7 @@
-import pdb
+# Algorithm that returns the quantiles for the data on each site
+# in Leap.
+
 import json
-import inspect
 import numpy as np
 
 def map_fns():

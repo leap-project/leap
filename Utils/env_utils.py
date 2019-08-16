@@ -1,5 +1,6 @@
+# Utils file for helper functions to the environment manager.
+
 import inspect
-import pdb
 
 # Loads a function named fn_name from req into the appropriate
 # context. If it doesn't exist, load function from pre-existing

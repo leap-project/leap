@@ -2,20 +2,19 @@
 # will create an instance of the LEAP class and can either
 # set their own user defined functions or use one of the func-
 # tions available in LEAP
+
 from abc import ABC, abstractmethod
 import sys
 sys.path.append("../")
 import json
 import grpc
 import ProtoBuf as pb
-import LeapApi.codes as codes
-import inspect
-import pdb
-from Utils import leap_utils
 
-class LocalCloudRequest():
+
+class LocalCloudRequest:
     def __init__(self):
         self.req = None
+
 
 # TODO: Deal with imports. Right now, we assume the local sites and cloud have all necessary imports.
 class Leap(ABC):

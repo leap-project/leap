@@ -1,6 +1,7 @@
+# A file with a few examples on how to write a Leap program.
+
 import sys
 sys.path.append("../")
-import pdb
 import LeapApi.leap as leap
 import LeapApi.leap_fn as leap_fn
 import LeapApi.codes as codes
@@ -11,8 +12,6 @@ import LeapApi.LeapLocal.functions as leap_functions
 from LeapApi.LeapLocal.cloud import LocalCloudAlgoServicer
 from LeapApi.LeapLocal.localsite import LocalSiteAlgoServicer
 from LeapApi.LeapLocal.coordinator import LocalCoordinator
-
-import torch
 
 
 def predef_count_exp():

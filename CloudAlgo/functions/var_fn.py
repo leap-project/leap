@@ -1,7 +1,9 @@
-import pdb
+# Algorithm that returns the variance of the datasets
+# analyzed in Leap.
+
 import json
-import inspect
 import pandas as pd
+
 
 def map_fns():
     # Sum a particular column
@@ -25,6 +27,7 @@ def map_fns():
         return json.dumps(result)
     return [map_fn1, map_fn2]
 
+
 def agg_fns():
     def agg_fn1(map_results):
         s = 0
@@ -45,28 +48,35 @@ def agg_fns():
         return ss/c
     return [agg_fn1, agg_fn2]
 
+
 def update_fns():
     def update_fn1(agg_result, state):
         state["i"] += 1
         state["mean"] = agg_result
         return state
+
     def update_fn2(agg_result, state):
         state["i"] += 1
         return state
     return [update_fn1, update_fn2]
 
+
 # Returns which map/agg fn to run
 def choice_fn(state):
     return state["i"] % 2
 
+
 def dataprep_fn(data):
     return data
+
 
 def stop_fn(agg_result, state):
     return state["i"] == 2
 
+
 def postprocessing_fn(agg_result, state):
     return agg_result
+
 
 def init_state_fn():
     state = {

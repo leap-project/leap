@@ -1,7 +1,6 @@
-import pdb
-import json
-import inspect
+# An algorithm that trains a model using federated learning.
 
+import json
 import pandas as pd
 import torch
 import torch.utils.data

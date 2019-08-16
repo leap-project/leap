@@ -1,7 +1,8 @@
-import pdb
+# An algorithm that counts the number of elements returned
+# from the database and makes the output differentially private
+# in the sites.
+
 import json
-import inspect
-import numpy as np
 
 # Sum a particular column
 

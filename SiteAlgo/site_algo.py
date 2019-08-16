@@ -1,3 +1,9 @@
+# This file contains the code for the server that listens
+# to requests from a coordinator. It also operates the logic
+# for running the algorithms.
+#
+# Usage: python -m site_algo -ip=127.0.0.1:60000 -cip=127.0.0.1:50001
+
 import sys
 sys.path.append("../")
 import grpc

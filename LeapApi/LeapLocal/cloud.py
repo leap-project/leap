@@ -1,10 +1,13 @@
+# The class that defines a local cloud algo in Leap
+
 import pdb
 import json
-
 from CloudAlgo.cloud_algo import CloudAlgoServicer
 from LeapLocal.localsite import SiteResponse
+
+
 # data template for site request
-class SiteRequest():
+class SiteRequest:
     def __init__(self):
         self.id = None
         self.req = None

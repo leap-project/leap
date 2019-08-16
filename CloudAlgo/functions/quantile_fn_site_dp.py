@@ -1,8 +1,7 @@
-""" Quantiles using exponential mechanism
-"""
-import pdb
+# Algorithm that returns the quantiles for the data on each site
+# in Leap and adds noise using the exponential mechanism.
+
 import json
-import inspect
 import numpy as np
 
 

@@ -1,3 +1,5 @@
+// File containing any error related helper functions in Go.
+
 package Utils
 
 import (

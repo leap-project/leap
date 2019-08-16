@@ -1,6 +1,7 @@
-import pdb
+# The laplace and exponential mechanisms to add noise to outputs
+# in Leap.
+
 import json
-import inspect
 import numpy as np
 import pandas as pd 
 

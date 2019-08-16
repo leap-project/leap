@@ -1,3 +1,5 @@
+// The main file for defining what a coordinator looks like.
+
 package coordinator
 
 import (

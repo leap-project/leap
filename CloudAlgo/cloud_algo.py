@@ -1,10 +1,8 @@
-"""
-Server to listen to requests from the Coordinator and 
-spawn processes responsible for iterative aggregation logic
+# File for a program that listens to requests from clients
+# and runs some of the 8 abstract functions in leap.
+#
+# Usage: python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000
 
-1. Generate unique ID for UDF
-2. grpc call to coordinator to get site map results
-"""
 import sys
 sys.path.append("../")
 import time
@@ -13,7 +11,6 @@ import multiprocessing
 import grpc
 import ProtoBuf as pb
 import concurrent.futures as futures
-import pdb
 import json
 import logging
 from pylogrus import PyLogrus, TextFormatter

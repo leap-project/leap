@@ -47,21 +47,26 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.id_count = 0
         self.live_requests = {}
 
-    """ Coordinates computations across multiple local sites and returns result to client
-       req["module"]: stringified python module containing
-           * map_fn: a list of map(data, site_state) that returns local computations at each iteration
-           * agg_fn: a list of agg(map_results, cloud_state) used to aggregate results from each site
-           * update_fn: a list of update(agg_result, site_state, cloud_state) used to update the site and cloud states
-           * choice_fn(site_state): selects the appropriate map/agg_fn depending on the state
-           * stop_fn(agg_result, site_state, cloud_state): returns true if stopping criterion is met
-           * post_fn(agg_result, site_state, cloud_state): final processing of the aggregated result to return to client
-           * data_prep(data): converts standard data schema from each site to be compatible with map_fn
-           * prep(site_state): initialization for the cloud
-           * site_state: state that is passed to the sites
-           * cloud_state: state that is only used by the cloud
-    
-       req["filter"]: query filter string to get dataset of interest
-       """
+    # Coordinates computations across multiple local sites and returns result to client
+    #   req["module"]: stringified python module containing
+    #       * map_fn: a list of map(data, site_state) that returns local computations at each iteration
+    #       * agg_fn: a list of agg(map_results, cloud_state) used to aggregate results from each site
+    #       * update_fn: a list of update(agg_result, site_state, cloud_state) used to update the site and cloud states
+    #       * choice_fn(site_state): selects the appropriate map/agg_fn depending on the state
+    #       * stop_fn(agg_result, site_state, cloud_state): returns true if stopping criterion is met
+    #       * post_fn(agg_result, site_state, cloud_state): final processing of the aggregated result to return to client
+    #       * data_prep(data): converts standard data schema from each site to be compatible with map_fn
+    #       * prep(site_state): initialization for the cloud
+    #       * site_state: state that is passed to the sites
+    #       * cloud_state: state that is only used by the cloud
+    #
+    #   req["filter"]: query filter string to get dataset of interest
+
+    # Grpc service call for the cloud algo to compute some
+    # algorithm.
+    #
+    # request: The algorithm to be computed
+    # context: Grpc boilerplate
     def Compute(self, request, context):
         req_id = self._generate_req_id()
         log.withFields({"request-id": req_id}).info("Received a computation request.")
@@ -96,10 +101,12 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             raise e
         return res
 
-    """ Return new request that is sent to the client
-    TODO: Split cloud algo udf functions from site algos
-    """
-    # input_req is the request sent by the client_connector
+    # Takes a request and the state and creates a request to
+    # be sent to the coordinator that grpc understands.
+    #
+    # req_id: The id of the request.
+    # req: The request to be serialized
+    # state: The state that will go in the request.
     def _create_computation_request(self, req_id, req, state):
         request = pb.computation_msgs_pb2.MapRequest()
         request.id = req_id
@@ -108,9 +115,8 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         request.req = json.dumps(req)
         return request
 
-    """ Adds a new entry to self.live_requests mapping id to process
-    Returns the newly generated id
-    """
+    # Generates a new id for a request
+    # TODO: Lock the request counter
     def _generate_req_id(self):
         # TODO: Sandbox each request to isolate environments.
         new_id = self.id_count
@@ -118,24 +124,32 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.id_count += 1
         return new_id       
 
+    # Gets the grpc stub to send a message to the coordinator.
     def _get_coord_stub(self):
         channel = grpc.insecure_channel(self.coordinator_ip_port)
         coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
         return coord_stub
 
+    # Contains the logic for aggregating and performing the
+    # general algorithmic portion of Leap that happens in the
+    # cloud.
+    #
+    # req: The request from a client.
+    # coord_stub: The stub used to send a message to the
+    #             coordinator.
+    # req_id: The id of the request being sent.
     def _compute_logic(self, req, coord_stub, req_id):
         state = init_state_fn()
-
-        # Generate algo_id
 
         stop = False
         while not stop:
             map_results = []
+
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
             site_request = self._create_computation_request(req_id, req, state)
 
-                # Get result from each site through coordinator
+            # Get result from each site through coordinator
             results = coord_stub.Map(site_request)
 
             extracted_responses = self._extract_map_responses(results.responses)
@@ -151,6 +165,9 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         post_result = postprocessing_fn(agg_result, state)
         return post_result
 
+    # Extracts the protobuf responses into a list.
+    #
+    # pb_responses: Response message from protobuf.
     def _extract_map_responses(self, pb_responses):
         responses = []
         for r in pb_responses:

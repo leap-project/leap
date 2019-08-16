@@ -1,12 +1,12 @@
 package Tests
 
 import (
-	"leap/Concurrent"
+	"leap/Utils"
 	"testing"
 )
 
 func TestSet(t *testing.T) {
-	cmap := Concurrent.NewMap()
+	cmap := Utils.NewMap()
 	cmap.Set("test", 5)
 	val := cmap.Get("test")
 	length := cmap.Length()
@@ -19,7 +19,7 @@ func TestSet(t *testing.T) {
 }
 
 func TestContains(t *testing.T) {
-	cmap := Concurrent.NewMap()
+	cmap := Utils.NewMap()
 	cmap.Set("test", 7)
 	contains := cmap.Contains("test")
 	length := cmap.Length()
@@ -38,7 +38,7 @@ func TestContains(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
-	cmap := Concurrent.NewMap()
+	cmap := Utils.NewMap()
 	cmap.Set("test", 7)
 	cmap.Delete("test")
 	contains := cmap.Contains("test")

@@ -10,12 +10,10 @@ import json
 import ProtoBuf as pb
 import logging
 from pylogrus import PyLogrus, TextFormatter
-import pdb
-
 import Utils.env_manager as env_manager
 import LeapApi.codes as codes
-
 import CloudAlgo.functions.privacy as leap_privacy
+
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
@@ -36,20 +34,22 @@ log = logger.withFields({"node": "site-algo"})
 redCapUrl = "https://rc.bcchr.ca/redcap_demo/api/"
 redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 
-""" Contacts a redCap project and returns the filtered records from this project.
 
-url: Url of the RedCap project
-token: Token used to access RedCap project given in the url
-filterLogic: The filter to be applied to the results."""
+# Contacts a redCap project and returns the filtered records
+# from this project
+#
+# url: Url of the RedCap project
+# token: Token used to access RedCap project given in the url
+# filterLogic: The filter to be applied to the results."""
 def getRedcapData(url, token, filterLogic):
     project = redcap.Project(url, token)
     patients = project.export_records(filter_logic=filterLogic)
     return patients
 
-"""Starts listening for RPC requests at the specified ip and
-port.
+# Starts listening for RPC requests at the specified ip and
+# port.
 
-No args"""
+# No args
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(args.ip_port, args.connector_ip_port), server)
@@ -67,16 +67,12 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         self.connector_ip_port = connector_ip_port
         self.live_requests = {}
 
-    def _get_response_obj(self):
-        return pb.computation_msgs_pb2.MapResponse()
-
-    """ RPC requesting for a computation to be done using
-    this algorithm.
-    
-    request: A protobuf request determining what to be
-             computed
-    context: Boilerplate for grpc containing the context
-             of the RPC."""
+    # RPC requesting for a map function to be run
+    #
+    # request: A protobuf request determining what to be
+    #          computed
+    # context: Boilerplate for grpc containing the context
+    #          of the RPC."""
     def Map(self, request, context):
         try:
             self.live_requests[request.id] = None
@@ -106,7 +102,17 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         except BaseException as e:
             log.withFields({"request-id": request.id}).error(e)
             raise e
-    
+
+    # Gets the protobuf message for a map response
+    #
+    # No args
+    def _get_response_obj(self):
+        return pb.computation_msgs_pb2.MapResponse()
+
+    # Chooses the appropriate map function to run, gets the
+    # data, and computes the map function on the data.
+    #
+    # request: Request containing the functions to be run.
     def map_logic(self, request):
         req_id = request.id
         req = json.loads(request.req)
@@ -135,6 +141,10 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
             map_result = map_fn[choice](data, state)
         return map_result
 
+    # Gets the data from the database
+    #
+    # req: A leap request containing the selector to retrieve
+    #      the data.
     def get_data(self, req):
         s_filter = req["selector"]
         data = getRedcapData(redCapUrl, redCapToken, s_filter)

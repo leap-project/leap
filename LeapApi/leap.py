@@ -16,17 +16,19 @@ class LocalCloudRequest:
         self.req = None
 
 
-# TODO: Deal with imports. Right now, we assume the local sites and cloud have all necessary imports.
+# An abstract class that represents Leap.
 class Leap(ABC):
 
     # Constructor that takes in a code representing one of
     # the available algorithms in Leap.
+    #
+    # leap_function: The algorithm that a user wants to rub
+    #                in Leap.
     def __init__(self, leap_function):
         self.leap_function = leap_function
 
-    # # Gets the result of performing the selected algorithm
-    # # on the filtered data.
-    # #
+    # Gets the result of performing the selected algorithm
+    # on the filtered data.
     def get_result(self):
         request = self._create_computation_request()
             
@@ -39,7 +41,6 @@ class Leap(ABC):
         return result
 
     # Uses protobuf to create a computation request.
-    #
     def _create_computation_request(self):
         request = self._create_request_obj()
 
@@ -56,29 +57,47 @@ class Leap(ABC):
         pass
     
 
+# Extends the base Leap class and mocks Leap being run in a
+# distributed environment. This class is useful for debugging.
 class LocalLeap(Leap):
+
+    # Constructor
+    #
+    # leap_function: An algorithm to be run in Leap.
+    # cloud: An instance of a class mocking the cloud.
     def __init__(self, leap_function, cloud):
         super().__init__(leap_function)
         self.cloud = cloud
 
+    # Returns a stub that mocks sending a request to the
+    # cloud.
     def _get_compute_stub(self):
         return self.cloud
 
+    # Creates a request for a local leap computation.
     def _create_request_obj(self):
         request = LocalCloudRequest()
         return request 
 
 
+# Extends the base Leap class and actually runs the Leap
+# algorithms in a distributed environment.
 class DistributedLeap(Leap):
+
+    # Constructor
+    #
+    # leap_function: An algorithm to be run in Leap.
     def __init__(self, leap_function):
         super().__init__(leap_function)
-    
+
+    # Gets the stub from the cloud grpc service. This stub
+    # is used to send messages to the cloud algos.
     def _get_compute_stub(self):
-        # Sets up the connection so that we can make RPC calls
         channel = grpc.insecure_channel("127.0.0.1:70000")
         stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
         return stub
 
+    # Creates a protobuf request object for a Leap computation
     def _create_request_obj(self):
         request = pb.computation_msgs_pb2.ComputeRequest()
-        return request 
+        return request

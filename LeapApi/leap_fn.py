@@ -10,11 +10,11 @@ import LeapApi.codes as codes
 from Utils import leap_utils
 
 
-# TODO: Deal with imports. Right now, we assume the local sites and cloud have all necessary imports.
-class LeapFunction():
+# The main base class for a Leap function.
+class LeapFunction:
 
-    # Constructor that takes in a code representing one of
-    # the available algorithms in Leap.
+    # Constructor that initializes the abstract functions in
+    # Leap to None.
     def __init__(self):
         self.map_fns = None
         self.agg_fns = None
@@ -27,6 +27,8 @@ class LeapFunction():
         self.selector = None
         self.leap_type = None
 
+    # Creates a request to be sent to a Leap program with the
+    # abstract functions and the selector.
     def create_request(self):
         req = {}
         map_fns = leap_utils.fn_to_string(self.map_fns)
@@ -52,7 +54,9 @@ class LeapFunction():
         return req
 
 
+# A user defined leap function. Extends the base LeapFunction.
 class UDF(LeapFunction):
+
     def __init__(self):
         super().__init__()
         self.leap_type = codes.UDF
@@ -61,16 +65,22 @@ class UDF(LeapFunction):
         pass
 
 
+# A user defined leap function that uses the laplace mechanism
+# for privacy.
 class PrivateLaplaceUDF(UDF):
-    # target_attribute is the field in map result that we want to make private
-    # TODO: Make this scalable to multiple fields
+
+    # Takes in epsilon and delta, which are privacy parameters,
+    # and the target_attribute, which is the field in the map result
+    # that we want to make private
     def __init__(self, epsilon, delta, target_attribute):
         super().__init__()
         self.leap_type = codes.LAPLACE_UDF
         self.epsilon = epsilon
         self.delta = delta
         self.target_attribute = target_attribute
-    
+
+    # Creates a request with the abstract funcitons and the
+    # privacy parameters and target attributes defined.
     def create_request(self):
         req = super().create_request()
         req["epsilon"] = self.epsilon
@@ -82,7 +92,13 @@ class PrivateLaplaceUDF(UDF):
         pass
 
 
+# A user defined leap funciton that uses the exponential mechanism
+# for privacy.
 class PrivateExponentialUDF(UDF):
+
+    # Takes in epsilon and delta, which are privacy parameters,
+    # and the target_attribute, which is the field in the map result
+    # that we want to make private
     def __init__(self, epsilon, delta, target_attribute):
         super().__init__()
         self.leap_type = codes.EXPONENTIAL_UDF
@@ -91,6 +107,9 @@ class PrivateExponentialUDF(UDF):
         self.target_attribute = target_attribute
         self.score_fns = None
 
+    # Creates a request with the abstract functions, the
+    # privacy parameters and target attributes, and the score
+    # function used by the exponential mechanism.
     def create_request(self):
         req = {}
         score_fns = leap_utils.fn_to_string(self.score_fns)
@@ -112,14 +131,20 @@ class PrivateExponentialUDF(UDF):
         req["init_state_fn"] = init_state_fn
         req["selector"] = self.selector
         req["leap_type"] = self.leap_type
-        
-
         req["epsilon"] = self.epsilon
         req["delta"] = self.delta
         req["target_attribute"] = self.target_attribute
         return req
 
+
+# Extends the base LeapFunction and allows the user to choose
+# a Leap function that is already implemented in Leap.
 class PredefinedFunction(LeapFunction):
+
+    # Constructor
+    #
+    # algo_code: The number code for the algorithm that the
+    #            user wants to run.
     def __init__(self, algo_code):
         super().__init__()
         self.algo_code = algo_code
@@ -128,12 +153,23 @@ class PredefinedFunction(LeapFunction):
     def validate(self):
         pass
 
+    # Creates a request with the algo_code of the function
+    # that we want to run.
     def create_request(self):
         req = super().create_request()
         req["algo_code"] = self.algo_code
         return req
 
+
+# Extends the PredefinedFunction, but allows the output to
+# be differentially private.
 class PrivatePredefinedFunction(PredefinedFunction):
+
+    # Constructor
+    #
+    # algo_code: Number code for the algo to be executed.
+    # epsilon: Privacy parameter
+    # delta: Privacy parameter
     def __init__(self, algo_code, epsilon, delta):
         super().__init__(algo_code)
         self.epsilon = epsilon
@@ -143,6 +179,7 @@ class PrivatePredefinedFunction(PredefinedFunction):
     def validate(self):
         pass
 
+    # Creates a request with epsilon and delta.
     def create_request(self):
         req = super().create_request()
         req["epsilon"] = self.epsilon
@@ -160,7 +197,11 @@ class FedLearnFunction(PredefinedFunction):
         self.hyperparams = None
         self.get_dataloader = None
         self.leap_type = codes.FEDERATED_LEARNING
-    
+
+    # Creates a request for a federated learning model to be
+    # trained. The request includes the optimizer, criterion, model,
+    # dataloader, and hyperparams necessary for training a Pytorch
+    # model.
     def create_request(self):
         req = super().create_request()
 

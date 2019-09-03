@@ -1,8 +1,12 @@
 # LEAP
-LEAP project
+Leap project
+
+Leap is a Large-scale federated and privacy preserving Evaluation & Analysis Platform. It allows researchers to answer questions about any distributed medical data, while supporting primitives that can guarantee patient privacy. There are three basic parts to Leap: the client, the cloud, and the hospital sites. The Leap client is a set of programs that expose the API and is the point of interaction between the user and the platform. The cloud composes the main part of the infrastructure and is responsible for aggregating the results from each hospital. The third component is the hospital site, which runs computations/analysis on the dataset owned by that site.
 
 ## Setup
 1. Install Go
+
+
 2. Install Python
 3. Install protoc compiler and runtime
 - `sudo apt-get install autoconf automake libtool curl make g++ unzip`

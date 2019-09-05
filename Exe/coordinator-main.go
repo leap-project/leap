@@ -9,7 +9,7 @@ import (
 // Accepted Flags
 // - ip: Ip and port to listen for connections
 //
-// e.g go run *.go -ip=127.0.0.1:8000
+// e.g go run coordinator-main.go -ip=127.0.0.1:8000
 
 func main() {
 	config := coordinator.GetConfig("coord-config.json")

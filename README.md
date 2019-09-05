@@ -34,10 +34,10 @@ sudo ldconfig # refresh shared library cache.
 ### Go packages
 We need to install the packages used by our Go programs. To install the packages, run the following commands in your terminal:
 ```
-go get -u github.com/golang/protobuf/protoc-gen-go # Installs protobuf
-go get -u google.golang.org/grpc # Installs grpc
-go get -u github.com/sirupsen/logrus # Installs logrus
-go get -u github.com/rifflock/lfshook # Enables colour at terminal with multiwriter
+go get -u github.com/golang/protobuf/protoc-gen-go
+go get -u google.golang.org/grpc
+go get -u github.com/sirupsen/logrus
+go get -u github.com/rifflock/lfshook
 ```
 
 ### Python packages
@@ -55,8 +55,25 @@ pip install torch
 ```
 
 ## Running LEAP
-To run the coordinator go to the coordinator folder and type `go run *.go` in your terminal. You can change the ip and ports the coordinator will be listening to by modifying the config.json file in the coordinator folder.
+The leap infrastructure is composed of 4 different programs: the site-algo, the site-connector, the coordinator, and the cloud-algo. Once these 4 programs are up and running, you can use the Leap API to perform some computations.
 
-To run the site connector go to the site-connector folder and type `go run *.go` in your terminal. You can change the ip and ports the site-coonector will be listening to by modifying the config.json file in the coordinator folder.
+### Starting the Coordinator
+The coordinator is what holds the system together. Tt talks to the site-connector and the cloud-algo. To start the coordinator go to the Exe directory and run the following command:
+```go run coordinator-main.go -ip=127.0.0.1:5000```
+The `ip` is the ip and port the coordinator is listening to.
 
-To run a simple count query go to the cloud-algos folder and run `python count.py`.
+### Starting the Site Connector
+The site connector is the point of contact between each hospital site and the coordinator. To run the site connector go to the Exe directory and execute the following command: 
+```go run connector-main.go -ip=127.0.0.1:50001 -cip="127.0.0.1:50001" -aip="127.0.0.1:60000" -id=0```
+The `ip` is the ip and port the site connector is listening to, the `cip` is the ip and port the coordinator is listening to, and the `aip` is the ip and port of the site algo in the same site as the connector. You also have to give a numerical id to the site connector, which is used to identify the hospital site.
+
+### Starting the Site Algo
+The site algo has access to a dataset and runs computations relayed to it. It responds to requests from the site-connector, which passes the results from the site-algo to the coordinator. Inside the SiteAlgo directory, type the following command:
+```python -m site_algo -ip=127.0.0.1:60000 -cip=127.0.0.1:50001```
+The `ip` is the ip and port the site algo is listening to. The `cip` is the ip and port the site connector on the same site is listening to.
+
+### Starting the Cloud Algo
+The cloud algo receives the results from all the sites through the coordinator. It then performs some computation using these results. To run the cloud algo, navigate to the CloudAlgo directory and enter the following command: 
+```python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000```
+The `ip`is the ip and port the cloud algo is listening to. The `cip` is the ip and port the coordinator is listening to.
+

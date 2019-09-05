@@ -92,7 +92,7 @@ python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000
 
 ## Using Leap
 Now that you have set up the infrastructure, you can start using Leap. Below we have a simple example on how to count the number of patients on each hospital site that are older than 50 and have a bmi of less than 25.
-```
+```python
 import LeapApi.leap_fn as leap_fn
 import LeapApi.leap as leap
 
@@ -176,7 +176,7 @@ def init_state_fn():
 ```
 
 Now just send those functions over to Leap and get the result:
-```
+```python
 import LeapApi.leap_fn as leap_fn
 import LeapApi.leap as leap
 

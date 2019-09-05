@@ -183,15 +183,15 @@ import LeapApi.leap as leap
 udf_count = leap_fn.UDF()
 
 selector = "[age] > 50 and [bmi] < 25"
-leap_udf.selector = selector
-leap_udf.map_fns = map_fns
-leap_udf.update_fns = update_fns
-leap_udf.agg_fns = agg_fns
-leap_udf.choice_fn = choice_fn
-leap_udf.stop_fn = stop_fn
-leap_udf.dataprep_fn = dataprep_fn
-leap_udf.postprocessing_fn = postprocessing_fn
-leap_udf.init_state_fn = init_state_fn
+udf_count.selector = selector
+udf_count.map_fns = map_fns
+udf_count.update_fns = update_fns
+udf_count.agg_fns = agg_fns
+udf_count.choice_fn = choice_fn
+udf_count.stop_fn = stop_fn
+udf_count.dataprep_fn = dataprep_fn
+udf_count.postprocessing_fn = postprocessing_fn
+udf_count.init_state_fn = init_state_fn
 
 dist_leap = leap.DistributedLeap(udf_count)
 result = dist_leap.get_result()

@@ -62,26 +62,31 @@ The coordinator is what holds the system together. Tt talks to the site-connecto
 ```
 go run coordinator-main.go -ip=127.0.0.1:5000
 ```
-The `ip` is the ip and port the coordinator is listening to.
+`ip`: Ip and port of the coordinator
 
 ### Starting the Site Connector
 The site connector is the point of contact between each hospital site and the coordinator. To run the site connector go to the Exe directory and execute the following command: 
 ```
 go run connector-main.go -ip=127.0.0.1:50001 -cip="127.0.0.1:50001" -aip="127.0.0.1:60000" -id=0
 ```
-The `ip` is the ip and port the site connector is listening to, the `cip` is the ip and port the coordinator is listening to, and the `aip` is the ip and port of the site algo in the same site as the connector. You also have to give a numerical id to the site connector, which is used to identify the hospital site.
+`id`: Id of this site
+`ip`: Ip and port of this site connector
+`cip`: Ip and port of the coordinator
+`aip`: The ip and port of the site algo in the same site
 
 ### Starting the Site Algo
 The site algo has access to a dataset and runs computations relayed to it. It responds to requests from the site-connector, which passes the results from the site-algo to the coordinator. Inside the SiteAlgo directory, type the following command:
 ```
 python -m site_algo -ip=127.0.0.1:60000 -cip=127.0.0.1:50001
 ```
-The `ip` is the ip and port the site algo is listening to. The `cip` is the ip and port the site connector on the same site is listening to.
+`ìp`: Ip and port of this site algo
+`cip`: Ip and port of the site connector in the same site
 
 ### Starting the Cloud Algo
 The cloud algo receives the results from all the sites through the coordinator. It then performs some computation using these results. To run the cloud algo, navigate to the CloudAlgo directory and enter the following command: 
 ```
 python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000
 ```
-The `ip`is the ip and port the cloud algo is listening to. The `cip` is the ip and port the coordinator is listening to.
+`ip`: The ip and port of the cloud algo
+`cip`: The ip and port of the coordinator
 

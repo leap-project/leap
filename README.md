@@ -90,3 +90,109 @@ python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000
 `ip`: The ip and port of the cloud algo  
 `cip`: The ip and port of the coordinator
 
+## Using Leap
+Now that you have set up the infrastructure, you can start using Leap. Below we have a simple example on how to count the number of patients on each hospital site that are older than 50 and have a bmi of less than 25.
+```
+import LeapApi.leap_fn as leap_fn
+import LeapApi.leap as leap
+
+predef_count = leap_fn.PredefinedFunction(algo_code=codes.COUNT_ALGO)
+
+selector = "[age] > 50 and [bmi] < 25"
+predef_count.selector = selector
+
+dist_leap = leap.DistributedLeap(predef_count)
+result = dist_leap.get_result()
+
+```
+
+You can also write your own algorithms. To create an algorithm, that counts the number of patients on each site you need to write the 8 abstract functions of Leap. For example:
+```python
+import pdb
+import json
+import inspect
+import numpy as np
+
+# Sum a particular column
+
+def map_fns():
+
+    def map_fn1(data, state):
+        COUNT_SENSITIVITY = 1
+        epsilon = privacy_params["epsilon"]
+        delta = privacy_params["delta"]
+
+
+        if delta == 0:
+            noise = np.random.laplace(loc = 0, scale = COUNT_SENSITIVITY/float(epsilon), size = (1,1))
+        else:
+            sigma = (COUNT_SENSITIVITY/(epsilon))*np.sqrt(2*np.log(1.25/delta))
+            noise = np.random.normal(0.0, sigma, 1)
+
+        count = len(data) + noise.item()
+        result = {
+            "count": count
+        }
+        return json.dumps(result)
+
+    return [map_fn1]
+
+def agg_fns():
+
+    def agg_fn1(map_results):
+        s = 0
+        for result in map_results:
+            result = json.loads(result)
+            s += result["count"]
+        return s
+    return [agg_fn1]
+
+def update_fns():
+
+    def update_fn1(agg_result, state):
+        state["i"] += 1
+        return state
+
+    return [update_fn1]
+
+# Returns which map/agg fn to run
+def choice_fn(state):
+    return 0
+
+def dataprep_fn(data):
+    return data
+
+def stop_fn(agg_result, state):
+    return state["i"] == 1
+
+def postprocessing_fn(agg_result, state):
+    return agg_result
+
+def init_state_fn():
+    state = {
+        "i": 0,
+    }
+    return state
+```
+
+Now just send those functions over to Leap and get the result:
+```
+import LeapApi.leap_fn as leap_fn
+import LeapApi.leap as leap
+
+udf_count = leap_fn.UDF()
+
+selector = "[age] > 50 and [bmi] < 25"
+leap_udf.selector = selector
+leap_udf.map_fns = map_fns
+leap_udf.update_fns = update_fns
+leap_udf.agg_fns = agg_fns
+leap_udf.choice_fn = choice_fn
+leap_udf.stop_fn = stop_fn
+leap_udf.dataprep_fn = dataprep_fn
+leap_udf.postprocessing_fn = postprocessing_fn
+leap_udf.init_state_fn = init_state_fn
+
+dist_leap = leap.DistributedLeap(udf_count)
+result = dist_leap.get_result()
+```

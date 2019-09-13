@@ -8,6 +8,7 @@ import sys
 sys.path.append("../")
 import grpc
 import time
+import pandas
 import multiprocessing
 import argparse
 import concurrent.futures as futures
@@ -19,11 +20,13 @@ from pylogrus import PyLogrus, TextFormatter
 import Utils.env_manager as env_manager
 import LeapApi.codes as codes
 import CloudAlgo.functions.privacy as leap_privacy
+import csv
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
 parser.add_argument("-cip", "--connector_ip_port", default="127.0.0.1:50001", help="The ip and port of the site connector")
+parser.add_argument("-csv", "--csv_true", default="0", help="Whether this site algo will retrieve data from csv or RedCap")
 args = parser.parse_args()
 
 # Setup logging tool
@@ -37,8 +40,29 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 log = logger.withFields({"node": "site-algo"})
 
+# TODO: Don't hardcode this
 redCapUrl = "https://rc.bcchr.ca/redcap_demo/api/"
 redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
+
+
+# Gets the data from a database or csv file and returns
+# the records to perform a computation on.
+#
+# filter: The filter that is used to retrieve the Redcap data.
+def get_data_from_src(filter=""):
+    if args.csv_true == "1":
+        return get_csv_data()
+    else:
+        return get_redcap_data(redCapUrl, redCapToken, filter)
+
+
+# TODO: Actually filter the data according to a user selector
+# Gets the data from a csv file and returns the records to
+# perform a computation on.
+def get_csv_data():
+    patients = pandas.read_csv("data.csv")
+    print(patients)
+    return patients
 
 
 # Contacts a redCap project and returns the filtered records
@@ -47,9 +71,9 @@ redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 # url: Url of the RedCap project
 # token: Token used to access RedCap project given in the url
 # filterLogic: The filter to be applied to the results."""
-def getRedcapData(url, token, filterLogic):
+def get_redcap_data(url, token, filter_logic):
     project = redcap.Project(url, token)
-    patients = project.export_records(filter_logic=filterLogic)
+    patients = project.export_records(filter_logic=filter_logic)
     return patients
 
 # Starts listening for RPC requests at the specified ip and
@@ -153,7 +177,7 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
     #      the data.
     def get_data(self, req):
         s_filter = req["selector"]
-        data = getRedcapData(redCapUrl, redCapToken, s_filter)
+        data = get_data_from_src(s_filter)
         return data
 
 if __name__ == "__main__":

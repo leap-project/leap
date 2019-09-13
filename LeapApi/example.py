@@ -114,7 +114,7 @@ def fed_learn_exp():
     return leap_fed_learn
 
 def distributed():
-    leap_exp_fn = predef_private_count_exp()
+    leap_exp_fn = fed_learn_exp()
     dist_leap = leap.DistributedLeap(leap_exp_fn)
     print(dist_leap.get_result())
 
@@ -130,5 +130,5 @@ def local():
 
 
 if __name__ == "__main__":
-    local()
-    #distributed()
+    #local()
+    distributed()

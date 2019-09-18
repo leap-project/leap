@@ -30,6 +30,13 @@ make check
 sudo make install
 sudo ldconfig # refresh shared library cache.
 ```
+The compiler plugin for Go will be installed in `$GOPATH/bin`. Unless you already have `$GOBIN` set, you must set `$GOPATH/bin` to your `$PATH` for the protocol compiler to find it. To do this, open `~/.bashrc` and inside your.bashrc add the following line:
+```
+export PATH=$PATH:$GOPATH/bin
+```
+
+### Cloning LEAP
+The next step is to clone the LEAP repository in your computer. You can do this by navigating to the directory where you want to install LEAP and running `https://github.com/bestchai/leap.git`in the terminal.
 
 #### Go packages
 We need to install the packages used by our Go programs. To install the packages, run the following commands in your terminal:

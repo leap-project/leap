@@ -57,6 +57,11 @@ pip install torch
 ## Running LEAP
 The leap infrastructure is composed of 4 different programs: the site-algo, the site-connector, the coordinator, and the cloud-algo. Once these 4 programs are up and running, you can use the Leap API to perform some computations.
 
+Before starting the 4 different programs go to the Protobuf folder and run the following command to compile the proto files into go and python files:
+```
+bash compileProtos.sh
+```
+
 #### Starting the Coordinator
 The coordinator is what holds the system together. Tt talks to the site-connector and the cloud-algo. To start the coordinator go to the Exe directory and run the following command:
 ```

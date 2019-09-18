@@ -8,7 +8,6 @@ import LeapApi.codes as codes
 import CloudAlgo.functions as cloud_functions
 import LeapApi.LeapLocal.functions as leap_functions
 
-
 from LeapApi.LeapLocal.cloud import LocalCloudAlgoServicer
 from LeapApi.LeapLocal.localsite import LocalSiteAlgoServicer
 from LeapApi.LeapLocal.coordinator import LocalCoordinator

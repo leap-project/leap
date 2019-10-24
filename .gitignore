@@ -9,3 +9,7 @@
 .vscode/
 ProtoBuf/src/
 src/
+*.key
+*.pem
+*.crt
+*.csr

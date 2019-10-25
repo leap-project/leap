@@ -8,6 +8,7 @@ import (
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"io/ioutil"
 	"leap/Utils"
 	pb "leap/ProtoBuf"
@@ -23,6 +24,12 @@ import (
 type Config struct {
 	IpPort string
 }
+
+// Certificates and keys for SSL/TLS
+var (
+	crt = "../Certificates/Coordinator/server.crt"
+	key = "../Certificates/Coordinator/server.key"
+)
 
 type Coordinator struct {
 	// Initial config
@@ -110,7 +117,11 @@ func (c *Coordinator) Serve() {
 	listener, err := net.Listen("tcp", c.Conf.IpPort)
 	checkErr(c, err)
 	c.Log.WithFields(logrus.Fields{"ip-port": c.Conf.IpPort}).Info("Listening for requests.")
-	s := grpc.NewServer()
+	creds, err := credentials.NewServerTLSFromFile(crt, key)
+	if err != nil {
+		c.Log.Error("could not load TLS keys: %s", err)
+	}
+	s := grpc.NewServer(grpc.Creds(creds))
 	pb.RegisterCoordinatorServer(s, c)
 	err = s.Serve(listener)
 	checkErr(c, err)

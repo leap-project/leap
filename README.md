@@ -70,7 +70,7 @@ bash compileProtos.sh
 ```
 
 #### Starting the Coordinator
-The coordinator is what holds the system together. Tt talks to the site-connector and the cloud-algo. To start the coordinator go to the Exe directory and run the following command:
+The coordinator is what holds the system together. It talks to the site-connector and the cloud-algo. To start the coordinator go to the Exe directory and run the following command:
 ```
 go run coordinator-main.go -ip=127.0.0.1:5000
 ```
@@ -189,9 +189,6 @@ def init_state_fn():
 
 Now just send those functions over to Leap and get the result:
 ```python
-import LeapApi.leap_fn as leap_fn
-import LeapApi.leap as leap
-
 udf_count = leap_fn.UDF()
 
 selector = "[age] > 50 and [bmi] < 25"

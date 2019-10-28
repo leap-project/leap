@@ -1,3 +1,7 @@
 {
-  "IpPort": "127.0.0.1:50000"
+  "IpPort": "127.0.0.1:50000",
+  "Secure": false,
+  "Crt": "../Coordinator/Certificates/server.crt",
+  "Key": "../Coordinator/Certificates/server.key",
+  "CertAuth": "../Certificates/myCA.crt"
 }

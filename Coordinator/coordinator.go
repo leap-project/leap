@@ -3,6 +3,8 @@
 package coordinator
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"flag"
 	"github.com/rifflock/lfshook"
@@ -22,14 +24,17 @@ import (
 // ip and port it listen for requests from algorithms in dis-
 // tributed sites.
 type Config struct {
+	// The ip and port of the coordinator
 	IpPort string
+	// Flag that determines whether to use SSL/TLS encryption
+	Secure bool
+	// File path to SSL/TLS certificate
+	Crt string
+	// File path to SSL/TLS key
+	Key string
+	// File path to the certificate authority crt
+	CertAuth string
 }
-
-// Certificates and keys for SSL/TLS
-var (
-	crt = "../Certificates/Coordinator/server.crt"
-	key = "../Certificates/Coordinator/server.key"
-)
 
 type Coordinator struct {
 	// Initial config
@@ -80,10 +85,18 @@ func GetConfig(filePath string) Config {
 	config := Config{}
 	json.Unmarshal(jsonBytes, &config)
 
-	IpPortPtr := flag.String("ip", config.IpPort, "The ip and port of the coordinator")
+	ipPortPtr := flag.String("ip", config.IpPort, "The ip and port of the coordinator")
+	securePtr := flag.Bool("secure", config.Secure, "Whether to use SSL/TLS to encrypt and authenticate connections.")
+	crtPtr := flag.String("crt", config.Crt, "The SSL/TLS certificate for the coordinator")
+	keyPtr := flag.String("key", config.Key, "The SSL/TLS key for the coordinator")
+	certAuthPtr := flag.String("ca", config.CertAuth, "The SSL/TLS certificate for the certificate authority")
 	flag.Parse()
 
-	config.IpPort = *IpPortPtr
+	config.IpPort = *ipPortPtr
+	config.Secure = *securePtr
+	config.Crt = *crtPtr
+	config.Key = *keyPtr
+	config.CertAuth = *certAuthPtr
 	return config
 }
 
@@ -117,11 +130,43 @@ func (c *Coordinator) Serve() {
 	listener, err := net.Listen("tcp", c.Conf.IpPort)
 	checkErr(c, err)
 	c.Log.WithFields(logrus.Fields{"ip-port": c.Conf.IpPort}).Info("Listening for requests.")
-	creds, err := credentials.NewServerTLSFromFile(crt, key)
-	if err != nil {
-		c.Log.Error("could not load TLS keys: %s", err)
+
+	var s *grpc.Server
+	if c.Conf.Secure {
+		// Load coordinator certificates from disk
+		cert, err := tls.LoadX509KeyPair(c.Conf.Crt, c.Conf.Key)
+		if err != nil {
+			c.Log.Error(err)
+			return
+		}
+
+		// Create certificate pool from certificate authority
+		certPool := x509.NewCertPool()
+		ca, err := ioutil.ReadFile(c.Conf.CertAuth)
+		if err != nil {
+			c.Log.Error(err)
+			return
+		}
+
+		// Append client certificates from certificate authority
+		ok := certPool.AppendCertsFromPEM(ca)
+		if !ok {
+			c.Log.Error("Error when appending client certs")
+		}
+
+		// Create TLS credentials
+		creds := credentials.NewTLS(&tls.Config{
+			ClientAuth: tls.RequireAndVerifyClientCert,
+			Certificates: []tls.Certificate{cert},
+			ClientCAs: certPool,
+		})
+
+		s = grpc.NewServer(grpc.Creds(creds))
+
+	} else {
+		s = grpc.NewServer()
 	}
-	s := grpc.NewServer(grpc.Creds(creds))
+
 	pb.RegisterCoordinatorServer(s, c)
 	err = s.Serve(listener)
 	checkErr(c, err)

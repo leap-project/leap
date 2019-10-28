@@ -1,7 +1,7 @@
 # File for a program that listens to requests from clients
 # and runs some of the 8 abstract functions in leap.
 #
-# Usage: python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000
+# Usage: python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000 -secure=False -crt="./certificates/client.crt" -key="./certificates/client.key" -ca="../Certificates/myCA.crt"
 
 import sys
 sys.path.append("../")
@@ -25,6 +25,10 @@ import LeapApi.codes as codes
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:70000", help="The ip and port this algorithm is listening to")
 parser.add_argument("-cip", "--coordinator_ip_port", default="127.0.0.1:50000", help="The ip and port of the cloud coordinator")
+parser.add_argument("-secure", "--secure_with_tls", default=False, help="Whether to use SSL/TLS encryption on connections")
+parser.add_argument("-crt", "--cert", default="./certificates/client.crt", help="The SSL/TLS certificate for the cloud algo")
+parser.add_argument("-key", "--key", default="./certificates/client.key", help="The SSL/TLS private key for the cloud algo")
+parser.add_argument("-ca", "--certificate_authority", default="../Certificates/myCA.crt", help="The certificate authority")
 args = parser.parse_args()
 
 # Setup logging tool
@@ -46,6 +50,9 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.coordinator_ip_port = coordinator_ip_port
         self.id_count = 0
         self.live_requests = {}
+        self.crt = None
+        self.key = None
+        self.ca = None
 
     # Coordinates computations across multiple local sites and returns result to client
     #   req["module"]: stringified python module containing
@@ -126,7 +133,14 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
 
     # Gets the grpc stub to send a message to the coordinator.
     def _get_coord_stub(self):
-        channel = grpc.insecure_channel(self.coordinator_ip_port)
+        channel = None
+
+        if args.secure_with_tls:
+            creds = grpc.ssl_channel_credentials(root_certificates=self.ca, private_key=self.key, certificate_chain=self.crt)
+            channel = grpc.insecure_channel(self.coordinator_ip_port, creds)
+        else:
+            channel = grpc.insecure_channel(self.coordinator_ip_port)
+
         coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
         return coord_stub
 
@@ -180,7 +194,17 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
 # No args
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    pb.cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(CloudAlgoServicer(args.ip_port, args.coordinator_ip_port), server)
+    cloudAlgoServicer = CloudAlgoServicer(args.ip_port, args.coordinator_ip_port)
+
+    if args.secure_with_tls:
+        fd = open(args.crt)
+        cloudAlgoServicer.crt = fd.read()
+        fd = open(args.key)
+        cloudAlgoServicer.key = fd.read()
+        fd = open(args.certificate_authority)
+        CloudAlgoServicer.ca = fd.read()
+
+    pb.cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(cloudAlgoServicer, server)
     server.add_insecure_port(args.ip_port)
     server.start()
     log.info("Server started")

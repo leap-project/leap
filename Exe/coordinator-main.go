@@ -13,8 +13,8 @@ import (
 // - key: Path to the coordinator's private key (used with TLS)
 // - ca: Path to the certificate authority (used with TLS)
 //
-// e.g go run coordinator-main.go -ip=127.0.0.1:8000 -secure=false -crt="../Coordinator/Certificates/server.crt" \
-// key="../Coordinator/Certificates/server.key" -ca="../Certificates/myCA.crt"
+/* e.g go run coordinator-main.go -ip=127.0.0.1:8000 -secure=true -crt="../Coordinator/Certificates/coord.crt" \
+   key="../Coordinator/Certificates/coord.key" -ca="../Certificates/myCA.crt" */
 
 func main() {
 	config := coordinator.GetConfig("coord-config.json")

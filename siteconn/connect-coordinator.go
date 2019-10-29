@@ -6,11 +6,10 @@ package siteconnector
 import (
 	"context"
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"leap/utils"
 	pb "leap/proto"
+	"leap/utils"
 )
 
 // Invokes map function in site and returns the result of run-
@@ -22,7 +21,7 @@ import (
 func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponse, error) {
 	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
 	sc.PendingRequests.Set(req.Id, req.Id)
-	conn, err := grpc.Dial(sc.Conf.AlgoIpPort, grpc.WithInsecure())
+	conn, err := sc.Dial(sc.Conf.AlgoIpPort, sc.Conf.AlgoIpPort)
 
 	checkErr(sc, err)
 	defer conn.Close()

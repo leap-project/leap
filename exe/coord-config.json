@@ -1,7 +1,8 @@
 {
   "IpPort": "127.0.0.1:50000",
-  "Secure": false,
+  "Secure": true,
   "Crt": "../coordinator/certs/coord.crt",
   "Key": "../coordinator/certs/coord.key",
-  "CertAuth": "../certs/myCA.crt"
+  "CertAuth": "../certs/myCA.crt",
+  "SiteConnCN": "LEAP-Site-Connector"
 }

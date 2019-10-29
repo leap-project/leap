@@ -7,12 +7,11 @@ import (
 	"context"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"leap/utils"
 	pb "leap/proto"
+	"leap/utils"
 	"time"
 
 	"github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 )
 
 type ResultFromSite struct {
@@ -95,7 +94,7 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 //       value.
 // ch: The channel where the response is sent to.
 func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, ch chan ResultFromSite) {
-	conn, err := grpc.Dial(site.ipPort, grpc.WithInsecure())
+	conn, err := c.Dial(site.ipPort, c.Conf.SiteConnCN)
 	checkErr(c, err)
 	defer conn.Close()
 

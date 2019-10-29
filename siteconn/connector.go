@@ -4,11 +4,14 @@ package siteconnector
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"flag"
+	"google.golang.org/grpc/credentials"
 	"io/ioutil"
-	"leap/utils"
 	pb "leap/proto"
+	"leap/utils"
 	"net"
 	"os"
 	"strconv"
@@ -33,10 +36,26 @@ type SiteConnector struct {
 // and port it listen for requests from the coordinator, and
 // the ip and port to contact the coordinator.
 type Config struct {
+	// Ip and port of this site connector
 	IpPort            string
+	// Ip and port of the coordinator
 	CoordinatorIpPort string
+	// Ip and port of the site algo this connector contacts
 	AlgoIpPort        string
+	// Id of this site
 	SiteId            int32
+	// Flag that determines whether to use SSL/TLS encryption
+	Secure bool
+	// File path to SSL/TLS certificate
+	Crt string
+	// File path to SSL/TLS key
+	Key string
+	// File path to the certificate authority crt
+	CertAuth string
+	// The common name of the coordinator. Used in SSL/TLS
+	CoordCN string
+	// The common name of the site algo. Used in SSL/TLS
+	SiteAlgoCN string
 }
 
 // Creates a new site connector with the configurations given
@@ -66,12 +85,21 @@ func GetConfig(filePath string) Config {
 	CoordinatorIpPortPtr := flag.String("cip", config.CoordinatorIpPort, "The ip and port of the coordinator to be contacted")
 	AlgoIpPortPtr := flag.String("aip", config.AlgoIpPort, "The ip and port of the python server to be contacted")
 	SiteIdPtr := flag.Int("id", 0, "The id of a site")
+	securePtr := flag.Bool("secure", config.Secure, "Whether to use SSL/TLS to encrypt and authenticate connections.")
+	crtPtr := flag.String("crt", config.Crt, "The SSL/TLS certificate for the coordinator")
+	keyPtr := flag.String("key", config.Key, "The SSL/TLS key for the coordinator")
+	certAuthPtr := flag.String("ca", config.CertAuth, "The SSL/TLS certificate for the certificate authority")
+	flag.Parse()
 	flag.Parse()
 
 	config.SiteId = int32(*SiteIdPtr)
 	config.IpPort = *IpPortPtr
 	config.CoordinatorIpPort = *CoordinatorIpPortPtr
 	config.AlgoIpPort = *AlgoIpPortPtr
+	config.Secure = *securePtr
+	config.Crt = *crtPtr
+	config.Key = *keyPtr
+	config.CertAuth = *certAuthPtr
 	return config
 }
 
@@ -101,13 +129,48 @@ func AddFileHookToLogs(dirPath string, siteId int) {
 // connector, and serves requests that arrive at the
 // listener.
 //
-//
 // No args.
 func (sc *SiteConnector) Serve() {
 	listener, err := net.Listen("tcp", sc.Conf.IpPort)
 	sc.Log.WithFields(logrus.Fields{"ip-port": sc.Conf.IpPort}).Info("Listening for requests.")
 	checkErr(sc, err)
-	s := grpc.NewServer()
+
+	var s *grpc.Server
+	if sc.Conf.Secure {
+		// Load coordinator certificates from disk
+		cert, err := tls.LoadX509KeyPair(sc.Conf.Crt, sc.Conf.Key)
+		if err != nil {
+			sc.Log.Error(err)
+			return
+		}
+
+		// Create certificate pool from certificate authority
+		certPool := x509.NewCertPool()
+		ca, err := ioutil.ReadFile(sc.Conf.CertAuth)
+		if err != nil {
+			sc.Log.Error(err)
+			return
+		}
+
+		// Append client certificates from certificate authority
+		ok := certPool.AppendCertsFromPEM(ca)
+		if !ok {
+			sc.Log.Error("Error when appending client certs")
+		}
+
+		// Create TLS credentials
+		creds := credentials.NewTLS(&tls.Config{
+			ClientAuth: tls.RequireAndVerifyClientCert,
+			Certificates: []tls.Certificate{cert},
+			ClientCAs: certPool,
+		})
+
+		s = grpc.NewServer(grpc.Creds(creds))
+
+	} else {
+		s = grpc.NewServer()
+	}
+
 	pb.RegisterSiteConnectorServer(s, sc)
 	err = s.Serve(listener)
 	checkErr(sc, err)
@@ -116,8 +179,10 @@ func (sc *SiteConnector) Serve() {
 // This function registers a site-connector with a coordinator.
 // The site connectors sends the coordinator its ip, port, and
 // id.
+//
+// No args.
 func (sc *SiteConnector) Register() {
-	conn, err := grpc.Dial(sc.Conf.CoordinatorIpPort, grpc.WithInsecure())
+	conn, err := sc.Dial(sc.Conf.CoordinatorIpPort, sc.Conf.CoordCN)
 	checkErr(sc, err)
 	defer conn.Close()
 
@@ -134,6 +199,35 @@ func (sc *SiteConnector) Register() {
 		sc.Log.Warn("Was not able to register site with coordinator.")
 	}
 	sc.Log.Debug(response)
+}
+
+// This function does basically the same job as the grpc dial,
+// but it loads the proper credentials and establishes a
+// secure connection if the secure flag is turned on.
+//
+// addr: The address where you want to establish a connection
+// serverName: The common name of the server to be contacted
+func (sc *SiteConnector) Dial(addr string, serverName string) (*grpc.ClientConn, error) {
+	if sc.Conf.Secure {
+		cert, err := tls.LoadX509KeyPair(sc.Conf.Crt, sc.Conf.Key)
+		checkErr(sc, err)
+
+		certPool := x509.NewCertPool()
+		ca, err := ioutil.ReadFile(sc.Conf.CertAuth)
+		checkErr(sc, err)
+
+		certPool.AppendCertsFromPEM(ca)
+		creds := credentials.NewTLS(&tls.Config{
+			ServerName: sc.Conf.CoordCN,
+			Certificates: []tls.Certificate{cert},
+			RootCAs: certPool,
+		})
+
+		return grpc.Dial(sc.Conf.CoordinatorIpPort, grpc.WithTransportCredentials(creds))
+
+	} else {
+		return grpc.Dial(sc.Conf.CoordinatorIpPort, grpc.WithInsecure())
+	}
 }
 
 // TODO: Add request id to checkErr

@@ -34,6 +34,8 @@ type Config struct {
 	Key string
 	// File path to the certificate authority crt
 	CertAuth string
+	// The common name of the site connector
+	SiteConnCN string
 }
 
 type Coordinator struct {
@@ -170,6 +172,35 @@ func (c *Coordinator) Serve() {
 	pb.RegisterCoordinatorServer(s, c)
 	err = s.Serve(listener)
 	checkErr(c, err)
+}
+
+// This function does basically the same job as the grpc dial,
+// but it loads the proper credentials and establishes a
+// secure connection if the secure flag is turned on.
+//
+// addr: The address where you want to establish a connection
+// serverName: The common name of the server to be contacted
+func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, error) {
+	if c.Conf.Secure {
+		cert, err := tls.LoadX509KeyPair(c.Conf.Crt, c.Conf.Key)
+		checkErr(c, err)
+
+		certPool := x509.NewCertPool()
+		ca, err := ioutil.ReadFile(c.Conf.CertAuth)
+		checkErr(c, err)
+
+		certPool.AppendCertsFromPEM(ca)
+		creds := credentials.NewTLS(&tls.Config{
+			ServerName: servername,
+			Certificates: []tls.Certificate{cert},
+			RootCAs: certPool,
+		})
+
+		return grpc.Dial(addr, grpc.WithTransportCredentials(creds))
+
+	} else {
+		return grpc.Dial(addr, grpc.WithInsecure())
+	}
 }
 
 // TODO: Add request id to checkErr

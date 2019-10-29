@@ -2,8 +2,10 @@
 
 # Generate private RSA key to sign and authenticate the public key
 sudo openssl genrsa -out sitealgo.key 2048
-# Generate certificate. This is a selg-signed X.509 public key for distribution
-sudo openssl req -new -x509 -sha256 -key sitealgo.key -out sitealgo.crt -days 3650
-# Generate a certificate signing request to access the certificate authority
+
+# Create a signing request
 sudo openssl req -new -sha256 -key sitealgo.key -out sitealgo.csr
-sudo openssl x509 -req -sha256 -in sitealgo.csr -signkey sitealgo.key -out sitealgo.crt -days 3650
+
+# Generate a signed certificate
+sudo openssl x509 -req -in sitealgo.csr -CA ../../certs/myCA.crt -CAkey ../../certs/myCA.key -CAcreateserial -out sitealgo.crt -days 365 -sha256
+sudo rm .srl

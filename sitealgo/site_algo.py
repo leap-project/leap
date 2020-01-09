@@ -76,9 +76,10 @@ def get_csv_data():
 # token: Token used to access RedCap project given in the url
 # filterLogic: The filter to be applied to the results."""
 def get_redcap_data(url, token, filter_logic):
-    project = redcap.Project(url, token)
-    patients = project.export_records(filter_logic=filter_logic)
-    return patients
+    # project = redcap.Project(url, token)
+    # patients = project.export_records(filter_logic=filter_logic)
+    # return patients
+    return 3
 
 # Starts listening for RPC requests at the specified ip and
 # port.

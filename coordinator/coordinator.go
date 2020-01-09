@@ -138,6 +138,7 @@ func (c *Coordinator) Serve() {
 		// Load coordinator certificates from disk
 		cert, err := tls.LoadX509KeyPair(c.Conf.Crt, c.Conf.Key)
 		if err != nil {
+			c.Log.Warn("URGHH1")
 			c.Log.Error(err)
 			return
 		}
@@ -146,6 +147,7 @@ func (c *Coordinator) Serve() {
 		certPool := x509.NewCertPool()
 		ca, err := ioutil.ReadFile(c.Conf.CertAuth)
 		if err != nil {
+			c.Log.Warn("URGHH2")
 			c.Log.Error(err)
 			return
 		}
@@ -153,6 +155,7 @@ func (c *Coordinator) Serve() {
 		// Append client certificates from certificate authority
 		ok := certPool.AppendCertsFromPEM(ca)
 		if !ok {
+			c.Log.Warn("URGHH3")
 			c.Log.Error("Error when appending client certs")
 		}
 
@@ -174,7 +177,7 @@ func (c *Coordinator) Serve() {
 	checkErr(c, err)
 }
 
-// This function does basically the same job as the grpc dial,
+// This function does basically the same job as grpc dial,
 // but it loads the proper credentials and establishes a
 // secure connection if the secure flag is turned on.
 //

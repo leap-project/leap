@@ -27,10 +27,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
 parser.add_argument("-cip", "--connector_ip_port", default="127.0.0.1:50001", help="The ip and port of the site connector")
 parser.add_argument("-csv", "--csv_true", default="0", help="Whether this site algo will retrieve data from csv or RedCap")
-parser.add_argument("-secure", "--secure_with_tls", default="n", help="Whether to use SSL/TLS encryption on connections")
-parser.add_argument("-crt", "--cert", default="./certificates/client.crt", help="The SSL/TLS certificate for the cloud algo")
-parser.add_argument("-key", "--key", default="./certificates/client.key", help="The SSL/TLS private key for the cloud algo")
-parser.add_argument("-ca", "--certificate_authority", default="../Certificates/myCA.crt", help="The certificate authority")
+parser.add_argument("-secure", "--secure_with_tls", default="y", help="Whether to use SSL/TLS encryption on connections")
+parser.add_argument("-crt", "--cert", default="./certs/sitealgo.crt", help="The SSL/TLS certificate for the cloud algo")
+parser.add_argument("-key", "--key", default="./certs/sitealgo.key", help="The SSL/TLS private key for the cloud algo")
+parser.add_argument("-ca", "--certificate_authority", default="../certs/myCA.crt", help="The certificate authority")
 args = parser.parse_args()
 
 # Setup logging tool
@@ -79,7 +79,7 @@ def get_redcap_data(url, token, filter_logic):
     # project = redcap.Project(url, token)
     # patients = project.export_records(filter_logic=filter_logic)
     # return patients
-    return 3
+    return [1,2,3,4]
 
 # Starts listening for RPC requests at the specified ip and
 # port.
@@ -101,6 +101,7 @@ def serve():
         ca = fd.read()
 
         creds = grpc.ssl_server_credentials(((key, cert), ), root_certificates=ca)
+        pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(args.ip_port, args.connector_ip_port), server)
         server.add_secure_port(args.ip_port, creds)
     else:
         pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(args.ip_port, args.connector_ip_port), server)

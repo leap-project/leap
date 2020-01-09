@@ -198,7 +198,6 @@ func (sc *SiteConnector) Register() {
 	} else {
 		sc.Log.Warn("Was not able to register site with coordinator.")
 	}
-	sc.Log.Debug(response)
 }
 
 // This function does basically the same job as the grpc dial,
@@ -218,21 +217,22 @@ func (sc *SiteConnector) Dial(addr string, serverName string) (*grpc.ClientConn,
 
 		certPool.AppendCertsFromPEM(ca)
 		creds := credentials.NewTLS(&tls.Config{
-			ServerName: sc.Conf.CoordCN,
+			ServerName: serverName,
 			Certificates: []tls.Certificate{cert},
 			RootCAs: certPool,
 		})
 
-		return grpc.Dial(sc.Conf.CoordinatorIpPort, grpc.WithTransportCredentials(creds))
+		return grpc.Dial(addr, grpc.WithTransportCredentials(creds))
 
 	} else {
-		return grpc.Dial(sc.Conf.CoordinatorIpPort, grpc.WithInsecure())
+		return grpc.Dial(addr, grpc.WithInsecure())
 	}
 }
 
 // TODO: Add request id to checkErr
 // Helper to log errors in a site connector.
 //
+// sc:  Site connector instance (holds logging tool)
 // err: Error returned by a function that should be checked
 //      if nil or not.
 func checkErr(sc *SiteConnector, err error) {

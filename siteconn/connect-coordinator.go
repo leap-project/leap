@@ -21,7 +21,7 @@ import (
 func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponse, error) {
 	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
 	sc.PendingRequests.Set(req.Id, req.Id)
-	conn, err := sc.Dial(sc.Conf.AlgoIpPort, sc.Conf.AlgoIpPort)
+	conn, err := sc.Dial(sc.Conf.AlgoIpPort, sc.Conf.SiteAlgoCN)
 
 	checkErr(sc, err)
 	defer conn.Close()

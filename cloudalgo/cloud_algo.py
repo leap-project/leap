@@ -25,10 +25,10 @@ import api.codes as codes
 parser = argparse.ArgumentParser()
 parser.add_argument("-ip", "--ip_port", default="127.0.0.1:70000", help="The ip and port this algorithm is listening to")
 parser.add_argument("-cip", "--coordinator_ip_port", default="127.0.0.1:50000", help="The ip and port of the cloud coordinator")
-parser.add_argument("-secure", "--secure_with_tls", default="n", help="Whether to use SSL/TLS encryption on connections")
-parser.add_argument("-crt", "--cert", default="./certificates/client.crt", help="The SSL/TLS certificate for the cloud algo")
-parser.add_argument("-key", "--key", default="./certificates/client.key", help="The SSL/TLS private key for the cloud algo")
-parser.add_argument("-ca", "--certificate_authority", default="../Certificates/myCA.crt", help="The certificate authority")
+parser.add_argument("-secure", "--secure_with_tls", default="y", help="Whether to use SSL/TLS encryption on connections")
+parser.add_argument("-crt", "--cert", default="./certs/cloudalgo.crt", help="The SSL/TLS certificate for the cloud algo")
+parser.add_argument("-key", "--key", default="./certs/cloudalgo.key", help="The SSL/TLS private key for the cloud algo")
+parser.add_argument("-ca", "--certificate_authority", default="../certs/myCA.crt", help="The certificate authority")
 args = parser.parse_args()
 
 # Setup logging tool
@@ -137,7 +137,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
 
         if args.secure_with_tls == "y":
             creds = grpc.ssl_channel_credentials(root_certificates=self.ca, private_key=self.key, certificate_chain=self.cert)
-            channel = grpc.secure_channel(self.coordinator_ip_port, creds)
+            channel = grpc.secure_channel(self.coordinator_ip_port, creds, options=(('grpc.ssl_target_name_override', "LEAP-Coord",),))
         else:
             channel = grpc.insecure_channel(self.coordinator_ip_port)
 

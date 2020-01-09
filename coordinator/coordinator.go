@@ -138,7 +138,6 @@ func (c *Coordinator) Serve() {
 		// Load coordinator certificates from disk
 		cert, err := tls.LoadX509KeyPair(c.Conf.Crt, c.Conf.Key)
 		if err != nil {
-			c.Log.Warn("URGHH1")
 			c.Log.Error(err)
 			return
 		}
@@ -147,7 +146,6 @@ func (c *Coordinator) Serve() {
 		certPool := x509.NewCertPool()
 		ca, err := ioutil.ReadFile(c.Conf.CertAuth)
 		if err != nil {
-			c.Log.Warn("URGHH2")
 			c.Log.Error(err)
 			return
 		}
@@ -155,7 +153,6 @@ func (c *Coordinator) Serve() {
 		// Append client certificates from certificate authority
 		ok := certPool.AppendCertsFromPEM(ca)
 		if !ok {
-			c.Log.Warn("URGHH3")
 			c.Log.Error("Error when appending client certs")
 		}
 
@@ -209,7 +206,7 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 // TODO: Add request id to checkErr
 // Helper to log errors in the coordinator.
 //
-// coord: Coordinator instance
+// coord: Coordinator instance (holds logging tool)
 // err: Error returned by a function that should be checked
 //      if nil or not.
 func checkErr(c *Coordinator, err error) {

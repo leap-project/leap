@@ -13,3 +13,4 @@ src/
 *.pem
 *.crt
 *.csr
+*.srl

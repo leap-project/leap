@@ -78,27 +78,21 @@ func NewCoordinator(config Config) *Coordinator {
 // If a flag is absent, use the default flag given in the
 // config.json file.
 //
-// filePath: The path to a file with config information.
-func GetConfig(filePath string) Config {
-	jsonFile, _ := os.Open(filePath)
+// No args.
+func GetConfig() Config {
+	configPathPtr := flag.String("config", "../config/coord-config.json", "The path to the config file")
+	flag.Parse()
+
+	jsonFile, err := os.Open(*configPathPtr)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"node": "coordinator"}).Error("Could not find config file: " + *configPathPtr)
+	}
 	defer jsonFile.Close()
 	jsonBytes, _ := ioutil.ReadAll(jsonFile)
 
 	config := Config{}
 	json.Unmarshal(jsonBytes, &config)
 
-	ipPortPtr := flag.String("ip", config.IpPort, "The ip and port of the coordinator")
-	securePtr := flag.Bool("secure", config.Secure, "Whether to use SSL/TLS to encrypt and authenticate connections.")
-	crtPtr := flag.String("crt", config.Crt, "The SSL/TLS certificate for the coordinator")
-	keyPtr := flag.String("key", config.Key, "The SSL/TLS key for the coordinator")
-	certAuthPtr := flag.String("ca", config.CertAuth, "The SSL/TLS certificate for the certificate authority")
-	flag.Parse()
-
-	config.IpPort = *ipPortPtr
-	config.Secure = *securePtr
-	config.Crt = *crtPtr
-	config.Key = *keyPtr
-	config.CertAuth = *certAuthPtr
 	return config
 }
 

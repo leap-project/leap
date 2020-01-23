@@ -72,34 +72,21 @@ func NewSiteConnector(config Config) *SiteConnector {
 // If a flag is absent, use the default flag given in the
 // config.json file.
 //
-// filepath: The path to the json with the config
-func GetConfig(filePath string) Config {
-	jsonFile, _ := os.Open(filePath)
+// No args.
+func GetConfig() Config {
+	configPathPtr := flag.String("config", "../config/conn-config.json", "The path to the config file")
+	flag.Parse()
+
+	jsonFile, err := os.Open(*configPathPtr)
+	if err != nil {
+		logrus.WithFields(logrus.Fields{"node": "site-connector"}).Error("Could not find config file: " + *configPathPtr)
+	}
 	defer jsonFile.Close()
 	jsonBytes, _ := ioutil.ReadAll(jsonFile)
 
 	config := Config{}
 	json.Unmarshal(jsonBytes, &config)
 
-	IpPortPtr := flag.String("ip", config.IpPort, "The ip and port to listen for requests")
-	CoordinatorIpPortPtr := flag.String("cip", config.CoordinatorIpPort, "The ip and port of the coordinator to be contacted")
-	AlgoIpPortPtr := flag.String("aip", config.AlgoIpPort, "The ip and port of the python server to be contacted")
-	SiteIdPtr := flag.Int("id", 0, "The id of a site")
-	securePtr := flag.Bool("secure", config.Secure, "Whether to use SSL/TLS to encrypt and authenticate connections.")
-	crtPtr := flag.String("crt", config.Crt, "The SSL/TLS certificate for the coordinator")
-	keyPtr := flag.String("key", config.Key, "The SSL/TLS key for the coordinator")
-	certAuthPtr := flag.String("ca", config.CertAuth, "The SSL/TLS certificate for the certificate authority")
-	flag.Parse()
-	flag.Parse()
-
-	config.SiteId = int32(*SiteIdPtr)
-	config.IpPort = *IpPortPtr
-	config.CoordinatorIpPort = *CoordinatorIpPortPtr
-	config.AlgoIpPort = *AlgoIpPortPtr
-	config.Secure = *securePtr
-	config.Crt = *crtPtr
-	config.Key = *keyPtr
-	config.CertAuth = *certAuthPtr
 	return config
 }
 

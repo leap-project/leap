@@ -1,6 +1,8 @@
 # File for a program that listens to requests from clients
 # and runs some of the 8 abstract functions in leap.
 #
+# - config: The path to the config file for the cloud algo
+#
 # Usage: python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000 -secure="y" -crt="./certs/cloudalgo.crt" -key="./certs/cloudalgo.key" -ca="../certs/myCA.crt"
 
 import sys
@@ -23,13 +25,15 @@ import api.codes as codes
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-ip", "--ip_port", default="127.0.0.1:70000", help="The ip and port this algorithm is listening to")
-parser.add_argument("-cip", "--coordinator_ip_port", default="127.0.0.1:50000", help="The ip and port of the cloud coordinator")
-parser.add_argument("-secure", "--secure_with_tls", default="y", help="Whether to use SSL/TLS encryption on connections")
-parser.add_argument("-crt", "--cert", default="./certs/cloudalgo.crt", help="The SSL/TLS certificate for the cloud algo")
-parser.add_argument("-key", "--key", default="./certs/cloudalgo.key", help="The SSL/TLS private key for the cloud algo")
-parser.add_argument("-ca", "--certificate_authority", default="../certs/myCA.crt", help="The certificate authority")
+parser.add_argument("-config", "--config", default="../config/cloudalgo_config.json", help="Path to the config file")
 args = parser.parse_args()
+
+# Load config file
+config = None
+config_path = args.config
+with open(config_path) as json_file:
+    data = json_file.read()
+    config = json.loads(data)
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -135,7 +139,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     def _get_coord_stub(self):
         channel = None
 
-        if args.secure_with_tls == "y":
+        if config["secure_with_tls"] == "y":
             creds = grpc.ssl_channel_credentials(root_certificates=self.ca, private_key=self.key, certificate_chain=self.cert)
             channel = grpc.secure_channel(self.coordinator_ip_port, creds, options=(('grpc.ssl_target_name_override', "LEAP-Coord",),))
         else:
@@ -194,22 +198,22 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
 # No args
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    cloudAlgoServicer = CloudAlgoServicer(args.ip_port, args.coordinator_ip_port)
+    cloudAlgoServicer = CloudAlgoServicer(config["ip_port"], config["coordinator_ip_port"])
 
-    if args.secure_with_tls == "y":
-        fd = open(args.cert, "rb")
+    if config["secure_with_tls"] == "y":
+        fd = open(config["cert"], "rb")
         cloudAlgoServicer.cert = fd.read()
-        fd = open(args.key, "rb")
+        fd = open(config["key"], "rb")
         cloudAlgoServicer.key = fd.read()
-        fd = open(args.certificate_authority, "rb")
+        fd = open(config["certificate_authority"], "rb")
         cloudAlgoServicer.ca = fd.read()
 
 
     pb.cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(cloudAlgoServicer, server)
-    server.add_insecure_port(args.ip_port)
+    server.add_insecure_port(config["ip_port"])
     server.start()
     log.info("Server started")
-    log.withFields({"ip-port": args.ip_port}).info("Listening for requests")
+    log.withFields({"ip-port": config["ip_port"]}).info("Listening for requests")
     while True:
         time.sleep(5)
 

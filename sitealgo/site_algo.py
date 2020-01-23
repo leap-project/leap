@@ -2,7 +2,9 @@
 # to requests from a coordinator. It also operates the logic
 # for running the algorithms.
 #
-# Usage: python -m site_algo -ip=127.0.0.1:60000 -cip=127.0.0.1:50001
+# - config: The path to the config file for the site algo
+#
+# Usage: python -m site_algo -config=../config/sitealgo_config.json
 
 import sys
 sys.path.append("../")
@@ -24,14 +26,15 @@ import csv
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-ip", "--ip_port", default="127.0.0.1:60000", help="The ip and port this algorithm is listening to")
-parser.add_argument("-cip", "--connector_ip_port", default="127.0.0.1:50001", help="The ip and port of the site connector")
-parser.add_argument("-csv", "--csv_true", default="0", help="Whether this site algo will retrieve data from csv or RedCap")
-parser.add_argument("-secure", "--secure_with_tls", default="y", help="Whether to use SSL/TLS encryption on connections")
-parser.add_argument("-crt", "--cert", default="./certs/sitealgo.crt", help="The SSL/TLS certificate for the cloud algo")
-parser.add_argument("-key", "--key", default="./certs/sitealgo.key", help="The SSL/TLS private key for the cloud algo")
-parser.add_argument("-ca", "--certificate_authority", default="../certs/myCA.crt", help="The certificate authority")
+parser.add_argument("-config", "--config", default="../config/sitealgo_config.json", help="Path to the config file")
 args = parser.parse_args()
+
+# Load config file
+config = None
+config_path = args.config
+with open(config_path) as json_file:
+    data = json_file.read()
+    config = json.loads(data)
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -54,7 +57,7 @@ redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 #
 # filter: The filter that is used to retrieve the Redcap data.
 def get_data_from_src(filter=""):
-    if args.csv_true == "1":
+    if config["csv_true"] == "1":
         return get_csv_data()
     else:
         return get_redcap_data(redCapUrl, redCapToken, filter)
@@ -92,24 +95,24 @@ def serve():
     ca = None
 
     # If secure flag is on only run encrypted connections
-    if args.secure_with_tls == "y":
-        fd = open(args.cert, "rb")
+    if config["secure_with_tls"] == "y":
+        fd = open(config["cert"], "rb")
         cert = fd.read()
-        fd = open(args.key, "rb")
+        fd = open(config["key"], "rb")
         key = fd.read()
-        fd = open(args.certificate_authority, "rb")
+        fd = open(config["certificate_authority"], "rb")
         ca = fd.read()
 
         creds = grpc.ssl_server_credentials(((key, cert), ), root_certificates=ca)
-        pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(args.ip_port, args.connector_ip_port), server)
-        server.add_secure_port(args.ip_port, creds)
+        pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(config["ip_port"], config["connector_ip_port"]), server)
+        server.add_secure_port(config["ip_port"], creds)
     else:
-        pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(args.ip_port, args.connector_ip_port), server)
-        server.add_insecure_port(args.ip_port)
+        pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(config["ip_port"], config["connector_ip_port"]), server)
+        server.add_insecure_port(config["ip_port"])
 
     server.start()
     log.info("Server started")
-    log.info("Listening at " + args.ip_port)
+    log.info("Listening at " + config["ip_port"])
     while True:
         time.sleep(5)
 

@@ -4,5 +4,6 @@
   "secure_with_tls": "y",
   "cert": "./certs/cloudalgo.crt",
   "key": "./certs/cloudalgo.key",
-  "certificate_authority": "../certs/myCA.crt"
+  "certificate_authority": "../certs/myCA.crt",
+  "coord_cn": "Coord"
 }

@@ -7,6 +7,6 @@
   "Crt": "../siteconn/certs/siteconn.crt",
   "Key": "../siteconn/certs/siteconn.key",
   "CertAuth": "../certs/myCA.crt",
-  "CoordCN": "LEAP-Coord",
-  "SiteAlgoCN": "LEAP-SiteAlgo"
+  "CoordCN": "Coord",
+  "SiteAlgoCN": "SiteAlgo"
 }

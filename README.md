@@ -98,45 +98,45 @@ python -m cloud_algo -config=../config/cloudalgo_config.json
 `config`: The path to the config file of the cloud algo.
 
 ## Config Files
-Each node in LEAP can be configured by using a json that gets passed as a parameter when the node gets initialized. Some of the things that can be configured using these config files are the ip and port of the node being configured, whether to use SSL/TLS to encryp the connections, or the ID of the node.
+Each node in LEAP can be configured by using a json that gets passed as a parameter when the node gets initialized. Some of the things that can be configured using these config files are the ip and port of the node being configured, whether to use SSL/TLS to encrypt the connections, or the ID of the node.
 
 #### Cloud Algo Config
-`ip_port`: The ip and port the cloud algo is listening. Takes format of "ip:port" string.
-`coordinator_ip_port`: The ip and port the coordinator is listening. Takes format of "ip:port" string.
-`secure_with_tls`: Whether to use tls to secure connections between the cloud algo. Use "y" to enable TLS and "n" to disable it.
-`cert`: A string that gives the path to the location of the certificate for the cloud algo. Only used when TLS is enabled.
-`key`: A string that gives the path to the location of the private key for the cloud algo. Only used when TLS is enabled.  
+`ip_port`: The ip and port the cloud algo is listening. Takes format of "ip:port" string.  
+`coordinator_ip_port`: The ip and port the coordinator is listening. Takes format of "ip:port" string.  
+`secure_with_tls`: Whether to use tls to secure connections between the cloud algo. Use "y" to enable TLS and "n" to disable it.  
+`cert`: A string that gives the path to the location of the certificate for the cloud algo. Only used when TLS is enabled.  
+`key`: A string that gives the path to the location of the private key for the cloud algo. Only used when TLS is enabled.   
 `certificate_authority`: The path to the certificate from the certificate authority. Only used when TLS is enabled.  
 `coord_cn`: The name given to the coordinator when its certificate is created. Only used when TLS is enabled.  
 
 #### Coordinator Config
-`IpPort`: The ip and port the coordinator is listening. Takes format of "ip:port" string.
-`Secure`: Whether to use tls to secure connections between the coordinator. Use true to enable TLS and false to disable it.
-`Crt`: A string that gives the path to the location of the certificate for the coordinator. Only used when TLS is enabled.
-`Key`: A string that gives the path to the location of the private key for the coordinator. Only used when TLS is enabled. 
-`CertAuth`: The path to the certificate from the certificate authority. Only used when TLS is enabled. 
-`SiteConnCN`: The name given to the site connector when its certificate is created. Only used when TLS is enabled.
+`IpPort`: The ip and port the coordinator is listening. Takes format of "ip:port" string.  
+`Secure`: Whether to use tls to secure connections between the coordinator. Use true to enable TLS and false to disable it.  
+`Crt`: A string that gives the path to the location of the certificate for the coordinator. Only used when TLS is enabled.  
+`Key`: A string that gives the path to the location of the private key for the coordinator. Only used when TLS is enabled.   
+`CertAuth`: The path to the certificate from the certificate authority. Only used when TLS is enabled.   
+`SiteConnCN`: The name given to the site connector when its certificate is created. Only used when TLS is enabled.  
 
 #### Site Connector Config
-`IpPort`: The ip and port the site connector is listening. Takes format of "ip:port" string.
-`CoordinatorIpPort`: The ip and port the coordinator is listening. Takes format of "ip:port" string.
-`AlgoIpPort`: The ip and port the site algo is listening. Takes format of "ip:port" string.
-`SiteId`: The id of this side. An integer.
-`Secure`: Whether to use tls to secure connections between the site connector. Use true to enable TLS and false to disable it.
-`Crt`: A string that gives the path to the location of the certificate for the site connector. Only used when TLS is enabled.
-`Key`: A string that gives the path to the location of the private key for the site connector. Only used when TLS is enabled. 
-`CertAuth`: The path to the certificate from the certificate authority. Only used when TLS is enabled. 
-`CoordCN`: The name given to the coordinator when its certificate is created. Only used when TLS is enabled.
-`SiteAlgoCN`: The name given to the site algo when its certificate is created. Only used when TLS is enabled.
+`IpPort`: The ip and port the site connector is listening. Takes format of "ip:port" string.  
+`CoordinatorIpPort`: The ip and port the coordinator is listening. Takes format of "ip:port" string.  
+`AlgoIpPort`: The ip and port the site algo is listening. Takes format of "ip:port" string.  
+`SiteId`: The id of this side. An integer.  
+`Secure`: Whether to use tls to secure connections between the site connector. Use true to enable TLS and false to disable it.  
+`Crt`: A string that gives the path to the location of the certificate for the site connector. Only used when TLS is enabled.  
+`Key`: A string that gives the path to the location of the private key for the site connector. Only used when TLS is enabled.   
+`CertAuth`: The path to the certificate from the certificate authority. Only used when TLS is enabled.   
+`CoordCN`: The name given to the coordinator when its certificate is created. Only used when TLS is enabled.  
+`SiteAlgoCN`: The name given to the site algo when its certificate is created. Only used when TLS is enabled.  
 
 #### Site Algo Config
-`ip_port`: The ip and port the site algo is listening. Takes format of "ip:port" string.
-`connector_ip_port`: The ip and port the site connector is listening. Takes format of "ip:port" string.
-`csv_true`: Whether to grab data from a csv file.  
-`secure_with_tls`: Whether to use tls to secure connections between the site algo. Use "y" to enable TLS and "n" to disable it.
-`cert`: A string that gives the path to the location of the certificate for the site algo. Only used when TLS is enabled.
-`key`: A string that gives the path to the location of the private key for the site algo. Only used when TLS is enabled.  
-`certificate_authority`: The path to the certificate from the certificate authority. Only used when TLS is enabled.  
+`ip_port`: The ip and port the site algo is listening. Takes format of "ip:port" string.  
+`connector_ip_port`: The ip and port the site connector is listening. Takes format of "ip:port" string.  
+`csv_true`: Whether to grab data from a csv file.    
+`secure_with_tls`: Whether to use tls to secure connections between the site algo. Use "y" to enable TLS and "n" to disable it.  
+`cert`: A string that gives the path to the location of the certificate for the site algo. Only used when TLS is enabled.  
+`key`: A string that gives the path to the location of the private key for the site algo. Only used when TLS is enabled.    
+`certificate_authority`: The path to the certificate from the certificate authority. Only used when TLS is enabled.    
 
 ## Using Leap
 Now that you have set up the infrastructure, you can start using Leap. Below we have a simple example on how to count the number of patients on each hospital site that are older than 50 and have a bmi of less than 25.

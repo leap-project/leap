@@ -152,9 +152,9 @@ func (c *Coordinator) Serve() {
 
 		// Create TLS credentials
 		creds := credentials.NewTLS(&tls.Config{
-			ClientAuth: tls.RequireAndVerifyClientCert,
+			ClientAuth:   tls.RequireAndVerifyClientCert,
 			Certificates: []tls.Certificate{cert},
-			ClientCAs: certPool,
+			ClientCAs:    certPool,
 		})
 
 		s = grpc.NewServer(grpc.Creds(creds))
@@ -185,9 +185,9 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 
 		certPool.AppendCertsFromPEM(ca)
 		creds := credentials.NewTLS(&tls.Config{
-			ServerName: servername,
+			ServerName:   servername,
 			Certificates: []tls.Certificate{cert},
-			RootCAs: certPool,
+			RootCAs:      certPool,
 		})
 
 		return grpc.Dial(addr, grpc.WithTransportCredentials(creds))

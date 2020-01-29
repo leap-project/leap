@@ -15,9 +15,9 @@ import (
 )
 
 type ResultFromSite struct {
-	Response    *pb.MapResponse
-	Err         error
-	SiteId      int32
+	Response *pb.MapResponse
+	Err      error
+	SiteId   int32
 }
 
 // Makes a remote procedure call to a site connector with a
@@ -53,8 +53,8 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 	// Asynchronously send compute request to each site.
 	for item := range c.SiteConnectors.Iter() {
 		site := item.Value.(SiteConnector)
-			go c.getResultFromSite(req, site, ch)
-			sitesLength++
+		go c.getResultFromSite(req, site, ch)
+		sitesLength++
 	}
 
 	// Append the responses to the asynchronous requests

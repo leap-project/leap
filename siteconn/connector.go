@@ -37,13 +37,13 @@ type SiteConnector struct {
 // the ip and port to contact the coordinator.
 type Config struct {
 	// Ip and port of this site connector
-	IpPort            string
+	IpPort string
 	// Ip and port of the coordinator
 	CoordinatorIpPort string
 	// Ip and port of the site algo this connector contacts
-	AlgoIpPort        string
+	AlgoIpPort string
 	// Id of this site
-	SiteId            int32
+	SiteId int32
 	// Flag that determines whether to use SSL/TLS encryption
 	Secure bool
 	// File path to SSL/TLS certificate
@@ -147,9 +147,9 @@ func (sc *SiteConnector) Serve() {
 
 		// Create TLS credentials
 		creds := credentials.NewTLS(&tls.Config{
-			ClientAuth: tls.RequireAndVerifyClientCert,
+			ClientAuth:   tls.RequireAndVerifyClientCert,
 			Certificates: []tls.Certificate{cert},
-			ClientCAs: certPool,
+			ClientCAs:    certPool,
 		})
 
 		s = grpc.NewServer(grpc.Creds(creds))
@@ -204,9 +204,9 @@ func (sc *SiteConnector) Dial(addr string, serverName string) (*grpc.ClientConn,
 
 		certPool.AppendCertsFromPEM(ca)
 		creds := credentials.NewTLS(&tls.Config{
-			ServerName: serverName,
+			ServerName:   serverName,
 			Certificates: []tls.Certificate{cert},
-			RootCAs: certPool,
+			RootCAs:      certPool,
 		})
 
 		return grpc.Dial(addr, grpc.WithTransportCredentials(creds))

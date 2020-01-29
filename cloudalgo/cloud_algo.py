@@ -3,7 +3,7 @@
 #
 # - config: The path to the config file for the cloud algo
 #
-# Usage: python -m cloud_algo -ip=127.0.0.1:70000 -cip=127.0.0.1:50000 -secure="y" -crt="./certs/cloudalgo.crt" -key="./certs/cloudalgo.key" -ca="../certs/myCA.crt"
+# Usage: python -m cloud_algo -config=../config/cloudalgo_config.json
 
 import sys
 sys.path.append("../")

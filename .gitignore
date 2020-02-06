@@ -8,7 +8,7 @@
 *pb2_grpc.py
 .vscode/
 ProtoBuf/src/
-src/
+*sitealgo/src/
 *.key
 *.pem
 *.crt

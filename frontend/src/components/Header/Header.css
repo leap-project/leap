@@ -1,0 +1,27 @@
+header {
+    color: white;
+    background-color: #353635;
+    height: 100%;
+}
+
+h1,h2 {
+    text-align: left;
+    margin: 0px 5px 5px 5px;
+    display: inline;
+}
+
+ul {
+    text-align: left;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    display: inline;
+}
+
+a.navbar {
+    color: white;
+    text-decoration: none;
+}

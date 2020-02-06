@@ -7,17 +7,22 @@ class Home extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = { buttonState: 'neutral', queryResult: null};
+        this.state = { queryResult: null};
         this.leapService = new LeapService();
         this.handleComputeClick = this.handleComputeClick.bind(this);
-        console.log("hereee");
+        this.ButtonElement = React.createRef();
     }
 
     handleComputeClick() {
-        console.log("clicking");
-        this.leapService.compute("").then(res => {
-            this.setState({buttonState: 'success', queryResult: res});
-        });
+        this.leapService.compute("")
+            .then(res => {
+            this.setState({queryResult: res});
+            this.ButtonElement.current.changeState('success');
+        })
+            .catch(err => {
+                console.log("caught error on compute click")
+                this.ButtonElement.current.changeState('error');
+            });
     }
 
     render() {
@@ -25,7 +30,12 @@ class Home extends React.Component {
             <div className="outer-div">
                 How many women in our database have been previously pregnant?
                 <div>
-                    <Button className='computeButton' onClick={this.handleComputeClick} state={this.state.buttonState} text={"Compute"} />
+                    <Button className='ComputeButton'
+                            onClick={this.handleComputeClick}
+                            state={this.state.buttonState}
+                            text={"Compute"}
+                            ref={this.ButtonElement}
+                    />
                 </div>
             </div>
         );

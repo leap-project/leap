@@ -3,12 +3,6 @@ package protoBuf;
 
 import "computation-msgs.proto";
 
-// To compile the protobuf to Go run the following inside the protoBuf folder:
-// protoc -I=. --go_out=plugins=grpc:.  cloud-algos.proto
-
-// To compile the protobuf to Python run the following inside the protoBuf folder:
-// python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. cloud-algos.proto
-
 // To compile the protobuf to JS run the following inside the protoBuf folder:
 // protoc -I=. --js_out=import_style=commonjs,mode=grpcwebtext:../frontend/src/protos cloud-algos.proto
 

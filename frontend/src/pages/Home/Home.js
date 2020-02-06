@@ -14,15 +14,17 @@ class Home extends React.Component {
     }
 
     handleComputeClick() {
-        this.leapService.compute("")
-            .then(res => {
-            this.setState({queryResult: res});
-            this.ButtonElement.current.changeState('success');
-        })
-            .catch(err => {
+        console.log(this.leapService.compute);
+        this.leapService.compute({dp: false, algoType: "count"}, rpcResponse => {
+            console.log("Inside callback in handleComputeClick");
+            if (rpcResponse.error === undefined || rpcResponse.error === null) {
+                this.setState({queryResult: rpcResponse.computationResult});
+                this.ButtonElement.current.changeState('success');
+            } else {
                 console.log("caught error on compute click")
                 this.ButtonElement.current.changeState('error');
-            });
+            }
+        });
     }
 
     render() {

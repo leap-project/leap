@@ -9,10 +9,11 @@ class Home extends React.Component {
         super(props);
         this.state = { buttonState: 'neutral', queryResult: null};
         this.leapService = new LeapService();
-        this.handleClick = this.handleClick.bind(this)
+        this.handleComputeClick = this.handleComputeClick.bind(this);
+        console.log("hereee");
     }
 
-    handleClick() {
+    handleComputeClick() {
         console.log("clicking");
         this.leapService.compute("").then(res => {
             this.setState({buttonState: 'success', queryResult: res});
@@ -24,7 +25,7 @@ class Home extends React.Component {
             <div className="outer-div">
                 How many women in our database have been previously pregnant?
                 <div>
-                    <Button className='computeButton' onClick={this.handleClick} state={this.state.buttonState}/>
+                    <Button className='computeButton' onClick={this.handleComputeClick} state={this.state.buttonState} text={"Compute"} />
                 </div>
             </div>
         );

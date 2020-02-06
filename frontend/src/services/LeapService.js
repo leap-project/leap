@@ -1,8 +1,9 @@
 import axios from "axios";
 
 class LeapService {
+
     async compute(selector) {
-        const url = "localhost:someport/compute";
+        const url = "localhost:700001/compute";
         return axios.get(url, {
             params: {
                 selector: selector

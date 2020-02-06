@@ -2,14 +2,22 @@ import React from "react";
 import "./Button.css";
 import ProgressButton from 'react-progress-button'
 
-function Button(props) {
-    return (
-        <div>
-            <ProgressButton onClick={() => props.handleClick()} state={'loading'}>
-                Compute
-            </ProgressButton>
-        </div>
-    )
+class Button extends React.Component {
+
+    constructor(props) {
+        super(props);
+    }
+
+    render() {
+        return (
+            <div>
+                <ProgressButton onClick={this.props.onClick()} state={'loading'}>
+                    {this.props.text}
+                </ProgressButton>
+            </div>
+        )
+    }
+
 }
 
 export default Button

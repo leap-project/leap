@@ -14,14 +14,15 @@ class Home extends React.Component {
     }
 
     handleComputeClick() {
-        this.computeService.compute({dp: false, algoType: "count"}, rpcResponse => {
-
-            if (rpcResponse.error === undefined || rpcResponse.error === null) {
-                this.setState({queryResult: rpcResponse.computationResult});
-                this.ButtonElement.current.changeState('success');
-            } else {
-                this.ButtonElement.current.changeState('error');
-            }
+        this.computeService.compute({dp: false, algoType: "count"}, res => {
+            console.log(res);
+            this.setState({queryResult: res.computationResult});
+            this.ButtonElement.current.changeState('success');
+        }).catch(err => {
+            console.log("Is this the error?");
+            console.log(err);
+            console.log("Yes sir!");
+            this.ButtonElement.current.changeState('error');
         });
     }
 

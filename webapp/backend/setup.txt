@@ -1,0 +1,6 @@
+# Inside conda or a virtualenv
+$ pip install django
+$ pip install djangorestframework
+
+# Package to enable CORS
+$ pip install django-cors-headers

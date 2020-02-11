@@ -5,7 +5,7 @@ const API_URL = "http://localhost:8000";
 
 class ComputeService {
     async compute(req) {
-        const url = `${API_URL}/compute`;
+        const url = `${API_URL}/compute/`;
 
         return axios.post(url, {
             dp: req.dp,

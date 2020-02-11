@@ -10,7 +10,7 @@ class ComputeView(APIView):
     """
     def post(self, request, format=None):
         print("Got POST for compute")
-        return Response()
+        return Response(status=status.HTTP_200_OK)
 
 class SitesView(APIView):
     """
@@ -20,4 +20,4 @@ class SitesView(APIView):
 
     def get(self, request, format=None):
         print("Got GET for sites")
-        return Response()
+        return Response(status=status.HTTP_200_OK)

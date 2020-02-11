@@ -14,16 +14,24 @@ class Home extends React.Component {
     }
 
     handleComputeClick() {
-        this.computeService.compute({dp: false, algoType: "count"}, res => {
-            console.log(res);
+        this.computeService.compute({dp: false, algo: "count"}).then(res => {
+            console.log("Something is working");
             this.setState({queryResult: res.computationResult});
             this.ButtonElement.current.changeState('success');
         }).catch(err => {
-            console.log("Is this the error?");
-            console.log(err);
-            console.log("Yes sir!");
             this.ButtonElement.current.changeState('error');
-        });
+        })
+
+        //     , res => {
+        //     console.log("Something is working");
+        //     this.setState({queryResult: res.computationResult});
+        //     this.ButtonElement.current.changeState('success');
+        // }).catch(err => {
+        //     console.log("Is this the error?");
+        //     console.log(err);
+        //     console.log("Yes sir!");
+        //     this.ButtonElement.current.changeState('error');
+        // });
     }
 
     render() {

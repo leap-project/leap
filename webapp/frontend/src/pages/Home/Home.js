@@ -1,27 +1,25 @@
 import React from "react";
 import "./Home.css"
 import Button from "../../components/Button/Button"
-import LeapService from "../../services/LeapService"
+import ComputeService from "../../services/ComputeService"
 
 class Home extends React.Component {
 
     constructor(props) {
         super(props);
         this.state = { queryResult: null};
-        this.leapService = new LeapService();
+        this.computeService = new ComputeService();
         this.handleComputeClick = this.handleComputeClick.bind(this);
         this.ButtonElement = React.createRef();
     }
 
     handleComputeClick() {
-        console.log(this.leapService.compute);
-        this.leapService.compute({dp: false, algoType: "count"}, rpcResponse => {
-            console.log("Inside callback in handleComputeClick");
+        this.computeService.compute({dp: false, algoType: "count"}, rpcResponse => {
+
             if (rpcResponse.error === undefined || rpcResponse.error === null) {
                 this.setState({queryResult: rpcResponse.computationResult});
                 this.ButtonElement.current.changeState('success');
             } else {
-                console.log("caught error on compute click")
                 this.ButtonElement.current.changeState('error');
             }
         });

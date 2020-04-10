@@ -12,8 +12,6 @@ class ComputeService {
             algo: req.algo,
         }).then(response => {
             return response.data;
-        }).catch(err => {
-            return err
         })
     }
 }

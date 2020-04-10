@@ -21,11 +21,14 @@ class ComputeView(APIView):
     """
     def post(self, request, format=None):
         leap_predef = None
-        if request.dp:
+        print("Inside post")
+        request = {"dp": False}
+        if request["dp"]:
             leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_SITE_COUNT_ALGO, epsilon=1, delta=0)
         else:
+            print("Gonna call leap api")
             leap_predef = leap_fn.PredefinedFunction(codes.COUNT_ALGO)
-
+            print("Running non dp leap")
             selector = "[age] > 50 and [bmi] < 25"
             leap_predef.selector = selector
             dist_leap = leap.DistributedLeap(leap_predef)

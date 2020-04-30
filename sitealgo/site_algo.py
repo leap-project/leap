@@ -24,7 +24,6 @@ import api.codes as codes
 import cloudalgo.functions.privacy as leap_privacy
 import csv
 
-print(pb)
 # Parse command line arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("-config", "--config", default="../config/sitealgo_config.json", help="Path to the config file")

@@ -3,7 +3,7 @@
   "CoordinatorIpPort": "127.0.0.1:50000",
   "AlgoIpPort": "127.0.0.1:60000",
   "SiteId": 0,
-  "Secure": true,
+  "Secure": false,
   "Crt": "../siteconn/certs/siteconn.crt",
   "Key": "../siteconn/certs/siteconn.key",
   "CertAuth": "../certs/myCA.crt",

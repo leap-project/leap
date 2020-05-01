@@ -1,5 +1,6 @@
 syntax = "proto3";
 package protoBuf;
+option go_package=".;protoBuf";
 
 import "computation-msgs.proto";
 

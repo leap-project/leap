@@ -1,5 +1,6 @@
 syntax = "proto3";
 package protoBuf;
+option go_package = ".;protoBuf";
 
 // To compile the protobuf to Go run the following inside the protoBuf folder:
 // protoc -I=. --go_out=. registration-msgs.proto

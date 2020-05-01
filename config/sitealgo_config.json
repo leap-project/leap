@@ -2,7 +2,7 @@
   "ip_port": "127.0.0.1:60000",
   "connector_ip_port": "127.0.0.1:50001",
   "csv_true": "0",
-  "secure_with_tls": "y",
+  "secure_with_tls": "n",
   "cert": "./certs/sitealgo.crt",
   "key": "./certs/sitealgo.key",
   "certificate_authority": "../certs/myCA.crt"

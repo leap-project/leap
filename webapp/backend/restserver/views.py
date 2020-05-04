@@ -6,6 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
+import json
 import api.leap as leap
 import api.leap_fn as leap_fn
 import api.codes as codes
@@ -18,7 +19,8 @@ class ComputeView(APIView):
     """
     def post(self, request, format=None):
         leap_predef = None
-        if request.dp:
+        body = json.loads(request.body)
+        if body['dp']:
             leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_SITE_COUNT_ALGO, epsilon=1, delta=0)
         else:
             leap_predef = leap_fn.PredefinedFunction(codes.COUNT_ALGO)
@@ -26,7 +28,6 @@ class ComputeView(APIView):
             selector = "[age] > 50 and [bmi] < 25"
             leap_predef.selector = selector
             dist_leap = leap.DistributedLeap(leap_predef)
-            print(dist_leap.get_result())
 
         return Response(status=status.HTTP_200_OK)
 

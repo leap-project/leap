@@ -58,13 +58,3 @@ class Home extends React.Component {
 }
 
 export default Home
-
-// <Flexbox flexDirection="row">
-//     <div className="questionText"> How many women in our database have been previously pregnant?</div>
-// <Button className='ComputeButton'
-// onClick={this.handleComputeClick}
-// state={this.state.buttonState}
-// text={"Compute"}
-// ref={this.ButtonElement}
-// />
-// </Flexbox>

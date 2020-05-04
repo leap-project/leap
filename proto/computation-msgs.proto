@@ -1,16 +1,6 @@
 syntax = "proto3";
-package protoBuf;
-option go_package=".;protoBuf";
-
-
-// To compile the protobuf to Go run the following inside the protoBuf folder:
-// protoc -I=. --go_out=.  computation-msgs.proto
-
-// To compile the protobuf to Python run the following inside the protoBuf folder:
-// protoc -I=. --python_out=. computation-msgs.proto
-
-// To compile the protobuf to JS run the following inside the protoBuf folder:
-// protoc -I=. --js_out=import_style=commonjs:. computation-msgs.proto
+package proto;
+option go_package=".;proto";
 
 message WebRequest {
     bool dp = 1;

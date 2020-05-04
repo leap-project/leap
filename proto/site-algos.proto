@@ -1,8 +1,8 @@
 syntax = "proto3";
-package protoBuf;
-option go_package=".;protoBuf";
+package proto;
+option go_package=".;proto";
 
-import "computation-msgs.proto";
+import "proto/computation-msgs.proto";
 
 // To compile the protobuf to Go run the following inside the protoBuf folder:
 // protoc -I=. --go_out=plugins=grpc:.  site-algos.proto

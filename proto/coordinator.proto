@@ -1,16 +1,9 @@
 syntax = "proto3";
-package protoBuf;
-option go_package=".;protoBuf";
+package proto;
+option go_package=".;proto";
 
-import "computation-msgs.proto";
-import "registration-msgs.proto";
-
-// To compile the protobuf to Go run the following inside the protoBuf folder:
-// protoc -I=. --go_out=plugins=grpc:.  coordinator.proto
-
-// To compile the protobuf to Python run the following inside the protoBuf folder:
-// python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. coordinator.proto
-
+import "proto/computation-msgs.proto";
+import "proto/registration-msgs.proto";
 
 // RPC service at the coordinator that will handle requests from sites and cloud algos
 service Coordinator {

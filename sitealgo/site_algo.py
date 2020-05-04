@@ -4,19 +4,14 @@
 #
 # - config: The path to the config file for the site algo
 #
-# Usage: python -m site_algo -config=../config/sitealgo_config.json
 
-import sys
-sys.path.append("../")
+
 import grpc
 import time
 import pandas
-import multiprocessing
-import argparse
 import concurrent.futures as futures
 import redcap
 import json
-import proto as pb
 import logging
 from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
@@ -24,21 +19,13 @@ import api.codes as codes
 import cloudalgo.functions.privacy as leap_privacy
 import csv
 
-# Parse command line arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("-config", "--config", default="../config/sitealgo_config.json", help="Path to the config file")
-args = parser.parse_args()
-
-# Load config file
-config = None
-config_path = args.config
-with open(config_path) as json_file:
-    data = json_file.read()
-    config = json.loads(data)
+import proto as pb
+from proto import site_algos_pb2_grpc
+from proto import computation_msgs_pb2
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
-logger = logging.getLogger(__name__)  # type: PyLogrus
+logger = logging.getLogger(__name__) 
 logger.setLevel(logging.DEBUG)
 formatter = TextFormatter(datefmt='Z', colorize=True)
 ch = logging.StreamHandler()
@@ -52,72 +39,88 @@ redCapUrl = "https://rc.bcchr.ca/redcap_demo/api/"
 redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 
 
-# Gets the data from a database or csv file and returns
-# the records to perform a computation on.
-#
-# filter: The filter that is used to retrieve the Redcap data.
-def get_data_from_src(filter=""):
-    if config["csv_true"] == "1":
-        return get_csv_data()
-    else:
-        return get_redcap_data(redCapUrl, redCapToken, filter)
 
 
-# TODO: Actually filter the data according to a user selector
-# Gets the data from a csv file and returns the records to
-# perform a computation on.
-def get_csv_data():
-    patients = pandas.read_csv("data.csv")
-    print(patients)
-    return patients
+# Class for starting a site algo
+class SiteAlgo():
+    def __init__(self, config_path):
+        self.config = self.get_config(config_path)
+        pass
+
+    def get_config(self, config_path):
+        with open(config_path) as json_file:
+            data = json_file.read()
+            config = json.loads(data)
+            return config
+
+    # Gets the data from a database or csv file and returns
+    # the records to perform a computation on.
+    #
+    # filter: The filter that is used to retrieve the Redcap data.
+    def get_data_from_src(self, filter=""):
+        if self.config["csv_true"] == "1":
+            return self.get_csv_data()
+        else:
+            return self.get_redcap_data(redCapUrl, redCapToken, filter)
 
 
-# Contacts a redCap project and returns the filtered records
-# from this project
-#
-# url: Url of the RedCap project
-# token: Token used to access RedCap project given in the url
-# filterLogic: The filter to be applied to the results."""
-def get_redcap_data(url, token, filter_logic):
-    # project = redcap.Project(url, token)
-    # patients = project.export_records(filter_logic=filter_logic)
-    # return patients
-    return [1,2,3,4]
+    # TODO: Actually filter the data according to a user selector
+    # Gets the data from a csv file and returns the records to
+    # perform a computation on.
+    def get_csv_data(self):
+        patients = pandas.read_csv("data.csv")
+        return patients
 
-# Starts listening for RPC requests at the specified ip and
-# port.
 
-# No args
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    cert = None
-    key = None
-    ca = None
+    # Contacts a redCap project and returns the filtered records
+    # from this project
+    #
+    # url: Url of the RedCap project
+    # token: Token used to access RedCap project given in the url
+    # filterLogic: The filter to be applied to the results."""
+    def get_redcap_data(self, url, token, filter_logic):
+        # project = redcap.Project(url, token)
+        # patients = project.export_records(filter_logic=filter_logic)
+        # return patients
+        return [1,2,3,4]
 
-    # If secure flag is on only run encrypted connections
-    if config["secure_with_tls"] == "y":
-        fd = open(config["cert"], "rb")
-        cert = fd.read()
-        fd = open(config["key"], "rb")
-        key = fd.read()
-        fd = open(config["certificate_authority"], "rb")
-        ca = fd.read()
+    # Starts listening for RPC requests at the specified ip and
+    # port.
+    #
+    # No args
+    def serve(self):
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        cert = None
+        key = None
+        ca = None
 
-        creds = grpc.ssl_server_credentials(((key, cert), ), root_certificates=ca)
-        pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(config["ip_port"], config["connector_ip_port"]), server)
-        server.add_secure_port(config["ip_port"], creds)
-    else:
-        pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(config["ip_port"], config["connector_ip_port"]), server)
-        server.add_insecure_port(config["ip_port"])
+        # If secure flag is on only run encrypted connections
+        if self.config["secure_with_tls"] == "y":
+            fd = open(self.config["cert"], "rb")
+            cert = fd.read()
+            fd = open(self.config["key"], "rb")
+            key = fd.read()
+            fd = open(self.config["certificate_authority"], "rb")
+            ca = fd.read()
 
-    server.start()
-    log.info("Server started")
-    log.info("Listening at " + config["ip_port"])
-    while True:
-        time.sleep(5)
+            creds = grpc.ssl_server_credentials(((key, cert), ), root_certificates=ca)
+            pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(self.config["ip_port"], self.config["connector_ip_port"]), server)
+            server.add_secure_port(self.config["ip_port"], creds)
+        else:
+            pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(self.config["ip_port"], self.config["connector_ip_port"]), server)
+            server.add_insecure_port(self.config["ip_port"])
+
+        server.start()
+        log.info("Server started")
+        log.info("Listening at " + self.config["ip_port"])
+        while True:
+            time.sleep(5)
+
+
+
 
 # RPC Service for Site Algos
-class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
+class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     def __init__(self, ip_port, connector_ip_port):
         self.ip_port = ip_port
         self.connector_ip_port = connector_ip_port
@@ -206,6 +209,4 @@ class SiteAlgoServicer(pb.site_algos_pb2_grpc.SiteAlgoServicer):
         data = get_data_from_src(s_filter)
         return data
 
-if __name__ == "__main__":
-    serverProcess = multiprocessing.Process(target=serve)
-    serverProcess.start()
+

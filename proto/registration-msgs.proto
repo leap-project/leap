@@ -1,12 +1,6 @@
 syntax = "proto3";
-package protoBuf;
-option go_package = ".;protoBuf";
-
-// To compile the protobuf to Go run the following inside the protoBuf folder:
-// protoc -I=. --go_out=. registration-msgs.proto
-
-// To compile the protobuf to Python run the following inside the protoBuf folder:
-// protoc -I=. --python_out=. registration-msgs.proto
+package proto;
+option go_package = ".;proto";
 
 // Message sent by a site connector to a coordinator with the registration request of a site algo.
 message SiteRegReq { // Site Registration Request

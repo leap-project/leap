@@ -6,7 +6,6 @@
 # Usage: python -m cloud_algo -config=../config/cloudalgo_config.json
 
 import sys
-sys.path.append("../")
 import time
 import argparse
 import multiprocessing
@@ -16,10 +15,6 @@ import concurrent.futures as futures
 import json
 import logging
 from pylogrus import PyLogrus, TextFormatter
-import pdb
-
-import sys
-sys.path.append("../")
 import utils.env_manager as env_manager
 import api.codes as codes
 
@@ -56,7 +51,8 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.live_requests = {}
         self.cert = None
         self.key = None
-        self.ca = None
+        self.ca = Noneprint(sys.path)
+
 
     # Coordinates computations across multiple local sites and returns result to client
     #   req["module"]: stringified python module containing

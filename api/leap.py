@@ -4,8 +4,6 @@
 # tions available in LEAP
 
 from abc import ABC, abstractmethod
-import sys
-sys.path.append("../")
 import json
 import grpc
 import proto as pb

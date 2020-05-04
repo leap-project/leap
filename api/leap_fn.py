@@ -3,8 +3,6 @@
 # set their own user defined functions or use one of the func-
 # tions available in LEAP
 
-import sys
-sys.path.append("../")
 import json
 import api.codes as codes
 from utils import leap_utils

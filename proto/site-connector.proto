@@ -1,15 +1,8 @@
 syntax = "proto3";
-package protoBuf;
-option go_package=".;protoBuf";
+package proto;
+option go_package=".;proto";
 
-import "computation-msgs.proto";
-
-// To compile the protobuf to Go run the following inside the protoBuf folder:
-// protoc -I=. --go_out=plugins=grpc:.  site-connector.proto
-
-// To compile the protobuf to Python run the following inside the protoBuf folder:
-// python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. site-connector.proto
-
+import "proto/computation-msgs.proto";
 
 // RPC service at a site connector that will handle requests from site algorithms
 service SiteConnector {

@@ -1,16 +1,9 @@
 # File for a program that listens to requests from clients
 # and runs some of the 8 abstract functions in leap.
-#
-# - config: The path to the config file for the cloud algo
-#
-# Usage: python -m cloud_algo -config=../config/cloudalgo_config.json
 
-import sys
 import time
-import argparse
 import multiprocessing
 import grpc
-import proto as pb
 import concurrent.futures as futures
 import json
 import logging
@@ -18,17 +11,10 @@ from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
 import api.codes as codes
 
-# Parse command line arguments
-parser = argparse.ArgumentParser()
-parser.add_argument("-config", "--config", default="../config/cloudalgo_config.json", help="Path to the config file")
-args = parser.parse_args()
-
-# Load config file
-config = None
-config_path = args.config
-with open(config_path) as json_file:
-    data = json_file.read()
-    config = json.loads(data)
+import proto as pb
+from proto import cloud_algos_pb2_grpc
+from proto import computation_msgs_pb2
+from proto import coordinator_pb2_grpc
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -42,16 +28,58 @@ logger.addHandler(ch)
 log = logger.withFields({"node": "cloud-algo"})
 
 
+class CloudAlgo():
+    def __init__(self, config_path):
+        self.config = self.get_config(config_path)
+
+
+    # Loads the file with the configurations for the cloud algo
+    #
+    # config_path: The file path to the config file
+    def get_config(self, config_path):
+        with open(config_path) as json_file:
+            data = json_file.read()
+            config = json.loads(data)
+            return config
+
+
+    # Starts listening for RPC requests at the specified ip and
+    # port.
+    #
+    # No args
+    def serve(self):
+        cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config)
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+
+        if self.config["secure_with_tls"] == "y":
+            fd = open(self.config["cert"], "rb")
+            cloudAlgoServicer.cert = fd.read()
+            fd = open(self.config["key"], "rb")
+            cloudAlgoServicer.key = fd.read()
+            fd = open(self.config["certificate_authority"], "rb")
+            cloudAlgoServicer.ca = fd.read()
+
+
+        cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(cloudAlgoServicer, server)
+        server.add_insecure_port(self.config["ip_port"])
+        server.start()
+        log.info("Server started")
+        log.withFields({"ip-port": self.config["ip_port"]}).info("Listening for requests")
+        while True:
+            time.sleep(5)
+
+
 # GRPC service for cloud algos
-class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
-    def __init__(self, ip_port, coordinator_ip_port):
-        self.ip_port = ip_port
-        self.coordinator_ip_port = coordinator_ip_port
+class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
+    def __init__(self, ip_port, coordinator_ip_port, config):
         self.id_count = 0
         self.live_requests = {}
+        self.ip_port = ip_port
+        self.coordinator_ip_port = coordinator_ip_port
+        self.config = config
         self.cert = None
         self.key = None
-        self.ca = Noneprint(sys.path)
+        self.ca = None
 
 
     # Coordinates computations across multiple local sites and returns result to client
@@ -68,6 +96,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     #     * cloud_state: state that is only used by the cloud
     #
     #   req["filter"]: query filter string to get dataset of interest
+
 
     # Grpc service call for the cloud algo to compute some
     # algorithm.
@@ -98,7 +127,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
 
             result = self._compute_logic(req, coord_stub, req_id)
 
-            res = pb.computation_msgs_pb2.ComputeResponse()
+            res = computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(result)
         except grpc.RpcError as e:
             log.withFields({"request-id": req_id}).error(e.details())
@@ -108,6 +137,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
             raise e
         return res
 
+
     # Takes a request and the state and creates a request to
     # be sent to the coordinator that grpc understands.
     #
@@ -115,12 +145,13 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
     # req: The request to be serialized
     # state: The state that will go in the request.
     def _create_computation_request(self, req_id, req, state):
-        request = pb.computation_msgs_pb2.MapRequest()
+        request = computation_msgs_pb2.MapRequest()
         request.id = req_id
         req = req.copy()
         req["state"] = state
         request.req = json.dumps(req)
         return request
+
 
     # Generates a new id for a request
     # TODO: Lock the request counter
@@ -131,18 +162,20 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.id_count += 1
         return new_id       
 
+
     # Gets the grpc stub to send a message to the coordinator.
     def _get_coord_stub(self):
         channel = None
 
-        if config["secure_with_tls"] == "y":
+        if self.config["secure_with_tls"] == "y":
             creds = grpc.ssl_channel_credentials(root_certificates=self.ca, private_key=self.key, certificate_chain=self.cert)
-            channel = grpc.secure_channel(self.coordinator_ip_port, creds, options=(('grpc.ssl_target_name_override', config["coord_cn"],),))
+            channel = grpc.secure_channel(self.coordinator_ip_port, creds, options=(('grpc.ssl_target_name_override', self.config["coord_cn"],),))
         else:
             channel = grpc.insecure_channel(self.coordinator_ip_port)
 
-        coord_stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
+        coord_stub = coordinator_pb2_grpc.CoordinatorStub(channel)
         return coord_stub
+
 
     # Contains the logic for aggregating and performing the
     # general algorithmic portion of Leap that happens in the
@@ -179,6 +212,7 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         post_result = postprocessing_fn(agg_result, state)
         return post_result
 
+
     # Extracts the protobuf responses into a list.
     #
     # pb_responses: Response message from protobuf.
@@ -187,34 +221,3 @@ class CloudAlgoServicer(pb.cloud_algos_pb2_grpc.CloudAlgoServicer):
         for r in pb_responses:
             responses.append(r.response)
         return responses
-
-# Starts listening for RPC requests at the specified ip and
-# port.
-#
-# No args
-def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    cloudAlgoServicer = CloudAlgoServicer(config["ip_port"], config["coordinator_ip_port"])
-
-    if config["secure_with_tls"] == "y":
-        fd = open(config["cert"], "rb")
-        cloudAlgoServicer.cert = fd.read()
-        fd = open(config["key"], "rb")
-        cloudAlgoServicer.key = fd.read()
-        fd = open(config["certificate_authority"], "rb")
-        cloudAlgoServicer.ca = fd.read()
-
-
-    pb.cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(cloudAlgoServicer, server)
-    server.add_insecure_port(config["ip_port"])
-    server.start()
-    log.info("Server started")
-    log.withFields({"ip-port": config["ip_port"]}).info("Listening for requests")
-    while True:
-        time.sleep(5)
-
-if __name__ == "__main__":
-    serverProcess = multiprocessing.Process(target=serve)
-    serverProcess.start()
-
-

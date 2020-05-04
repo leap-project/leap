@@ -5,6 +5,7 @@ import pdb
 import logging
 from pylogrus import PyLogrus, TextFormatter
 import json
+from cloudalgo.functions import *
 import cloudalgo.functions as leap_fn
 import utils.env_utils as env_utils
 
@@ -236,9 +237,10 @@ class CloudPredefinedEnvironment(CloudEnvironment):
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req, req_id):
         super().set_env(context, req, req_id)
+
         algo_code = req["algo_code"]
         module = getattr(leap_fn, algo_code)
-        
+
         env_utils.load_fn("init_state_fn", req, context, module=module)
         env_utils.load_fn("choice_fn", req, context, module=module)
         env_utils.load_fn("stop_fn", req, context, module=module)

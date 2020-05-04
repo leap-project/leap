@@ -38,14 +38,12 @@ log = logger.withFields({"node": "site-algo"})
 redCapUrl = "https://rc.bcchr.ca/redcap_demo/api/"
 redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 
-
-
-
 # Class for starting a site algo
 class SiteAlgo():
     def __init__(self, config_path):
         self.config = self.get_config(config_path)
         pass
+
 
     def get_config(self, config_path):
         with open(config_path) as json_file:
@@ -53,36 +51,6 @@ class SiteAlgo():
             config = json.loads(data)
             return config
 
-    # Gets the data from a database or csv file and returns
-    # the records to perform a computation on.
-    #
-    # filter: The filter that is used to retrieve the Redcap data.
-    def get_data_from_src(self, filter=""):
-        if self.config["csv_true"] == "1":
-            return self.get_csv_data()
-        else:
-            return self.get_redcap_data(redCapUrl, redCapToken, filter)
-
-
-    # TODO: Actually filter the data according to a user selector
-    # Gets the data from a csv file and returns the records to
-    # perform a computation on.
-    def get_csv_data(self):
-        patients = pandas.read_csv("data.csv")
-        return patients
-
-
-    # Contacts a redCap project and returns the filtered records
-    # from this project
-    #
-    # url: Url of the RedCap project
-    # token: Token used to access RedCap project given in the url
-    # filterLogic: The filter to be applied to the results."""
-    def get_redcap_data(self, url, token, filter_logic):
-        # project = redcap.Project(url, token)
-        # patients = project.export_records(filter_logic=filter_logic)
-        # return patients
-        return [1,2,3,4]
 
     # Starts listening for RPC requests at the specified ip and
     # port.
@@ -104,10 +72,10 @@ class SiteAlgo():
             ca = fd.read()
 
             creds = grpc.ssl_server_credentials(((key, cert), ), root_certificates=ca)
-            pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(self.config["ip_port"], self.config["connector_ip_port"]), server)
+            site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(self.config["ip_port"], self.config["connector_ip_port"], self.config), server)
             server.add_secure_port(self.config["ip_port"], creds)
         else:
-            pb.site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(self.config["ip_port"], self.config["connector_ip_port"]), server)
+            site_algos_pb2_grpc.add_SiteAlgoServicer_to_server(SiteAlgoServicer(self.config["ip_port"], self.config["connector_ip_port"], self.config), server)
             server.add_insecure_port(self.config["ip_port"])
 
         server.start()
@@ -118,13 +86,14 @@ class SiteAlgo():
 
 
 
-
 # RPC Service for Site Algos
 class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
-    def __init__(self, ip_port, connector_ip_port):
+    def __init__(self, ip_port, connector_ip_port, config):
         self.ip_port = ip_port
         self.connector_ip_port = connector_ip_port
+        self.config = config
         self.live_requests = {}
+
 
     # RPC requesting for a map function to be run
     #
@@ -162,11 +131,13 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             log.withFields({"request-id": request.id}).error(e)
             raise e
 
+
     # Gets the protobuf message for a map response
     #
     # No args
     def _get_response_obj(self):
-        return pb.computation_msgs_pb2.MapResponse()
+        return computation_msgs_pb2.MapResponse()
+
 
     # Chooses the appropriate map function to run, gets the
     # data, and computes the map function on the data.
@@ -200,13 +171,45 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             map_result = map_fn[choice](data, state)
         return map_result
 
+
     # Gets the data from the database
     #
     # req: A leap request containing the selector to retrieve
     #      the data.
     def get_data(self, req):
         s_filter = req["selector"]
-        data = get_data_from_src(s_filter)
+        data = self.get_data_from_src(s_filter)
         return data
 
+
+    # Gets the data from a database or csv file and returns
+    # the records to perform a computation on.
+    #
+    # filter: The filter that is used to retrieve the Redcap data.
+    def get_data_from_src(self, filter=""):
+        if self.config["csv_true"] == "1":
+            return self.get_csv_data()
+        else:
+            return self.get_redcap_data(redCapUrl, redCapToken, filter)
+
+
+    # TODO: Actually filter the data according to a user selector
+    # Gets the data from a csv file and returns the records to
+    # perform a computation on.
+    def get_csv_data(self):
+        patients = pandas.read_csv("data.csv")
+        return patients
+
+
+    # Contacts a redCap project and returns the filtered records
+    # from this project
+    #
+    # url: Url of the RedCap project
+    # token: Token used to access RedCap project given in the url
+    # filterLogic: The filter to be applied to the results."""
+    def get_redcap_data(self, url, token, filter_logic):
+        # project = redcap.Project(url, token)
+        # patients = project.export_records(filter_logic=filter_logic)
+        # return patients
+        return [1,2,3,4]
 

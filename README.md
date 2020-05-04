@@ -64,36 +64,36 @@ pip install torch
 ## Running LEAP
 The leap infrastructure is composed of 4 different programs: the site-algo, the site-connector, the coordinator, and the cloud-algo. Once these 4 programs are up and running, you can use the Leap API to perform some computations.
 
-Before starting the 4 different programs go to the Protobuf folder and run the following command to compile the proto files into go and python files:
+Before starting the 4 different programs go to the main leap directory and run the following command to compile the proto files:
 ```
 bash compileProtos.sh
 ```
 
 #### Starting the Coordinator
-The coordinator is what holds the system together. It talks to the site-connector and the cloud-algo. To start the coordinator go to the Exe directory and run the following command:
+The coordinator is what holds the system together. It talks to the site-connector and the cloud-algo. To start the coordinator go to the `exe` directory and run the following command:
 ```
 go run coordinator-main.go -config=../config/coord-config.json
 ```
 `config`: The path to the config file of the coordinator.  
 
 #### Starting the Site Connector
-The site connector is the point of contact between each hospital site and the coordinator. To run the site connector go to the Exe directory and execute the following command: 
+The site connector is the point of contact between each hospital site and the coordinator. To run the site connector go to the `exe` directory and execute the following command: 
 ```
 go run connector-main.go -config=../config/conn-config.json
 ```
 `config`: The path to the config file of the site-connector.
 
 #### Starting the Site Algo
-The site algo has access to a dataset and runs computations relayed to it. It responds to requests from the site-connector, which passes the results from the site-algo to the coordinator. Inside the SiteAlgo directory, type the following command:
+The site algo has access to a dataset and runs computations relayed to it. It responds to requests from the site-connector, which passes the results from the site-algo to the coordinator. Inside the `exe` directory, type the following command:
 ```
-python -m site_algo -config=../config/sitealgo_config.json
+python -m sitealgo_main -config=../config/sitealgo_config.json
 ```
 `config`: The path to the config file of the site algo.  
 
 #### Starting the Cloud Algo
-The cloud algo receives the results from all the sites through the coordinator. It then performs some computation using these results. To run the cloud algo, navigate to the CloudAlgo directory and enter the following command: 
+The cloud algo receives the results from all the sites through the coordinator. It then performs some computation using these results. To run the cloud algo, navigate to the `exe` directory and enter the following command: 
 ```
-python -m cloud_algo -config=../config/cloudalgo_config.json
+python -m cloudalgo_main -config=../config/cloudalgo_config.json
 ```
 `config`: The path to the config file of the cloud algo.
 

@@ -4,6 +4,7 @@ option go_package=".;proto";
 
 import "proto/computation-msgs.proto";
 import "proto/registration-msgs.proto";
+import "proto/availability-msgs.proto";
 
 // RPC service at the coordinator that will handle requests from sites and cloud algos
 service Coordinator {
@@ -13,5 +14,8 @@ service Coordinator {
 
     // Relays a computation request from the cloud to appropriate sites
     rpc Map (MapRequest) returns (MapResponses) {}
+
+    // Pinged by others to determine what sites are available
+    rpc SitesAvailable (SitesAvailableReq) returns (SitesAvailableRes) {}
 
 }

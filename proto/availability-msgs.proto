@@ -1,0 +1,29 @@
+syntax = "proto3";
+package proto;
+option go_package = ".;proto";
+
+// Message sent to a site to determine wheter it's available
+message SiteAvailableReq {
+  int32 site_id = 1;
+}
+
+// Message returned from a site indicating whether it is available
+message SiteAvailableRes {
+  repeated Site site = 1;
+}
+
+// Message sent to find out all the sites that are available at the moment
+message SitesAvailableReq{
+
+}
+
+// Message returned indicating all the sites registered at the moment and their status
+message SitesAvailableRes{
+  repeated Site sites = 1;
+}
+
+// Structure holding information on a site
+message Site {
+  int32 site_id = 1;
+  bool available = 2;
+}

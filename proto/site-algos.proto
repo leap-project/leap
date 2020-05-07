@@ -3,6 +3,7 @@ package proto;
 option go_package=".;proto";
 
 import "proto/computation-msgs.proto";
+import "proto/availability-msgs.proto";
 
 // To compile the protobuf to Go run the following inside the protoBuf folder:
 // protoc -I=. --go_out=plugins=grpc:.  site-algos.proto
@@ -16,5 +17,8 @@ service SiteAlgo {
 
     // Performs the appropriate computation at the host algo and returns the result.
     rpc Map (MapRequest) returns (MapResponse) {}
+
+    // Pinged by the site-connector to determine whether the site-algo is on
+    rpc SiteAvailable (SiteAvailableReq) returns (SiteAvailableRes) {}
 
 }

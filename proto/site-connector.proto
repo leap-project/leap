@@ -3,11 +3,15 @@ package proto;
 option go_package=".;proto";
 
 import "proto/computation-msgs.proto";
+import "proto/availability-msgs.proto";
 
 // RPC service at a site connector that will handle requests from site algorithms
 service SiteConnector {
 
     // Relays a computation request from the coordinator to appropriate algorithm in site
     rpc Map (MapRequest) returns (MapResponse) {}
+
+    // Pinged by the coordinator to determine whether a site is available
+    rpc SiteAvailable (SiteAvailableReq) returns (SiteAvailableRes) {}
 
 }

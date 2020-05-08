@@ -40,3 +40,26 @@ func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRe
 
 	return res, err
 }
+
+// Checks whether the site algo is running and return response
+// to coordinator.
+//
+// ctx: Carries value and cancellation signals across API
+//      boundaries.
+// req: Availability request.
+func (sc *SiteConnector) SiteAvailable(ctx context.Context, req *pb.SiteAvailableReq) (*pb.SiteAvailableRes, error) {
+	sc.Log.Info("Received request checking for site availability.")
+	conn, err := sc.Dial(sc.Conf.AlgoIpPort, sc.Conf.SiteAlgoCN)
+
+	checkErr(sc, err)
+	defer conn.Close()
+
+	client := pb.NewSiteAlgoClient(conn)
+	res, err := client.SiteAvailable(context.Background(), req)
+	if err != nil {
+		site := pb.Site{SiteId: sc.Conf.SiteId, Available: false}
+		return &pb.SiteAvailableRes{Site: &site}, nil
+	} else {
+		return res, nil
+	}
+}

@@ -9,7 +9,7 @@ message SiteAvailableReq {
 
 // Message returned from a site indicating whether it is available
 message SiteAvailableRes {
-  repeated Site site = 1;
+  Site site = 1;
 }
 
 // Message sent to find out all the sites that are available at the moment
@@ -19,7 +19,7 @@ message SitesAvailableReq{
 
 // Message returned indicating all the sites registered at the moment and their status
 message SitesAvailableRes{
-  repeated Site sites = 1;
+  repeated SiteAvailableRes responses = 1;
 }
 
 // Structure holding information on a site

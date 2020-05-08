@@ -1,0 +1,8 @@
+{
+  "coordinator_ip_port": "127.0.0.1:50000",
+  "secure_with_tls": "n",
+  "cert": "./certs/webapp.crt",
+  "key": "./certs/webapp.key",
+  "certificate_authority": "../certs/myCA.crt",
+  "coord_cn": "Webapp"
+}

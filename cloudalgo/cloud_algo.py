@@ -59,7 +59,7 @@ class CloudAlgo():
             fd = open(self.config["certificate_authority"], "rb")
             cloudAlgoServicer.ca = fd.read()
 
-
+        # TODO: Add secure port to cloud algo when tls is on
         cloud_algos_pb2_grpc.add_CloudAlgoServicer_to_server(cloudAlgoServicer, server)
         server.add_insecure_port(self.config["ip_port"])
         server.start()

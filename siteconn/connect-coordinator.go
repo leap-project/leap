@@ -55,13 +55,12 @@ func (sc *SiteConnector) SiteAvailable(ctx context.Context, req *pb.SiteAvailabl
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)
-	res, err := client.SiteAvailable(context.Background(), req)
+	_, err = client.SiteAvailable(context.Background(), req)
 	if err != nil {
 		site := pb.Site{SiteId: sc.Conf.SiteId, Available: false}
 		return &pb.SiteAvailableRes{Site: &site}, nil
 	} else {
 		site := pb.Site{SiteId: sc.Conf.SiteId, Available: true}
 		return &pb.SiteAvailableRes{Site: &site}, nil
-		return res, nil
 	}
 }

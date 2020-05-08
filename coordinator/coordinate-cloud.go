@@ -47,6 +47,8 @@ func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRespo
 //      boundaries.
 // req: Availability request
 func (c *Coordinator) SitesAvailable(ctx context.Context, req *pb.SitesAvailableReq) (*pb.SitesAvailableRes, error) {
+	c.Log.Info("Received request checking site availability")
+
 	ch  := make(chan *pb.SiteAvailableRes)
 	sitesLength := 0
 
@@ -56,7 +58,7 @@ func (c *Coordinator) SitesAvailable(ctx context.Context, req *pb.SitesAvailable
 		sitesLength++
 	}
 
-	responses := []*pb.SiteAvailableRes{}
+	responses := make([]*pb.SiteAvailableRes, 0)
 	for i := 0; i < sitesLength; i++ {
 		select {
 		case response := <-ch:
@@ -193,8 +195,7 @@ func (c *Coordinator) isSiteAvailable(site SiteConnector, ch chan *pb.SiteAvaila
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	res, err := client.SiteAvailable(ctx, &req)
-
+	_, err = client.SiteAvailable(ctx, &req)
 	if err != nil {
 		protoSite := pb.Site{SiteId: site.id, Available: false}
 		res := pb.SiteAvailableRes{
@@ -202,6 +203,10 @@ func (c *Coordinator) isSiteAvailable(site SiteConnector, ch chan *pb.SiteAvaila
 		}
 		ch <- &res
 	} else {
-		ch <- res
+		protoSite := pb.Site{SiteId: site.id, Available: true}
+		res := pb.SiteAvailableRes{
+			Site: &protoSite,
+		}
+		ch <- &res
 	}
 }

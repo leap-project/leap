@@ -22,6 +22,7 @@ import csv
 import proto as pb
 from proto import site_algos_pb2_grpc
 from proto import computation_msgs_pb2
+from proto import availability_msgs_pb2
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -126,10 +127,22 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             res = self._get_response_obj()
             res.response = map_result
             self.live_requests.pop(request.id)
-            return  res
+            return res
         except BaseException as e:
             log.withFields({"request-id": request.id}).error(e)
             raise e
+
+
+    # RPC asking if site algo is available. Returns site
+    # available response when pinged.
+    #
+    # request: A protobuf checking for availability
+    # context: Boilerplate for grpc containing the context
+    #          of the RPC."""
+    def SiteAvailable(self, request, context):
+        log.info("Received request checking for availability")
+        res = availability_msgs_pb2.SiteAvailableRes
+        return res
 
 
     # Gets the protobuf message for a map response

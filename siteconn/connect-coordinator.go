@@ -60,6 +60,8 @@ func (sc *SiteConnector) SiteAvailable(ctx context.Context, req *pb.SiteAvailabl
 		site := pb.Site{SiteId: sc.Conf.SiteId, Available: false}
 		return &pb.SiteAvailableRes{Site: &site}, nil
 	} else {
+		site := pb.Site{SiteId: sc.Conf.SiteId, Available: true}
+		return &pb.SiteAvailableRes{Site: &site}, nil
 		return res, nil
 	}
 }

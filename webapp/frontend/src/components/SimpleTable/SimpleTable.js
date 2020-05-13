@@ -35,9 +35,18 @@ function returnAvailableIcon(available) {
     }
 }
 
-export default function SimpleTable() {
+function buildSiteList(sites) {
+    let siteRows = [];
+    sites.forEach(site => {
+
+    })
+    return siteRows;
+}
+
+export default function SimpleTable(sites) {
     const classes = useStyles();
     const [selected, setSelected] = React.useState([]);
+
 
     const handleClick = (event, id) => {
         const selectedIndex = selected.indexOf(id);

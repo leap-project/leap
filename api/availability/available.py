@@ -1,5 +1,3 @@
-import sys
-sys.path.append("../../")
 import grpc
 from proto import availability_msgs_pb2
 from proto import coordinator_pb2_grpc

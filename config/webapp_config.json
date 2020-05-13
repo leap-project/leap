@@ -1,8 +1,10 @@
 {
   "coordinator_ip_port": "127.0.0.1:50000",
-  "secure_with_tls": "n",
-  "cert": "./certs/webapp.crt",
-  "key": "./certs/webapp.key",
-  "certificate_authority": "../certs/myCA.crt",
-  "coord_cn": "Webapp"
+  "cloudalgo_ip_port": "127.0.0.1:70000",
+  "secure_with_tls": false,
+  "cert": "../../../certs/webapp.crt",
+  "key": "../../../certs/webapp.key",
+  "certificate_authority": "../../../certs/myCA.crt",
+  "coord_cn": "Coord",
+  "site_algo_cn": "SiteAlgo"
 }

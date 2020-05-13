@@ -1,16 +1,18 @@
 from django.http import Http404
+from django.http import HttpResponse
 
-# from django.conf import settings
-# import os
 from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
+from api.availability.available import get_available_sites
 
 import json
 import api.leap as leap
 import api.leap_fn as leap_fn
 import api.codes as codes
-import cloudalgo.functions as cloud_functions
+
+config = None
+with open("../../config/webapp_config.json") as json_file:
+    data = json_file.read()
+    config = json.loads(data)
 
 class ComputeView(APIView):
     """
@@ -25,17 +27,17 @@ class ComputeView(APIView):
         else:
             leap_predef = leap_fn.PredefinedFunction(codes.COUNT_ALGO)
 
-            selector = "[age] > 50 and [bmi] < 25"
-            leap_predef.selector = selector
-            dist_leap = leap.DistributedLeap(leap_predef)
+        leap_predef.selector = body['selector']
 
-        return Response(status=status.HTTP_200_OK)
+        dist_leap = leap.DistributedLeap(leap_predef)
+        result = dist_leap.get_result()
+        return HttpResponse(result)
 
 class SitesView(APIView):
     """
     API endpoint that gets information about the sites registered
     in LEAP.
     """
-
     def get(self, request, format=None):
-        return Response(status=status.HTTP_200_OK)
+        sites = get_available_sites(config["coordinator_ip_port"])
+        return HttpResponse(sites)

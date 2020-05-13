@@ -2,8 +2,8 @@
   "ip_port": "127.0.0.1:70000",
   "coordinator_ip_port": "127.0.0.1:50000",
   "secure_with_tls": "n",
-  "cert": "./certs/cloudalgo.crt",
-  "key": "./certs/cloudalgo.key",
+  "cert": "../certs/cloudalgo.crt",
+  "key": "../certs/cloudalgo.key",
   "certificate_authority": "../certs/myCA.crt",
   "coord_cn": "Coord"
 }

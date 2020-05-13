@@ -18,46 +18,12 @@ class QuestionTable extends React.Component {
             },
         }
         this.classes = this.useStyles;
-        this.rows = []
-        if (this.state.queryResult.length === 0) {
-            this.rows = [
+        this.rows = [
                 this.createData(1,
-                    'How many women in our database have been previously pregnant?',
-                    true,
-                    ''),
-                this.createData(1,
-                    'What is the median age of first pregnancy?',
-                    true,
-                    ''),
-                this.createData(1,
-                    'What is the median pain level of pregnancies?',
+                    'Count people with age greater than 64',
                     false,
                     ''),
-                this.createData(1,
-                    'Is age at first pregnancy associated with pain level?',
-                    true,
-                    ''),
-            ];
-        } else {
-            this.rows = [
-                this.createData(1,
-                    'How many women in our database have been previously pregnant?',
-                    true,
-                    ''),
-                this.createData(1,
-                    'What is the median age of first pregnancy?',
-                    true,
-                    ''),
-                this.createData(1,
-                    'What is the median pain level of pregnancies?',
-                    false,
-                    ''),
-                this.createData(1,
-                    'Is age at first pregnancy associated with pain level?',
-                    true,
-                    ''),
-            ];
-        }
+        ];
 
     }
 

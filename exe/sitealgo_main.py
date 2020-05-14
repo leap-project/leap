@@ -11,7 +11,7 @@ import argparse
 
 # Parse command line arguments
 parser = argparse.ArgumentParser()
-parser.add_argument("-config", "--config", default="../config/sitealgo_config.json", help="Path to the config file")
+parser.add_argument("-config", "--config", default="../config/sitealgo1_config.json", help="Path to the config file")
 args = parser.parse_args()
 
 if __name__ == "__main__":

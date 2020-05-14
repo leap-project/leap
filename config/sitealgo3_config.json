@@ -1,6 +1,6 @@
 {
-  "ip_port": "127.0.0.1:60001",
-  "connector_ip_port": "127.0.0.1:50001",
+  "ip_port": "127.0.0.1:60003",
+  "connector_ip_port": "127.0.0.1:50003",
   "csv_true": "0",
   "secure_with_tls": "n",
   "cert": "../certs/sitealgo.crt",

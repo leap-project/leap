@@ -141,7 +141,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #          of the RPC."""
     def SiteAvailable(self, request, context):
         log.info("Received request checking for availability")
-        res = availability_msgs_pb2.SiteAvailableRes
+        res = availability_msgs_pb2.SiteAvailableRes()
+        res.site.available = True
         return res
 
 

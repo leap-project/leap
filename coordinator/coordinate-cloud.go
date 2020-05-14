@@ -194,7 +194,7 @@ func (c *Coordinator) isSiteAvailable(site SiteConnector, ch chan *pb.SiteAvaila
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	_, err = client.SiteAvailable(ctx, &req)
+	res, err := client.SiteAvailable(ctx, &req)
 	if err != nil {
 		protoSite := pb.Site{SiteId: site.id, Available: false}
 		res := pb.SiteAvailableRes{
@@ -202,7 +202,7 @@ func (c *Coordinator) isSiteAvailable(site SiteConnector, ch chan *pb.SiteAvaila
 		}
 		ch <- &res
 	} else {
-		protoSite := pb.Site{SiteId: site.id, Available: true}
+		protoSite := pb.Site{SiteId: site.id, Available: res.Site.Available}
 		res := pb.SiteAvailableRes{
 			Site: &protoSite,
 		}

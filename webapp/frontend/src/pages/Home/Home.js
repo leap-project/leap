@@ -32,6 +32,7 @@ class Home extends React.Component {
             this.setState({queryResult: [res]});
             this.ButtonElement.current.changeState('success');
         }).catch(err => {
+            this.setState({queryResult: []});
             this.ButtonElement.current.changeState('error');
         })
     }

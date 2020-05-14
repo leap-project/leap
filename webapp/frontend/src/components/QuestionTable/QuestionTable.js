@@ -11,7 +11,7 @@ import Button from "../Button/Button";
 class QuestionTable extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {buttonState: "", queryResult: []};
+        this.state = {buttonState: "", queryResult: props.queryResult};
         this.useStyles = {
             table: {
                 minWidth: 650,
@@ -22,7 +22,7 @@ class QuestionTable extends React.Component {
                 this.createData(1,
                     'Count people with age greater than 64',
                     false,
-                    ''),
+                    this.state.queryResult),
         ];
 
     }
@@ -34,6 +34,8 @@ class QuestionTable extends React.Component {
             return "Off"
         }
     }
+
+
 
     createData(id, question, dp, result) {
         return {id, question, dp, result};

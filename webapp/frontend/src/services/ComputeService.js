@@ -10,7 +10,7 @@ class ComputeService {
         return axios.post(url, {
             dp: req.dp,
             algo: req.algo,
-            filter: req.filter,
+            selector: req.selector,
         }).then(response => {
             return response.data;
         }).catch(err => {

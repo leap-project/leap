@@ -40,4 +40,13 @@ class SitesView(APIView):
     """
     def get(self, request, format=None):
         sites = get_available_sites(config["coordinator_ip_port"])
-        return HttpResponse(sites)
+        list_of_sites = {'sites': []}
+        for res in sites.responses:
+            if res.site.available:
+                parsed_site = {'site_id': res.site.site_id, 'available': True}
+            else:
+                parsed_site = {'site_id': res.site.site_id, 'available': False}
+
+            list_of_sites['sites'].append(parsed_site)
+        list_of_sites = json.dumps(list_of_sites)
+        return HttpResponse(list_of_sites)

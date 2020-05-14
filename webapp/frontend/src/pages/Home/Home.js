@@ -23,6 +23,7 @@ class Home extends React.Component {
     componentDidMount() {
         this.siteService.getSites().then(sites => {
             this.setState({sites: sites})
+
         })
     }
 

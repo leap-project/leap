@@ -19,14 +19,6 @@ function createData(id, available) {
     return {id, available};
 }
 
-const rows = [
-    createData('Site 1', true),
-    createData('Site 2', true),
-    createData('Site 3', false),
-    createData('Site 4', true),
-    createData('Site 5', false),
-];
-
 function returnAvailableIcon(available) {
     if (available) {
         return <MdSignalCellular4Bar style={{color: 'green'}}/>
@@ -36,17 +28,24 @@ function returnAvailableIcon(available) {
 }
 
 function buildSiteList(sites) {
-    let siteRows = [];
-    sites.forEach(site => {
-
-    })
-    return siteRows;
+    if (sites.sites !== undefined) {
+        sites = sites.sites
+        let siteRows = [];
+        for (let i = 0; i < sites.length; i++) {
+            let site = sites[i]
+            let data = createData('Site ' + site.site_id, site.available)
+            siteRows.push(data)
+        }
+        return siteRows
+    } else {
+        return []
+    }
 }
 
 export default function SimpleTable(sites) {
     const classes = useStyles();
     const [selected, setSelected] = React.useState([]);
-
+    const rows = buildSiteList(sites.sites)
 
     const handleClick = (event, id) => {
         const selectedIndex = selected.indexOf(id);

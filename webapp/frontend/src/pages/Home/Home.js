@@ -18,6 +18,7 @@ class Home extends React.Component {
         this.siteService = new SiteService();
         this.handleComputeClick = this.handleComputeClick.bind(this);
         this.ButtonElement = React.createRef();
+        this.QuestionTableElement = React.createRef()
     }
 
     componentDidMount() {

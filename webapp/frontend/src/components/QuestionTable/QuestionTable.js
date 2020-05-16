@@ -9,9 +9,10 @@ import Paper from '@material-ui/core/Paper';
 import Button from "../Button/Button";
 
 class QuestionTable extends React.Component {
+
     constructor(props) {
         super(props);
-        this.state = {buttonState: "", queryResult: props.queryResult};
+        this.state = {buttonState: ""};
         this.useStyles = {
             table: {
                 minWidth: 650,
@@ -22,7 +23,7 @@ class QuestionTable extends React.Component {
                 this.createData(1,
                     'Count people with age greater than 64',
                     false,
-                    this.state.queryResult),
+                    this.props.queryResult),
         ];
 
     }
@@ -42,6 +43,13 @@ class QuestionTable extends React.Component {
     }
 
     render() {
+        this.rows = [
+            this.createData(1,
+                'Count people with age greater than 64',
+                false,
+                this.props.queryResult),
+        ];
+
         return (
 
             <TableContainer component={Paper}>

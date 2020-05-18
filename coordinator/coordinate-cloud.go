@@ -17,7 +17,7 @@ import (
 type ResultFromSite struct {
 	Response *pb.MapResponse
 	Err      error
-	SiteId   int32
+	SiteId   int64
 }
 
 // Makes a remote procedure call to a site connector with a
@@ -77,12 +77,14 @@ func (c *Coordinator) getResultsFromSites(req *pb.MapRequest) (pb.MapResponses, 
 	ch := make(chan ResultFromSite)
 
 	sitesLength := 0
-
 	// Asynchronously send compute request to each site.
-	for item := range c.SiteConnectors.Iter() {
-		site := item.Value.(SiteConnector)
-		go c.getResultFromSite(req, site, ch)
-		sitesLength++
+	for _, siteId := range req.Sites {
+		item := c.SiteConnectors.Get(siteId)
+		if item != nil {
+			site := item.(SiteConnector)
+			go c.getResultFromSite(req, site, ch)
+			sitesLength++
+		}
 	}
 
 	// Append the responses to the asynchronous requests
@@ -132,16 +134,16 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 
 	response, err := client.Map(ctx, req)
 
-	// If site unavailable, update its status to false
+	// If site unavailable, update its available to false
 	if utils.IsUnavailableError(err) {
-		site.statusMux.Lock()
-		site.status = false
-		site.statusMux.Unlock()
+		site.availableMux.Lock()
+		site.available = false
+		site.availableMux.Unlock()
 		c.Log.WithFields(logrus.Fields{"site-id": site.id, "request-id": req.Id}).Warn("Site is unavailable.")
 	} else {
-		site.statusMux.Lock()
-		site.status = true
-		site.statusMux.Unlock()
+		site.availableMux.Lock()
+		site.available = true
+		site.availableMux.Unlock()
 	}
 
 	// Send response to goroutine waiting for responses
@@ -153,8 +155,8 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 // unavailable.
 //
 // results: A list of results from different sites.
-func getUnavailableSites(results []ResultFromSite) []int32 {
-	unavailableSites := []int32{}
+func getUnavailableSites(results []ResultFromSite) []int64 {
+	unavailableSites := []int64{}
 	for _, result := range results {
 		if utils.IsUnavailableError(result.Err) {
 			unavailableSites = append(unavailableSites, result.SiteId)
@@ -169,7 +171,7 @@ func getUnavailableSites(results []ResultFromSite) []int32 {
 //
 // results: A list of results from different sites.
 func getSuccessfulResponses(results []ResultFromSite) pb.MapResponses {
-	successfulResponses := pb.MapResponses{Responses: []*pb.MapResponse{}, UnavailableSites: []int32{}}
+	successfulResponses := pb.MapResponses{Responses: []*pb.MapResponse{}, UnavailableSites: []int64{}}
 	for _, result := range results {
 		if result.Err == nil {
 			successfulResponses.Responses = append(successfulResponses.Responses, result.Response)

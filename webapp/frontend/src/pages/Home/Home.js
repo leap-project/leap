@@ -9,6 +9,16 @@ import ComputeService from '../../services/ComputeService'
 import SiteService from "../../services/SiteService";
 import {COUNT_ALGO} from "../../codes.js"
 
+function createSiteIdList(sites) {
+    let siteIds = [];
+    if (sites.sites !== undefined) {
+        sites.sites.forEach(site => {
+            siteIds.push(site.site_id);
+        });
+    }
+    return siteIds;
+}
+
 class Home extends React.Component {
 
     constructor(props) {
@@ -29,7 +39,8 @@ class Home extends React.Component {
     }
 
     handleComputeClick() {
-        this.computeService.compute({dp: false, algo: COUNT_ALGO, selector:  "[age] > 50 and [bmi] < 25"}).then(res => {
+        let siteIds = createSiteIdList(this.state.sites);
+        this.computeService.compute({dp: false, algo: COUNT_ALGO, selector:  "[age] > 50 and [bmi] < 25", sites: siteIds}).then(res => {
             this.setState({queryResult: [res]});
             this.ButtonElement.current.changeState('success');
         }).catch(err => {

@@ -53,11 +53,11 @@ type Coordinator struct {
 
 type SiteConnector struct {
 	// Id of a site connector
-	id int32
+	id int64
 	// Status where true = siteconn live and false = siteconn down
-	status bool
-	// Lock for site status
-	statusMux sync.Mutex
+	available bool
+	// Lock for site available
+	availableMux sync.Mutex
 	// Ip and port to contact this site connector
 	ipPort string
 }

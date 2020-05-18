@@ -4,7 +4,7 @@ option go_package = ".;proto";
 
 // Message sent by a site connector to a coordinator with the registration request of a site algo.
 message SiteRegReq { // Site Registration Request
-                         int32 site_id = 1;
+                         int64 site_id = 1;
                          string site_ip_port = 2;
 }
 

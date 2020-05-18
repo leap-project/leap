@@ -43,7 +43,7 @@ type Config struct {
 	// Ip and port of the site algo this connector contacts
 	AlgoIpPort string
 	// Id of this site
-	SiteId int32
+	SiteId int64
 	// Flag that determines whether to use SSL/TLS encryption
 	Secure bool
 	// File path to SSL/TLS certificate

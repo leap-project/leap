@@ -2,7 +2,6 @@
 # and runs some of the 8 abstract functions in leap.
 
 import time
-import multiprocessing
 import grpc
 import concurrent.futures as futures
 import json
@@ -11,7 +10,6 @@ from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
 import api.codes as codes
 
-import proto as pb
 from proto import cloud_algos_pb2_grpc
 from proto import computation_msgs_pb2
 from proto import coordinator_pb2_grpc
@@ -109,6 +107,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         try:
             coord_stub = self._get_coord_stub()
             req = json.loads(request.req)
+            sites = request.sites
 
             leap_type = req["leap_type"]
             if leap_type == codes.UDF:
@@ -125,7 +124,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 env = env_manager.CloudFedereatedLearningEnvironment()
             env.set_env(globals(), req, req_id)
 
-            result = self._compute_logic(req, coord_stub, req_id)
+            result = self._compute_logic(req, coord_stub, req_id, sites)
 
             res = computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(result)
@@ -144,12 +143,14 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # req_id: The id of the request.
     # req: The request to be serialized
     # state: The state that will go in the request.
-    def _create_computation_request(self, req_id, req, state):
+    def _create_computation_request(self, req_id, req, state, sites):
         request = computation_msgs_pb2.MapRequest()
         request.id = req_id
         req = req.copy()
         req["state"] = state
         request.req = json.dumps(req)
+
+        request.sites.extend(sites)
         return request
 
 
@@ -185,7 +186,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # coord_stub: The stub used to send a message to the
     #             coordinator.
     # req_id: The id of the request being sent.
-    def _compute_logic(self, req, coord_stub, req_id):
+    def _compute_logic(self, req, coord_stub, req_id, sites):
         state = init_state_fn()
 
         stop = False
@@ -194,7 +195,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
 
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
-            site_request = self._create_computation_request(req_id, req, state)
+            site_request = self._create_computation_request(req_id, req, state, sites)
 
             # Get result from each site through coordinator
             results = coord_stub.Map(site_request)

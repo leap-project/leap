@@ -29,9 +29,9 @@ func (c *Coordinator) RegisterSite(ctx context.Context, req *pb.SiteRegReq) (*pb
 	} else {
 		c.Log.WithFields(logrus.Fields{"site-id": req.SiteId}).Info("Received registration request.")
 		site := SiteConnector{
-			id:     siteId,
-			status: true,
-			ipPort: ipPort,
+			id:        siteId,
+			available: true,
+			ipPort:    ipPort,
 		}
 		c.SiteConnectors.Set(siteId, site)
 		msg := "Site " + strconv.Itoa(int(siteId)) + " registered successfully"

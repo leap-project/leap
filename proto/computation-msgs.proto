@@ -2,26 +2,23 @@ syntax = "proto3";
 package proto;
 option go_package=".;proto";
 
-message WebRequest {
-    bool dp = 1;
-    string algo_type = 2;
-}
-
 // A generic JSON encoded request
 message ComputeRequest {
     string req = 1;
+    repeated int64 sites = 2;
 }
 
 // A generic JSON encoded response
 message ComputeResponse {
     string response = 1;
-    repeated int32 unavailable_sites = 2;
+    repeated int64 unavailable_sites = 2;
 }
 
 // A request for a map computation
 message MapRequest {
     int64 id = 1;
     string req = 2;
+    repeated int64 sites = 3;
 }
 
 // A response from a map computation
@@ -32,5 +29,5 @@ message MapResponse {
 // The map responses returned by the algorithms in different sites.
 message MapResponses {
     repeated MapResponse responses = 1;
-    repeated int32 unavailable_sites = 2;
+    repeated int64 unavailable_sites = 2;
 }

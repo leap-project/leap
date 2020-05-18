@@ -30,7 +30,8 @@ class ComputeView(APIView):
         leap_predef.selector = body['selector']
 
         dist_leap = leap.DistributedLeap(leap_predef)
-        result = dist_leap.get_result()
+        sites = body['sites']
+        result = dist_leap.get_result(sites)
         return HttpResponse(result)
 
 class SitesView(APIView):

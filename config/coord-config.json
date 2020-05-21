@@ -1,8 +1,10 @@
 {
   "IpPort": "127.0.0.1:50000",
+  "CloudAlgoIpPort": "127.0.0.1:7000",
   "Secure": false,
   "Crt": "../coordinator/certs/coord.crt",
   "Key": "../coordinator/certs/coord.key",
   "CertAuth": "../certs/myCA.crt",
-  "SiteConnCN": "Conn"
+  "SiteConnCN": "Conn",
+  "CloudAlgoCN": "CloudAlgo"
 }

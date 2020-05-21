@@ -43,7 +43,6 @@ redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 class SiteAlgo():
     def __init__(self, config_path):
         self.config = self.get_config(config_path)
-        pass
 
 
     def get_config(self, config_path):

@@ -18,4 +18,7 @@ service Coordinator {
     // Pinged by others to determine what sites are available
     rpc SitesAvailable (SitesAvailableReq) returns (SitesAvailableRes) {}
 
+    // Sends computation request to cloud algo
+    rpc Compute (ComputeRequest) returns (ComputeResponse) {}
+
 }

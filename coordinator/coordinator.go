@@ -26,6 +26,8 @@ import (
 type Config struct {
 	// The ip and port of the coordinator
 	IpPort string
+	// The ip and port of the cloud algos
+	CloudAlgoIpPort string
 	// Flag that determines whether to use SSL/TLS encryption
 	Secure bool
 	// File path to SSL/TLS certificate
@@ -36,6 +38,8 @@ type Config struct {
 	CertAuth string
 	// The common name of the site connector
 	SiteConnCN string
+	// The common name of the cloud algo
+	CloudAlgoCN string
 }
 
 type Coordinator struct {

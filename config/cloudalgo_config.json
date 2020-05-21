@@ -1,5 +1,5 @@
 {
-  "ip_port": "127.0.0.1:70000",
+  "ip_port": "127.0.0.1:7000",
   "coordinator_ip_port": "127.0.0.1:50000",
   "secure_with_tls": "n",
   "cert": "../certs/cloudalgo.crt",

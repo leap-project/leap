@@ -93,8 +93,10 @@ class DistributedLeap(Leap):
     # is used to send messages to the cloud algos.
     def _get_compute_stub(self):
         # TODO: Don't harcode ip address
-        channel = grpc.insecure_channel("127.0.0.1:70000")
-        stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
+        # channel = grpc.insecure_channel("127.0.0.1:70000")
+        # stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
+        channel = grpc.insecure_channel("127.0.0.1:50000")
+        stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
         return stub
 
     # Creates a protobuf request object for a Leap computation

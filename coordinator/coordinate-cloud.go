@@ -20,6 +20,33 @@ type ResultFromSite struct {
 	SiteId   int64
 }
 
+
+// Makes a remote procedure call to the cloud algo, so that
+// it can execute the specified algorithm.
+//
+// ctx: Carries value and cancellation signals across API
+//      boundaries.
+// req: Compute request specifying the algo to be used.
+func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
+	c.Log.Info("Received compute request.")
+	conn, err := c.Dial(c.Conf.CloudAlgoIpPort, c.Conf.CloudAlgoCN)
+
+	checkErr(c, err)
+	defer conn.Close()
+
+	client := pb.NewCloudAlgoClient(conn)
+	response, err := client.Compute(context.Background(), req)
+
+	checkErr(c, err)
+	if err == nil {
+		c.Log.Info("Successfully returned compute.")
+	} else {
+		c.Log.Error(err)
+	}
+
+	return response, err
+}
+
 // Makes a remote procedure call to a site connector with a
 // map request and returns the results of computing the map
 // function on multiple sites.
@@ -46,7 +73,7 @@ func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRespo
 //      boundaries.
 // req: Availability request
 func (c *Coordinator) SitesAvailable(ctx context.Context, req *pb.SitesAvailableReq) (*pb.SitesAvailableRes, error) {
-	c.Log.Info("Received request checking site availability")
+	c.Log.Info("Received request checking site availability.")
 
 	ch := make(chan *pb.SiteAvailableRes)
 	sitesLength := 0

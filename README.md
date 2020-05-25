@@ -36,7 +36,7 @@ export PATH=$PATH:$GOPATH/bin
 ```
 
 #### Cloning LEAP
-The next step is to clone the LEAP repository in your computer. You can do this by navigating to the directory where you want to install LEAP and running `git clone https://github.com/bestchai/leap.git`in the terminal.
+The next step is to clone the LEAP repository in your computer. You can do this by navigating to your GOPATH and running `git clone https://github.com/bestchai/leap.git`in the terminal.
 
 #### Go packages
 We need to install the packages used by our Go programs. To install the packages, run the following commands in your terminal:

@@ -42,19 +42,7 @@ type Config struct {
 	CloudAlgoCN string
 }
 
-type Coordinator struct {
-	// Initial config
-	Conf Config
-	// Logging tool
-	Log *logrus.Entry
-	// A concurrent map with request id as key and value. It re-
-	// presents the client requests that are being computed.
-	PendingRequests *utils.Map
-	// A concurrent map with site id as key and the ip and
-	// port of the site as a value.
-	SiteConnectors *utils.Map
-}
-
+// Struct used to define a SiteConnector for the coordinator
 type SiteConnector struct {
 	// Id of a site connector
 	id int64
@@ -66,6 +54,21 @@ type SiteConnector struct {
 	ipPort string
 }
 
+type Coordinator struct {
+	// Initial config
+	Conf Config
+	// Logging tool
+	Log *logrus.Entry
+	// A concurrent map with request id as key and value. It re-
+	// presents the client requests that are being computed.
+	PendingRequests *utils.Map
+	// A concurrent map with site id as key and the ip and
+	// port of the site as a value.
+	SiteConnectors *utils.Map
+	// Users that have been registered
+	Users *utils.Map
+}
+
 // Creates a new coordinator with the configurations given
 // from the config struct.
 //
@@ -75,6 +78,7 @@ func NewCoordinator(config Config) *Coordinator {
 		Log:             logrus.WithFields(logrus.Fields{"node": "coordinator"}),
 		PendingRequests: utils.NewMap(),
 		SiteConnectors:  utils.NewMap(),
+		Users:           utils.NewMap(),
 	}
 }
 

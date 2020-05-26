@@ -45,6 +45,7 @@ go get -u github.com/golang/protobuf/protoc-gen-go
 go get -u google.golang.org/grpc
 go get -u github.com/sirupsen/logrus
 go get -u github.com/rifflock/lfshook
+go get -u golang.org/x/crypto/bcrypt
 ```
 
 #### Python packages

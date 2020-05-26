@@ -1,9 +1,9 @@
 package coordinator
 
 import (
+	"context"
 	pb "leap/proto"
 	"time"
-	"context"
 )
 
 // Makes a remote procedure call to a site connector asking
@@ -65,4 +65,3 @@ func (c *Coordinator) isSiteAvailable(site SiteConnector, ch chan *pb.SiteAvaila
 		ch <- &res
 	}
 }
-

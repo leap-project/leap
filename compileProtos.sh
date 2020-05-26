@@ -27,3 +27,7 @@ python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. proto/site-a
 # Compile site-connector.proto
 protoc -I=. --go_out=plugins=grpc:proto/ proto/site-connector.proto
 python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. proto/site-connector.proto
+
+# Compile user-msgs.proto
+protoc -I=. --go_out=plugins=grpc:proto/ proto/user-msgs.proto
+python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. proto/user-msgs.proto

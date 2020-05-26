@@ -1,0 +1,24 @@
+syntax = "proto3";
+package proto;
+option go_package = ".;proto";
+
+message User {
+  string username = 1;
+  string password = 2;
+}
+
+message UserRegReq {
+  User user = 1;
+}
+
+message UserRegRes {
+  bool success = 1;
+}
+
+message UserAuthReq {
+  User user = 1;
+}
+
+message UserAuthRes {
+  bool success = 1;
+}

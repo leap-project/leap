@@ -1,13 +1,13 @@
 package coordinator
 
 import (
+	"context"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	pb "leap/proto"
 	"leap/utils"
 	"time"
-	"context"
 )
 
 type ResultFromSite struct {

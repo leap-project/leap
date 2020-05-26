@@ -5,6 +5,7 @@ option go_package=".;proto";
 import "proto/computation-msgs.proto";
 import "proto/registration-msgs.proto";
 import "proto/availability-msgs.proto";
+import "proto/user-msgs.proto";
 
 // RPC service at the coordinator that will handle requests from sites and cloud algos
 service Coordinator {
@@ -20,5 +21,11 @@ service Coordinator {
 
     // Sends computation request to cloud algo
     rpc Compute (ComputeRequest) returns (ComputeResponse) {}
+
+    // Registers a user with the coordinator
+    rpc RegisterUser (UserRegReq) returns (UserRegRes) {}
+
+    // Authenticates a user with the coordinator
+    rpc AuthUser (UserAuthReq) returns (UserAuthRes) {}
 
 }

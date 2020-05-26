@@ -5,7 +5,8 @@ option go_package=".;proto";
 // A generic JSON encoded request
 message ComputeRequest {
     string req = 1;
-    repeated int64 sites = 2;
+    string username = 2;
+    repeated int64 sites = 3;
 }
 
 // A generic JSON encoded response

@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"io/ioutil"
 	pb "leap/proto"
+	"leap/sqlite"
 	"leap/utils"
 	"net"
 	"os"
@@ -65,8 +66,8 @@ type Coordinator struct {
 	// A concurrent map with site id as key and the ip and
 	// port of the site as a value.
 	SiteConnectors *utils.Map
-	// Users that have been registered
-	Users *utils.Map
+	// Sqlite database
+	Database *sqlite.Database
 }
 
 // Creates a new coordinator with the configurations given
@@ -74,11 +75,12 @@ type Coordinator struct {
 //
 // config: The ip and port configuration of the coordinator.
 func NewCoordinator(config Config) *Coordinator {
+	log := logrus.WithFields(logrus.Fields{"node": "coordinator"})
 	return &Coordinator{Conf: config,
-		Log:             logrus.WithFields(logrus.Fields{"node": "coordinator"}),
+		Log:             log,
 		PendingRequests: utils.NewMap(),
 		SiteConnectors:  utils.NewMap(),
-		Users:           utils.NewMap(),
+		Database:        sqlite.CreateDatabase("leap-db", log),
 	}
 }
 

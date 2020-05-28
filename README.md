@@ -62,6 +62,14 @@ pip install pylogrus
 pip install torch
 ```
 
+### Installing MySQL
+Make sure to have gcc installed in your machine because go-sqlite3 is cgo package. Installing go-sqlite3 requires gcc, but after initial installation leap can run without relying on gcc.
+```
+go get github.com/mattn/go-sqlite3
+go install github.com/mattn/go-sqlite3
+export CGO_ENABLED=1
+```
+
 ## Running LEAP
 The leap infrastructure is composed of 4 different programs: the site-algo, the site-connector, the coordinator, and the cloud-algo. Once these 4 programs are up and running, you can use the Leap API to perform some computations.
 

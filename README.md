@@ -63,7 +63,7 @@ pip install torch
 ```
 
 ### Installing MySQL
-Make sure to have gcc installed in your machine because go-sqlite3 is cgo package. Installing go-sqlite3 requires gcc, but after initial installation leap can run without relying on gcc.
+Make sure to have gcc installed in your machine because go-sqlite3 is a cgo package. Installing go-sqlite3 requires gcc, but after initial installation leap can run without relying on gcc.
 ```
 go get github.com/mattn/go-sqlite3
 go install github.com/mattn/go-sqlite3

@@ -19,7 +19,7 @@ class LocalCloudAlgoServicer(CloudAlgoServicer):
         self.id_count = 0
         self.live_requests = {}
 
-    def _create_computation_request(self, req_id, req, state):
+    def _create_map_request(self, req_id, req, state):
         request = SiteRequest()
         request.id = req_id
         req = req.copy()

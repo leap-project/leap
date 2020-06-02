@@ -112,10 +112,10 @@ def fed_learn_exp():
     leap_fed_learn.hyperparams = hyperparams
     return leap_fed_learn
 
-def distributed():
-    leap_exp_fn = predef_count_exp()
+def distributed(sites):
+    leap_exp_fn = predef_private_site_count_exp()
     dist_leap = leap.DistributedLeap(leap_exp_fn)
-    print(dist_leap.get_result())
+    print(dist_leap.get_result(sites))
 
 def local():
     sites = []
@@ -130,4 +130,4 @@ def local():
 
 if __name__ == "__main__":
     #local()
-    distributed()
+    distributed([1])

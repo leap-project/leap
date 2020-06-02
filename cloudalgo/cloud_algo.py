@@ -106,8 +106,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # request: The algorithm to be computed
     # context: Grpc boilerplate
     def Compute(self, request, context):
-        req_id = self._generate_req_id()
-        log.withFields({"request-id": req_id}).info("Received a computation request.")
+        log.withFields({"request-id": request.id}).info("Received a computation request.")
         try:
             coord_stub = self._get_coord_stub()
             req = json.loads(request.req)
@@ -126,17 +125,17 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 env = env_manager.CloudPrivatePredefinedEnvironment()
             elif leap_type == codes.FEDERATED_LEARNING:
                 env = env_manager.CloudFedereatedLearningEnvironment()
-            env.set_env(globals(), req, req_id)
+            env.set_env(globals(), req, request.id)
 
-            result = self._compute_logic(req, coord_stub, req_id, sites)
+            result = self._compute_logic(req, request.id, coord_stub, sites)
 
             res = computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(result)
         except grpc.RpcError as e:
-            log.withFields({"request-id": req_id}).error(e.details())
+            log.withFields({"request-id": request.id}).error(e.details())
             raise e
         except BaseException as e:
-            log.withFields({"request-id": req_id}).error(e)
+            log.withFields({"request-id": request.id}).error(e)
             raise e
         return res
 
@@ -144,29 +143,19 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # Takes a request and the state and creates a request to
     # be sent to the coordinator that grpc understands.
     #
-    # req_id: The id of the request.
     # req: The request to be serialized
+    # req_id: The id
     # state: The state that will go in the request.
-    def _create_computation_request(self, req_id, req, state, sites):
+    # sites: The sites to be queries
+    def _create_map_request(self, req, req_id, state, sites):
         request = computation_msgs_pb2.MapRequest()
-        request.id = req_id
         req = req.copy()
         req["state"] = state
         request.req = json.dumps(req)
+        request.id = req_id
 
         request.sites.extend(sites)
         return request
-
-
-    # Generates a new id for a request
-    # TODO: Lock the request counter
-    def _generate_req_id(self):
-        # TODO: Sandbox each request to isolate environments.
-        new_id = self.id_count
-        self.live_requests[self.id_count] = None
-        self.id_count += 1
-        return new_id       
-
 
     # Gets the grpc stub to send a message to the coordinator.
     def _get_coord_stub(self):
@@ -187,10 +176,11 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # cloud.
     #
     # req: The request from a client.
+    # req_id: The id of the request.
     # coord_stub: The stub used to send a message to the
     #             coordinator.
-    # req_id: The id of the request being sent.
-    def _compute_logic(self, req, coord_stub, req_id, sites):
+    # sites: The sites where the map function will run
+    def _compute_logic(self, req, req_id, coord_stub, sites):
         state = init_state_fn()
 
         stop = False
@@ -199,7 +189,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
 
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
-            site_request = self._create_computation_request(req_id, req, state, sites)
+            site_request = self._create_map_request(req, req_id, state, sites)
 
             # Get result from each site through coordinator
             results = coord_stub.Map(site_request)

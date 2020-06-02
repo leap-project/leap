@@ -4,15 +4,18 @@ option go_package=".;proto";
 
 // A generic JSON encoded request
 message ComputeRequest {
-    string req = 1;
-    string username = 2;
-    repeated int64 sites = 3;
+    int64 id = 1;
+    string req = 2;
+    string username = 3;
+    repeated int64 sites = 4;
 }
 
 // A generic JSON encoded response
 message ComputeResponse {
     string response = 1;
-    repeated int64 unavailable_sites = 2;
+    int64 eps = 2;
+    int64 delt = 3;
+    repeated int64 unavailable_sites = 4;
 }
 
 // A request for a map computation
@@ -25,6 +28,8 @@ message MapRequest {
 // A response from a map computation
 message MapResponse {
     string response = 1;
+    int64 eps = 2;
+    int64 delt = 3;
 }
 
 // The map responses returned by the algorithms in different sites.

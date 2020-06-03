@@ -15,7 +15,8 @@ message ComputeResponse {
     string response = 1;
     int64 eps = 2;
     int64 delt = 3;
-    repeated int64 unavailable_sites = 4;
+    bool private = 4;
+    repeated int64 unavailable_sites = 5;
 }
 
 // A request for a map computation

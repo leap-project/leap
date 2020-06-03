@@ -127,16 +127,25 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 env = env_manager.CloudFedereatedLearningEnvironment()
             env.set_env(globals(), req, request.id)
 
-            result = self._compute_logic(req, request.id, coord_stub, sites)
+            result, eps, delt = self._compute_logic(req, request.id, coord_stub, sites)
 
             res = computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(result)
+
+            if 'epsilon' in req:
+                res.eps = eps
+                res.private = True
+            if 'delta' in req:
+                res.delt = delt
+                res.private = True
+
         except grpc.RpcError as e:
             log.withFields({"request-id": request.id}).error(e.details())
             raise e
         except BaseException as e:
             log.withFields({"request-id": request.id}).error(e)
             raise e
+
         return res
 
 
@@ -184,6 +193,8 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         state = init_state_fn()
 
         stop = False
+        eps = 0
+        delt = 0
         while not stop:
             map_results = []
 
@@ -193,6 +204,8 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
 
             # Get result from each site through coordinator
             results = coord_stub.Map(site_request)
+
+            eps, delt = self.accumulate_priv_values(req, eps, delt, len(results.responses))
 
             extracted_responses = self._extract_map_responses(results.responses)
 
@@ -205,8 +218,14 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             # Decide to stop or continue
             stop = stop_fn(agg_result, state)
         post_result = postprocessing_fn(agg_result, state)
-        return post_result
+        return post_result, eps, delt
 
+    def accumulate_priv_values(self, req, eps, delt, num_results):
+        if 'epsilon' in req:
+            eps += req['epsilon'] * num_results
+        if 'delta' in req:
+            delt += req['delta'] * num_results
+        return eps, delt
 
     # Extracts the protobuf responses into a list.
     #

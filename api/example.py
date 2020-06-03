@@ -130,4 +130,4 @@ def local():
 
 if __name__ == "__main__":
     #local()
-    distributed([1])
+    distributed([1, 3])

@@ -60,9 +60,10 @@ type Coordinator struct {
 	Conf Config
 	// Logging tool
 	Log *logrus.Entry
-	// A concurrent map with request id as key and value. It re-
-	// presents the client requests that are being computed.
-	PendingRequests *utils.Map
+	// The ID to be used for the next computation request that arrives
+	ReqCounter int64
+	// Lock to make counter access thread safe
+	ReqCounterMux sync.Mutex
 	// A concurrent map with site id as key and the ip and
 	// port of the site as a value.
 	SiteConnectors *utils.Map
@@ -77,10 +78,10 @@ type Coordinator struct {
 func NewCoordinator(config Config) *Coordinator {
 	log := logrus.WithFields(logrus.Fields{"node": "coordinator"})
 	return &Coordinator{Conf: config,
-		Log:             log,
-		PendingRequests: utils.NewMap(),
-		SiteConnectors:  utils.NewMap(),
-		Database:        sqlite.CreateDatabase("leap-db", log),
+		Log:            log,
+		ReqCounter:     0,
+		SiteConnectors: utils.NewMap(),
+		Database:       sqlite.CreateDatabase("leap-db", log),
 	}
 }
 

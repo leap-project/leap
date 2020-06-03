@@ -24,6 +24,12 @@ type ResultFromSite struct {
 // req: Compute request specifying the algo to be used.
 func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
 	c.Log.Info("Received compute request.")
+
+	c.ReqCounterMux.Lock()
+	req.Id = c.ReqCounter
+	c.ReqCounter++
+	c.ReqCounterMux.Unlock()
+
 	conn, err := c.Dial(c.Conf.CloudAlgoIpPort, c.Conf.CloudAlgoCN)
 
 	checkErr(c, err)
@@ -50,7 +56,6 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 //      boundaries.
 // req: Map request containing user defined functions.
 func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponses, error) {
-	c.PendingRequests.Set(req.Id, req.Id)
 	if c.SiteConnectors.Length() == 0 {
 		c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("No sites have been registered.")
 		return nil, status.Error(codes.Unavailable, "There have been no sites registered.")

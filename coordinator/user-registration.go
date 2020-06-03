@@ -35,7 +35,7 @@ func (c *Coordinator) RegisterUser(ctx context.Context, req *pb.UserRegReq) (*pb
 func (c *Coordinator) AuthUser(ctx context.Context, req *pb.UserAuthReq) (*pb.UserAuthRes, error) {
 	c.Log.Info("Received request to authenticate user")
 
-	_, _, passwordHash, _ := c.Database.GetUser(req.User.Username)
+	_, _, passwordHash, _ := c.Database.GetUserWithUsername(req.User.Username)
 
 	err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(req.User.Password))
 	if err != nil {

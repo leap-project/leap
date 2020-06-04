@@ -14,3 +14,4 @@ ProtoBuf/src/
 *.crt
 *.csr
 *.srl
+*leap-db*

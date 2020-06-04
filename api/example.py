@@ -7,6 +7,7 @@ import api.leap_fn as leap_fn
 import api.codes as codes
 import cloudalgo.functions as cloud_functions
 import api.local.functions as leap_functions
+import api.register.user.registration as user_reg
 
 from api.local.cloud import LocalCloudAlgoServicer
 from api.local.localsite import LocalSiteAlgoServicer
@@ -112,9 +113,9 @@ def fed_learn_exp():
     leap_fed_learn.hyperparams = hyperparams
     return leap_fed_learn
 
-def distributed(sites):
+def distributed(sites, username):
     leap_exp_fn = predef_private_site_count_exp()
-    dist_leap = leap.DistributedLeap(leap_exp_fn)
+    dist_leap = leap.DistributedLeap(leap_exp_fn, "127.0.0.1:50000", username)
     print(dist_leap.get_result(sites))
 
 def local():
@@ -130,4 +131,5 @@ def local():
 
 if __name__ == "__main__":
     #local()
-    distributed([1, 3])
+    user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
+    distributed([1], "TestUser")

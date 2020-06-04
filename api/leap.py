@@ -27,8 +27,8 @@ class Leap(ABC):
 
     # Gets the result of performing the selected algorithm
     # on the filtered data.
-    def get_result(self, sites):
-        request = self._create_computation_request(sites)
+    def get_result(self):
+        request = self._create_computation_request()
             
         compute_stub = self._get_compute_stub()
 
@@ -39,12 +39,11 @@ class Leap(ABC):
         return result
 
     # Uses protobuf to create a computation request.
-    def _create_computation_request(self, sites):
+    def _create_computation_request(self):
         request = self._create_request_obj()
 
         req = self.leap_function.create_request()
         request.req = json.dumps(req)
-        request.sites.extend(sites)
         return request
 
     @abstractmethod
@@ -86,8 +85,33 @@ class DistributedLeap(Leap):
     # Constructor
     #
     # leap_function: An algorithm to be run in Leap.
-    def __init__(self, leap_function):
+    def __init__(self, leap_function, coord_ip_port, username):
         super().__init__(leap_function)
+        self.coord_ip_port = coord_ip_port
+        self.username = username
+
+    # Gets the result of performing the selected algorithm
+    # on the filtered data.
+    def get_result(self, sites):
+        request = self._create_computation_request(sites)
+
+        compute_stub = self._get_compute_stub()
+
+        # Computed remotely
+        result = compute_stub.Compute(request, None)
+
+        result = json.loads(result.response)
+        return result
+
+    # Uses protobuf to create a computation request.
+    def _create_computation_request(self, sites):
+        request = self._create_request_obj()
+
+        req = self.leap_function.create_request()
+        request.req = json.dumps(req)
+        request.sites.extend(sites)
+        request.username = self.username
+        return request
 
     # Gets the stub from the cloud grpc service. This stub
     # is used to send messages to the cloud algos.
@@ -95,7 +119,7 @@ class DistributedLeap(Leap):
         # TODO: Don't harcode ip address
         # channel = grpc.insecure_channel("127.0.0.1:70000")
         # stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
-        channel = grpc.insecure_channel("127.0.0.1:50000")
+        channel = grpc.insecure_channel(self.coord_ip_port)
         stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
         return stub
 

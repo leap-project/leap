@@ -15,7 +15,7 @@ type Database struct {
 
 type Query struct {
 	Id      int
-	ReqId   int
+	ReqId   int64
 	UserId  int
 	Epsilon float64
 	Delta   float64

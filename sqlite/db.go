@@ -88,8 +88,8 @@ func (db *Database) InsertQuery(query Query) error {
 	return nil
 }
 
-func (db *Database) GetQueriesFromUser(username string) ([]Query, error) {
-	rows, err := db.Database.Query("SELECT * FROM query WHERE username=?", username)
+func (db *Database) GetQueriesFromUser(userId int) ([]Query, error) {
+	rows, err := db.Database.Query("SELECT * FROM query WHERE user_id=?", userId)
 	db.checkErr(err)
 
 	if err != nil {

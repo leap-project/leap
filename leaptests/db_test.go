@@ -109,3 +109,11 @@ func TestMultipleInserts(t *testing.T) {
 		t.Errorf("Delta not inserted correctly")
 	}
 }
+
+func TestGetNonExistentQuery(t *testing.T) {
+	queries, _ := db.GetQueriesFromUser(5)
+
+	if len(queries) != 0 {
+		t.Errorf("Length of queries returned != 0")
+	}
+}

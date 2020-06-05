@@ -50,7 +50,9 @@ func (db *Database) CreateUserTable() {
 	db.checkErr(err)
 }
 
-func (db *Database) InsertUser(username string, saltedHash string, budgetSpent int64) error {
+func (db *Database) InsertUser(user *LeapUser, saltedHash string) error {
+	username := user.Name
+	budgetSpent := user.BudgetSpent
 	statement, err := db.Database.Prepare("INSERT INTO user (username, salted_hash, budget_spent) VALUES (?, ?, ?)")
 	db.checkErr(err)
 	if err != nil {
@@ -65,7 +67,7 @@ func (db *Database) InsertUser(username string, saltedHash string, budgetSpent i
 	return nil
 }
 
-func (db *Database) GetUserWithUsername(username string) (int64, string, string, int64) {
+func (db *Database) GetUserWithUsername(username string) *LeapUser {
 	row := db.Database.QueryRow("SELECT * FROM user WHERE username=?", username)
 	var id int64
 	var name string
@@ -73,7 +75,8 @@ func (db *Database) GetUserWithUsername(username string) (int64, string, string,
 	var budgetspent int64
 	err := row.Scan(&id, &name, &saltedpass, &budgetspent)
 	db.checkErr(err)
-	return id, name, saltedpass, budgetspent
+	user := LeapUser{id, name, saltedpass, budgetspent}
+	return &user
 }
 
 // TODO: add site query was sent to

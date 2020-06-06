@@ -21,6 +21,12 @@ type Query struct {
 	Delta   float64
 }
 
+
+// Creates an in-memory database used by the coordinator to
+// retrieve and insert data
+//
+// dbname: Name to be given to the database
+// log: Log from the coordinator.
 func CreateDatabase(dbname string, log *logrus.Entry) *Database {
 	db := Database{Name: dbname, Log: log}
 	database, err := sql.Open("sqlite3", dbname+":mode=memory")
@@ -32,6 +38,11 @@ func CreateDatabase(dbname string, log *logrus.Entry) *Database {
 	return &db
 }
 
+
+// Creates a table used to hold Leap users and their login
+// information.
+//
+// No args.
 func (db *Database) CreateUserTable() {
 	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY, username VARCHAR(64) NOT NULL , salted_hash VARCHAR NOT NULL , budget_spent BIGINT, UNIQUE(username))")
 	db.checkErr(err)
@@ -66,6 +77,10 @@ func (db *Database) GetUserWithUsername(username string) (int64, string, string,
 }
 
 // TODO: add site query was sent to
+// Creates a table containing all the diff priv queries sent
+// to Leap.
+//
+// No args.
 func (db *Database) CreateQueryTable() {
 	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS query (id INTEGER PRIMARY KEY, req_id INTEGER, user_id INTEGER, epsilon REAL, delta REAL, FOREIGN KEY (user_id) REFERENCES user (id))")
 	db.checkErr(err)
@@ -73,6 +88,9 @@ func (db *Database) CreateQueryTable() {
 	db.checkErr(err)
 }
 
+// Inserts a new query to the table
+//
+// query: Query struc containing the eps and delta values
 func (db *Database) InsertQuery(query Query) error {
 	statement, err := db.Database.Prepare("INSERT INTO query (req_id, user_id, epsilon, delta) VALUES (?, ?, ?, ?)")
 	db.checkErr(err)
@@ -88,6 +106,9 @@ func (db *Database) InsertQuery(query Query) error {
 	return nil
 }
 
+// Returns all queries from the user with the given ID.
+//
+// userId: Id of the user to return queries
 func (db *Database) GetQueriesFromUser(userId int) ([]Query, error) {
 	rows, err := db.Database.Query("SELECT * FROM query WHERE user_id=?", userId)
 	db.checkErr(err)
@@ -112,6 +133,9 @@ func (db *Database) GetQueriesFromUser(userId int) ([]Query, error) {
 	return queries, nil
 }
 
+// Creates a table that contains the sites a user has access to.
+//
+// No args.
 func (db *Database) CreateSiteAccessTable() {
 	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS site_access (id INTEGER PRIMARY KEY, site_id INTEGER, user_id INTEGER, FOREIGN KEY (user_id) REFERENCES user (id))")
 	db.checkErr(err)
@@ -119,6 +143,9 @@ func (db *Database) CreateSiteAccessTable() {
 	db.checkErr(err)
 }
 
+// Logs an error.
+//
+// err: The error to be logged.
 func (db *Database) checkErr(err error) {
 	if err != nil {
 		db.Log.Error(err.Error())

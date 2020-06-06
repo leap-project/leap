@@ -7,7 +7,7 @@ import (
 )
 
 // Makes a remote procedure call to a site connector asking
-// it to return all available sites in the system.
+// it to return whether it is available.
 //
 // ctx: Carries value and cancellation signals across API
 //      boundaries.

@@ -3,14 +3,18 @@
 package coordinator
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
+	"errors"
 	"flag"
+	"fmt"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/metadata"
 	"io/ioutil"
 	pb "leap/proto"
 	"leap/sqlite"
@@ -168,10 +172,20 @@ func (c *Coordinator) Serve() {
 			ClientCAs:    certPool,
 		})
 
-		s = grpc.NewServer(grpc.Creds(creds))
+		opts := []grpc.ServerOption{
+			grpc.Creds(creds),
+			grpc.UnaryInterceptor(authenticate),
+		}
+
+		s = grpc.NewServer(opts...)
 
 	} else {
-		s = grpc.NewServer()
+
+		opts := []grpc.ServerOption{
+			grpc.UnaryInterceptor(authenticate),
+		}
+
+		s = grpc.NewServer(opts...)
 	}
 
 	pb.RegisterCoordinatorServer(s, c)
@@ -206,6 +220,16 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 	} else {
 		return grpc.Dial(addr, grpc.WithInsecure())
 	}
+}
+
+func authenticate(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
+	handler grpc.UnaryHandler) (interface{}, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+
+	if !ok {
+		return nil, errors.New("Missing metadata.")
+	}
+	return handler(ctx, req)
 }
 
 // TODO: Add request id to checkErr

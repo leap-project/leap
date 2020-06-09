@@ -113,9 +113,9 @@ def fed_learn_exp():
     leap_fed_learn.hyperparams = hyperparams
     return leap_fed_learn
 
-def distributed(sites, username):
+def distributed(sites, auth_token):
     leap_exp_fn = predef_private_site_count_exp()
-    dist_leap = leap.DistributedLeap(leap_exp_fn, "127.0.0.1:50000", username)
+    dist_leap = leap.DistributedLeap(leap_exp_fn, "127.0.0.1:50000", auth_token)
     print(dist_leap.get_result(sites))
 
 def local():
@@ -132,4 +132,4 @@ def local():
 if __name__ == "__main__":
     #local()
     user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
-    distributed([1], "TestUser")
+    distributed([1], "the_auth_token")

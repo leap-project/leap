@@ -85,10 +85,10 @@ class DistributedLeap(Leap):
     # Constructor
     #
     # leap_function: An algorithm to be run in Leap.
-    def __init__(self, leap_function, coord_ip_port, username):
+    def __init__(self, leap_function, coord_ip_port, auth_token):
         super().__init__(leap_function)
         self.coord_ip_port = coord_ip_port
-        self.username = username
+        self.auth_token = auth_token
 
     # Gets the result of performing the selected algorithm
     # on the filtered data.
@@ -98,7 +98,9 @@ class DistributedLeap(Leap):
         compute_stub = self._get_compute_stub()
 
         # Computed remotely
-        result = compute_stub.Compute(request, None)
+        metadata = []
+        metadata.append(('authorization', 'Bearer ' + self.auth_token))
+        result = compute_stub.Compute(request, None, metadata=metadata)
 
         result = json.loads(result.response)
         return result
@@ -110,15 +112,12 @@ class DistributedLeap(Leap):
         req = self.leap_function.create_request()
         request.req = json.dumps(req)
         request.sites.extend(sites)
-        request.username = self.username
         return request
 
     # Gets the stub from the cloud grpc service. This stub
     # is used to send messages to the cloud algos.
     def _get_compute_stub(self):
         # TODO: Don't harcode ip address
-        # channel = grpc.insecure_channel("127.0.0.1:70000")
-        # stub = pb.cloud_algos_pb2_grpc.CloudAlgoStub(channel)
         channel = grpc.insecure_channel(self.coord_ip_port)
         stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
         return stub

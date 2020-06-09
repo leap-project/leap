@@ -24,8 +24,8 @@ func (c *Coordinator) RegisterUser(ctx context.Context, req *pb.UserRegReq) (*pb
 
 	saltedPasswordHash, err := bcrypt.GenerateFromPassword([]byte(req.User.Password), bcrypt.DefaultCost)
 	checkErr(c, err)
-	user := LeapUser{Name: req.User.Username, SaltedPass: saltedPasswordHash, BudgetSpent: 0}
-	err = c.Database.InsertUser(&user, string(saltedPasswordHash))
+	user := sqlite.User{Name: req.User.Username, SaltedPass: string(saltedPasswordHash), BudgetSpent: 0}
+	err = c.Database.InsertUser(&user)
 
 	if err != nil {
 		return &pb.UserRegRes{Success: false}, err

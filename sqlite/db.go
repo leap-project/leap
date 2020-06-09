@@ -21,6 +21,12 @@ type Query struct {
 	Delta   float64
 }
 
+type User struct {
+	Id			int64
+	Name		string
+	SaltedPass 	string
+	BudgetSpent int64
+}
 
 // Creates an in-memory database used by the coordinator to
 // retrieve and insert data
@@ -50,9 +56,10 @@ func (db *Database) CreateUserTable() {
 	db.checkErr(err)
 }
 
-func (db *Database) InsertUser(user *LeapUser, saltedHash string) error {
+func (db *Database) InsertUser(user *User) error {
 	username := user.Name
 	budgetSpent := user.BudgetSpent
+	saltedHash := user.SaltedPass
 	statement, err := db.Database.Prepare("INSERT INTO user (username, salted_hash, budget_spent) VALUES (?, ?, ?)")
 	db.checkErr(err)
 	if err != nil {
@@ -67,7 +74,7 @@ func (db *Database) InsertUser(user *LeapUser, saltedHash string) error {
 	return nil
 }
 
-func (db *Database) GetUserWithUsername(username string) *LeapUser {
+func (db *Database) GetUserWithUsername(username string) *User {
 	row := db.Database.QueryRow("SELECT * FROM user WHERE username=?", username)
 	var id int64
 	var name string
@@ -75,7 +82,7 @@ func (db *Database) GetUserWithUsername(username string) *LeapUser {
 	var budgetspent int64
 	err := row.Scan(&id, &name, &saltedpass, &budgetspent)
 	db.checkErr(err)
-	user := LeapUser{id, name, saltedpass, budgetspent}
+	user := User{id, name, saltedpass, budgetspent}
 	return &user
 }
 

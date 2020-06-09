@@ -21,4 +21,5 @@ message UserAuthReq {
 
 message UserAuthRes {
   bool success = 1;
+  string token = 2;
 }

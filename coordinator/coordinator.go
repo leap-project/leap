@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -224,11 +223,15 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 
 func authenticate(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {
-	md, ok := metadata.FromIncomingContext(ctx)
 
-	if !ok {
-		return nil, errors.New("Missing metadata.")
+	if info.FullMethod == "/proto.Coordinator/Compute" {
+		_, ok := metadata.FromIncomingContext(ctx)
+
+		if !ok {
+			return nil, errors.New("Missing metadata.")
+		}
 	}
+
 	return handler(ctx, req)
 }
 

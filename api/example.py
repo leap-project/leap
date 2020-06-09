@@ -132,4 +132,5 @@ def local():
 if __name__ == "__main__":
     #local()
     user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
-    distributed([1], "the_auth_token")
+    auth_res = user_reg.authenticate_user("TestUser", "123456", "127.0.0.1:50000")
+    distributed([1], auth_res.token)

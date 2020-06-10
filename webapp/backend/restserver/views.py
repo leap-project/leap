@@ -3,11 +3,11 @@ from django.http import HttpResponse
 
 from rest_framework.views import APIView
 from api.availability.available import get_available_sites
+from proto import computation_msgs_pb2
 
 import json
 import api.leap as leap
 import api.leap_fn as leap_fn
-import api.codes as codes
 
 config = None
 with open("../../config/webapp_config.json") as json_file:
@@ -23,9 +23,9 @@ class ComputeView(APIView):
         leap_predef = None
         body = json.loads(request.body)
         if body['dp']:
-            leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_SITE_COUNT_ALGO, epsilon=1, delta=0)
+            leap_predef = leap_fn.PrivatePredefinedFunction(computation_msgs_pb2.AlgoCodes.PRIVATE_SITE_COUNT_ALGO, epsilon=1, delta=0)
         else:
-            leap_predef = leap_fn.PredefinedFunction(codes.COUNT_ALGO)
+            leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.COUNT_ALGO)
 
         leap_predef.selector = body['selector']
 

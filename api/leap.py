@@ -44,6 +44,9 @@ class Leap(ABC):
 
         req = self.leap_function.create_request()
         request.req = json.dumps(req)
+        if hasattr(self.leap_function, 'algo_code'):
+            request.algo_code = self.leap_function.algo_code
+        request.leap_type = self.leap_function.leap_type
         return request
 
     @abstractmethod
@@ -111,6 +114,10 @@ class DistributedLeap(Leap):
 
         req = self.leap_function.create_request()
         request.req = json.dumps(req)
+
+        if hasattr(self.leap_function, 'algo_code'):
+            request.algo_code = self.leap_function.algo_code
+        request.leap_type = self.leap_function.leap_type
         request.sites.extend(sites)
         return request
 

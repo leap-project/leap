@@ -26,7 +26,13 @@ type User struct {
 	Name		string
 	SaltedPass 	string
 	BudgetSpent int64
+	Role        string
 }
+
+// Roles for users
+const ADMIN = "admin"
+const DP_ONLY = "dp_only"
+const NON_DP  = "non_dp"
 
 // Creates an in-memory database used by the coordinator to
 // retrieve and insert data
@@ -45,12 +51,12 @@ func CreateDatabase(dbname string, log *logrus.Entry) *Database {
 }
 
 
-// Creates a table used to hold Leap users and their login
-// information.
+// Creates a table used to hold Leap users, their login
+// information and their role.
 //
 // No args.
 func (db *Database) CreateUserTable() {
-	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY, username VARCHAR(64) NOT NULL , salted_hash VARCHAR NOT NULL , budget_spent BIGINT, UNIQUE(username))")
+	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY, username VARCHAR(64) NOT NULL , salted_hash VARCHAR NOT NULL, budget_spent BIGINT, role VARCHAR, UNIQUE(username))")
 	db.checkErr(err)
 	_, err = statement.Exec()
 	db.checkErr(err)
@@ -63,13 +69,14 @@ func (db *Database) InsertUser(user *User) error {
 	username := user.Name
 	budgetSpent := user.BudgetSpent
 	saltedHash := user.SaltedPass
-	statement, err := db.Database.Prepare("INSERT INTO user (username, salted_hash, budget_spent) VALUES (?, ?, ?)")
+	role := user.Role
+	statement, err := db.Database.Prepare("INSERT INTO user (username, salted_hash, budget_spent, role) VALUES (?, ?, ?, ?)")
 	db.checkErr(err)
 	if err != nil {
 		return err
 	}
 
-	_, err = statement.Exec(username, saltedHash, budgetSpent)
+	_, err = statement.Exec(username, saltedHash, budgetSpent, role)
 	db.checkErr(err)
 	if err != nil {
 		return err
@@ -86,9 +93,10 @@ func (db *Database) GetUserWithUsername(username string) *User {
 	var name string
 	var saltedpass string
 	var budgetspent int64
-	err := row.Scan(&id, &name, &saltedpass, &budgetspent)
+	var role string
+	err := row.Scan(&id, &name, &saltedpass, &budgetspent, &role)
 	db.checkErr(err)
-	user := User{id, name, saltedpass, budgetspent}
+	user := User{id, name, saltedpass, budgetspent, role}
 	return &user
 }
 

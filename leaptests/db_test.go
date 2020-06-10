@@ -120,7 +120,7 @@ func TestGetNonExistentQuery(t *testing.T) {
 }
 
 func TestInsertUser(t *testing.T) {
-	err := db.InsertUser(&sqlite.User{Id: 1, Name: "Bob", SaltedPass: "pass123", BudgetSpent: 0})
+	err := db.InsertUser(&sqlite.User{Id: 1, Name: "Bob", SaltedPass: "pass123", BudgetSpent: 0, Role: "admin"})
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -141,5 +141,9 @@ func TestInsertUser(t *testing.T) {
 
 	if user.BudgetSpent != 0 {
 		t.Errorf("BudgetSpent not inserted correctly")
+	}
+
+	if user.Role != "admin" {
+		t.Errorf("User role not inserted correctly")
 	}
 }

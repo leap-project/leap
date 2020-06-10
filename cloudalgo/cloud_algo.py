@@ -8,7 +8,6 @@ import json
 import logging
 from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
-import api.codes as codes
 
 from proto import cloud_algos_pb2_grpc
 from proto import computation_msgs_pb2
@@ -112,22 +111,22 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             req = json.loads(request.req)
             sites = request.sites
 
-            leap_type = req["leap_type"]
-            if leap_type == codes.UDF:
+            leap_type = request.leap_type
+            if leap_type == computation_msgs_pb2.LeapTypes.UDF:
                 env = env_manager.CloudUDFEnvironment()
-            elif leap_type == codes.LAPLACE_UDF:
+            elif leap_type == computation_msgs_pb2.LeapTypes.LAPLACE_UDF:
                 env = env_manager.CloudUDFEnvironment() # LaplaceUDF does not change cloud api logic
-            elif leap_type == codes.EXPONENTIAL_UDF:
+            elif leap_type == computation_msgs_pb2.LeapTypes.EXPONENTIAL_UDF:
                 env = env_manager.CloudUDFEnvironment()
-            elif leap_type == codes.PREDEFINED:
+            elif leap_type == computation_msgs_pb2.LeapTypes.PREDEFINED:
                 env = env_manager.CloudPredefinedEnvironment()
-            elif leap_type == codes.PRIVATE_PREDEFINED:
+            elif leap_type == computation_msgs_pb2.LeapTypes.PRIVATE_PREDEFINED:
                 env = env_manager.CloudPrivatePredefinedEnvironment()
-            elif leap_type == codes.FEDERATED_LEARNING:
+            elif leap_type == computation_msgs_pb2.LeapTypes.FEDERATED_LEARNING:
                 env = env_manager.CloudFedereatedLearningEnvironment()
-            env.set_env(globals(), req, request.id)
+            env.set_env(globals(), req, request.id, request)
 
-            result, eps, delt = self._compute_logic(req, request.id, coord_stub, sites)
+            result, eps, delt = self._compute_logic(req, coord_stub, sites, request)
 
             res = computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(result)
@@ -152,16 +151,19 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # Takes a request and the state and creates a request to
     # be sent to the coordinator that grpc understands.
     #
-    # req: The request to be serialized
-    # req_id: The id
+    # req_body: The body of the request containing the functions
+    #           to be executed.
     # state: The state that will go in the request.
     # sites: The sites to be queries
-    def _create_map_request(self, req, req_id, state, sites):
+    # req: Protobuf request
+    def _create_map_request(self, req_body, state, sites, req):
         request = computation_msgs_pb2.MapRequest()
-        req = req.copy()
-        req["state"] = state
-        request.req = json.dumps(req)
-        request.id = req_id
+        req_body = req_body.copy()
+        req_body["state"] = state
+        request.req = json.dumps(req_body)
+        request.id = req.id
+        request.leap_type = req.leap_type
+        request.algo_code = req.algo_code
 
         request.sites.extend(sites)
         return request
@@ -189,7 +191,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # coord_stub: The stub used to send a message to the
     #             coordinator.
     # sites: The sites where the map function will run
-    def _compute_logic(self, req, req_id, coord_stub, sites):
+    def _compute_logic(self, req_body, coord_stub, sites, req):
         state = init_state_fn()
 
         stop = False
@@ -200,12 +202,12 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
 
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
-            site_request = self._create_map_request(req, req_id, state, sites)
+            site_request = self._create_map_request(req_body, state, sites, req)
 
             # Get result from each site through coordinator
             results = coord_stub.Map(site_request)
 
-            eps, delt = self.accumulate_priv_values(req, eps, delt, len(results.responses))
+            eps, delt = self.accumulate_priv_values(req_body, eps, delt, len(results.responses))
 
             extracted_responses = self._extract_map_responses(results.responses)
 

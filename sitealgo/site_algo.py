@@ -15,7 +15,6 @@ import json
 import logging
 from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
-import api.codes as codes
 import cloudalgo.functions.privacy as leap_privacy
 import csv
 
@@ -107,20 +106,20 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             log.withFields({"request-id": request.id}).info("Got map request")
 
             req = json.loads(request.req)
-            leap_type = req["leap_type"]
-            if leap_type == codes.UDF:
+            leap_type = request.leap_type
+            if leap_type == computation_msgs_pb2.LeapTypes.UDF:
                 env = env_manager.SiteUDFEnvironment()
-            elif leap_type == codes.LAPLACE_UDF:
+            elif leap_type == computation_msgs_pb2.LeapTypes.LAPLACE_UDF:
                 env = env_manager.SiteUDFEnvironment()
-            elif leap_type == codes.EXPONENTIAL_UDF:
+            elif leap_type == computation_msgs_pb2.LeapTypes.EXPONENTIAL_UDF:
                 env = env_manager.SiteExponentialUDFEnvironment()
-            elif leap_type == codes.PREDEFINED:
+            elif leap_type == computation_msgs_pb2.LeapTypes.PREDEFINED:
                 env = env_manager.SitePredefinedEnvironment()
-            elif leap_type == codes.PRIVATE_PREDEFINED:
+            elif leap_type == computation_msgs_pb2.LeapTypes.PRIVATE_PREDEFINED:
                 env = env_manager.SitePrivatePredefinedEnvironment()
-            elif leap_type == codes.FEDERATED_LEARNING:
+            elif leap_type == computation_msgs_pb2.LeapTypes.FEDERATED_LEARNING:
                 env = env_manager.SiteFederatedLearningEnvironment()
-            env.set_env(globals(), req, request.id)
+            env.set_env(globals(), req, request.id, request)
             log.withFields({"request-id": request.id}).info("Loaded all necessary environment")
             map_result = self.map_logic(request)
             res = self._get_response_obj()
@@ -168,14 +167,14 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             data = dataprep_fn(data)
         
         # Adding logic for private udf functions
-        leap_type = req["leap_type"]
-        if leap_type == codes.LAPLACE_UDF:
+        leap_type = request.leap_type
+        if leap_type == computation_msgs_pb2.LeapTypes.LAPLACE_UDF:
             # Compute sensitivity: maximum difference in score function
             epsilon = req["epsilon"]
             delta = req["delta"]
             target_attribute = req["target_attribute"]
             map_result = leap_privacy.dynamic_laplace(epsilon, delta, target_attribute, map_fn[choice], data, state)
-        elif leap_type == codes.EXPONENTIAL_UDF:
+        elif leap_type == computation_msgs_pb2.LeapTypes.EXPONENTIAL_UDF:
             epsilon = req["epsilon"]
             delta = req["delta"]
             target_attribute = req["target_attribute"]

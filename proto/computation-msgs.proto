@@ -7,7 +7,9 @@ option go_package=".;proto";
 message ComputeRequest {
     int64 id = 1;
     string req = 2;
-    repeated int64 sites = 4;
+    LeapTypes leap_type = 3;
+    AlgoCodes algo_code = 4;
+    repeated int64 sites = 5;
 }
 
 // A generic JSON encoded response
@@ -23,7 +25,9 @@ message ComputeResponse {
 message MapRequest {
     int64 id = 1;
     string req = 2;
-    repeated int64 sites = 3;
+    LeapTypes leap_type = 3;
+    AlgoCodes algo_code = 4;
+    repeated int64 sites = 5;
 }
 
 // A response from a map computation
@@ -37,4 +41,25 @@ message MapResponse {
 message MapResponses {
     repeated MapResponse responses = 1;
     repeated int64 unavailable_sites = 2;
+}
+
+// Leap types
+enum LeapTypes {
+    UDF = 0;
+    LAPLACE_UDF = 1;
+    EXPONENTIAL_UDF = 2;
+    PREDEFINED = 3;
+    PRIVATE_PREDEFINED = 4;
+    FEDERATED_LEARNING = 5;
+}
+
+// Algo codes
+enum AlgoCodes {
+    COUNT_ALGO = 0;
+    PRIVATE_SITE_COUNT_ALGO = 1;
+    PRIVATE_CLOUD_COUNT_ALGO = 2;
+    SUM_ALGO = 3;
+    VARIANCE_ALGO = 4;
+    FEDERATED_LEARNING_ALGO = 5;
+    QUANTILE_ALGO = 6;
 }

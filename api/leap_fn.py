@@ -4,9 +4,9 @@
 # tions available in LEAP
 
 import json
-import api.codes as codes
+import proto as pb
 from utils import leap_utils
-
+from proto import computation_msgs_pb2
 
 # The main base class for a Leap function.
 class LeapFunction:
@@ -47,7 +47,6 @@ class LeapFunction:
         req["postprocessing_fn"] = postprocessing_fn
         req["init_state_fn"] = init_state_fn
         req["selector"] = self.selector
-        req["leap_type"] = self.leap_type
 
         return req
 
@@ -57,7 +56,7 @@ class UDF(LeapFunction):
 
     def __init__(self):
         super().__init__()
-        self.leap_type = codes.UDF
+        self.leap_type = pb.computation_msgs_pb2.LeapTypes.UDF
         
     def validate(self):
         pass
@@ -72,7 +71,7 @@ class PrivateLaplaceUDF(UDF):
     # that we want to make private
     def __init__(self, epsilon, delta, target_attribute):
         super().__init__()
-        self.leap_type = codes.LAPLACE_UDF
+        self.leap_type = pb.computation_msgs_pb2.LeapTypes.LAPLACE_UDF
         self.epsilon = epsilon
         self.delta = delta
         self.target_attribute = target_attribute
@@ -99,7 +98,7 @@ class PrivateExponentialUDF(UDF):
     # that we want to make private
     def __init__(self, epsilon, delta, target_attribute):
         super().__init__()
-        self.leap_type = codes.EXPONENTIAL_UDF
+        self.leap_type = pb.computation_msgs_pb2.LeapTypes.EXPONENTIAL_UDF
         self.epsilon = epsilon
         self.delta = delta
         self.target_attribute = target_attribute
@@ -128,7 +127,6 @@ class PrivateExponentialUDF(UDF):
         req["postprocessing_fn"] = postprocessing_fn
         req["init_state_fn"] = init_state_fn
         req["selector"] = self.selector
-        req["leap_type"] = self.leap_type
         req["epsilon"] = self.epsilon
         req["delta"] = self.delta
         req["target_attribute"] = self.target_attribute
@@ -146,7 +144,7 @@ class PredefinedFunction(LeapFunction):
     def __init__(self, algo_code):
         super().__init__()
         self.algo_code = algo_code
-        self.leap_type = codes.PREDEFINED
+        self.leap_type = pb.computation_msgs_pb2.LeapTypes.PREDEFINED
 
     def validate(self):
         pass
@@ -155,7 +153,6 @@ class PredefinedFunction(LeapFunction):
     # that we want to run.
     def create_request(self):
         req = super().create_request()
-        req["algo_code"] = self.algo_code
         return req
 
 
@@ -172,7 +169,7 @@ class PrivatePredefinedFunction(PredefinedFunction):
         super().__init__(algo_code)
         self.epsilon = epsilon
         self.delta = delta
-        self.leap_type = codes.PRIVATE_PREDEFINED
+        self.leap_type = pb.computation_msgs_pb2.LeapTypes.PRIVATE_PREDEFINED
 
     def validate(self):
         pass
@@ -188,13 +185,13 @@ class PrivatePredefinedFunction(PredefinedFunction):
 # Federated Learning class that extends the main Leap class.
 class FedLearnFunction(PredefinedFunction):
     def __init__(self):
-        super().__init__(codes.FEDERATED_LEARNING_ALGO)
+        super().__init__(computation_msgs_pb2.AlgoCodes.FEDERATED_LEARNING_ALGO)
         self.get_optimizer = None
         self.get_model = None
         self.get_criterion = None
         self.hyperparams = None
         self.get_dataloader = None
-        self.leap_type = codes.FEDERATED_LEARNING
+        self.leap_type = pb.computation_msgs_pb2.LeapTypes.FEDERATED_LEARNING
 
     # Creates a request for a federated learning model to be
     # trained. The request includes the optimizer, criterion, model,
@@ -208,7 +205,6 @@ class FedLearnFunction(PredefinedFunction):
         req["get_model"] = leap_utils.fn_to_string(self.get_model)
         req["get_dataloader"] = leap_utils.fn_to_string(self.get_dataloader)
         req["hyperparams"] = json.dumps(self.hyperparams)
-        req["algo_code"] = self.algo_code
         return req
 
     def validate(self):

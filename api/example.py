@@ -4,30 +4,30 @@ import sys
 sys.path.append("../")
 import api.leap as leap
 import api.leap_fn as leap_fn
-import api.codes as codes
 import cloudalgo.functions as cloud_functions
 import api.local.functions as leap_functions
 import api.register.user.registration as user_reg
 
+from proto import computation_msgs_pb2
 from api.local.cloud import LocalCloudAlgoServicer
 from api.local.localsite import LocalSiteAlgoServicer
 from api.local.coordinator import LocalCoordinator
 
 
 def predef_count_exp():
-    leap_predef = leap_fn.PredefinedFunction(codes.COUNT_ALGO)
+    leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.COUNT_ALGO)
     selector = "[age] > 50 and [bmi] < 25"
     leap_predef.selector = selector
     return leap_predef
 
 def predef_private_site_count_exp():
-    leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_SITE_COUNT_ALGO, epsilon=1, delta=0)
+    leap_predef = leap_fn.PrivatePredefinedFunction(computation_msgs_pb2.AlgoCodes.PRIVATE_SITE_COUNT_ALGO, epsilon=1, delta=0)
     selector = "[age] > 50 and [bmi] < 25"
     leap_predef.selector = selector
     return leap_predef
 
 def predef_private_cloud_count_exp():
-    leap_predef = leap_fn.PrivatePredefinedFunction(codes.PRIVATE_CLOUD_COUNT_ALGO, epsilon=1, delta=0)
+    leap_predef = leap_fn.PrivatePredefinedFunction(computation_msgs_pb2.AlgoCodes.PRIVATE_CLOUD_COUNT_ALGO, epsilon=1, delta=0)
     selector = "[age] > 50 and [bmi] < 25"
     leap_predef.selector = selector
     return leap_predef
@@ -88,7 +88,7 @@ def udf_count_exp():
     return leap_udf
 
 def quantile_exp():
-    leap_predef = leap_fn.PredefinedFunction(codes.QUANTILE_ALGO)
+    leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.QUANTILE_ALGO)
     selector = ""
     leap_predef.selector = selector
     return leap_predef
@@ -131,6 +131,6 @@ def local():
 
 if __name__ == "__main__":
     #local()
-    user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
+    # user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
     auth_res = user_reg.authenticate_user("TestUser", "123456", "127.0.0.1:50000")
     distributed([1], auth_res.token)

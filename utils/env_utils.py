@@ -2,6 +2,8 @@
 
 import inspect
 
+from proto import computation_msgs_pb2
+
 # Loads a function named fn_name from req into the appropriate
 # context. If it doesn't exist, load function from pre-existing
 # module.
@@ -38,4 +40,20 @@ def load_from_fn_generator(gen_fn_name, fn_name, req, context, module=None, gen_
         context[fn_name] = globals()[gen_fn_name]()
     else:
         context[fn_name] = globals()[gen_fn_name](*tuple(gen_fn_args))
+
+def convert_algo_code(pb_enum):
+    if pb_enum is computation_msgs_pb2.AlgoCodes.COUNT_ALGO:
+        return "count_fn"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.PRIVATE_SITE_COUNT_ALGO:
+        return "count_fn_site_dp"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.PRIVATE_CLOUD_COUNT_ALGO:
+        return "count_fn_cloud_dp"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.SUM_ALGO:
+        return "sum_fn"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.VARIANCE_ALGO:
+        return "var_fn"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.FEDERATED_LEARNING_ALGO:
+        return "fl_fn"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.QUANTILE_ALGO:
+        return "quantile_fn"
 

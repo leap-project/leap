@@ -18,13 +18,16 @@ type User struct {
 }
 
 // TODO: Sanitize inputs or check if sqlite3 go package does it
-
+// Adds a user to the user table in the database.
+//
+// ctx: Grpc context
+// req: Request containing user information
 func (c *Coordinator) RegisterUser(ctx context.Context, req *pb.UserRegReq) (*pb.UserRegRes, error) {
 	c.Log.Info("Received request to register user")
 
 	saltedPasswordHash, err := bcrypt.GenerateFromPassword([]byte(req.User.Password), bcrypt.DefaultCost)
 	checkErr(c, err)
-	user := sqlite.User{Name: req.User.Username, SaltedPass: string(saltedPasswordHash), BudgetSpent: 0}
+	user := sqlite.User{Name: req.User.Username, SaltedPass: string(saltedPasswordHash), BudgetSpent: 0, Role: sqlite.NON_DP}
 	err = c.Database.InsertUser(&user)
 
 	if err != nil {
@@ -36,6 +39,12 @@ func (c *Coordinator) RegisterUser(ctx context.Context, req *pb.UserRegReq) (*pb
 	return &pb.UserRegRes{Success: true}, nil
 }
 
+// Checks if username and password matches. If they match,
+// return a jwt token that is used for making requests to the
+// API.
+//
+// ctx: Grpc context
+// req: Request containing username and password
 func (c *Coordinator) AuthUser(ctx context.Context, req *pb.UserAuthReq) (*pb.UserAuthRes, error) {
 	c.Log.Info("Received request to authenticate user")
 

@@ -46,6 +46,7 @@ go get -u google.golang.org/grpc
 go get -u github.com/sirupsen/logrus
 go get -u github.com/rifflock/lfshook
 go get -u golang.org/x/crypto/bcrypt
+go get -u github.com/dgrijalva/jwt-go
 ```
 
 #### Python packages

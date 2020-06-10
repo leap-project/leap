@@ -56,6 +56,9 @@ func (db *Database) CreateUserTable() {
 	db.checkErr(err)
 }
 
+// Inserts a new user to the table
+//
+// user: User struc containing the id, name, salted password hash, & budget spent
 func (db *Database) InsertUser(user *User) error {
 	username := user.Name
 	budgetSpent := user.BudgetSpent
@@ -74,6 +77,9 @@ func (db *Database) InsertUser(user *User) error {
 	return nil
 }
 
+// Returns the user with the given username.
+//
+// username: username of the user
 func (db *Database) GetUserWithUsername(username string) *User {
 	row := db.Database.QueryRow("SELECT * FROM user WHERE username=?", username)
 	var id int64

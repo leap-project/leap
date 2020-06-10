@@ -7,6 +7,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	pb "leap/proto"
 	"time"
+	"leap/sqlite"
 )
 
 type User struct {
@@ -23,7 +24,8 @@ func (c *Coordinator) RegisterUser(ctx context.Context, req *pb.UserRegReq) (*pb
 
 	saltedPasswordHash, err := bcrypt.GenerateFromPassword([]byte(req.User.Password), bcrypt.DefaultCost)
 	checkErr(c, err)
-	err = c.Database.InsertUser(req.User.Username, string(saltedPasswordHash), 0)
+	user := sqlite.User{Name: req.User.Username, SaltedPass: string(saltedPasswordHash), BudgetSpent: 0}
+	err = c.Database.InsertUser(&user)
 
 	if err != nil {
 		return &pb.UserRegRes{Success: false}, err
@@ -37,7 +39,8 @@ func (c *Coordinator) RegisterUser(ctx context.Context, req *pb.UserRegReq) (*pb
 func (c *Coordinator) AuthUser(ctx context.Context, req *pb.UserAuthReq) (*pb.UserAuthRes, error) {
 	c.Log.Info("Received request to authenticate user")
 
-	_, _, passwordHash, _ := c.Database.GetUserWithUsername(req.User.Username)
+	user := c.Database.GetUserWithUsername(req.User.Username)
+	passwordHash := user.SaltedPass
 
 	err := bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(req.User.Password))
 	if err != nil {

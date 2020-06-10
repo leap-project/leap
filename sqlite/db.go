@@ -21,6 +21,12 @@ type Query struct {
 	Delta   float64
 }
 
+type User struct {
+	Id			int64
+	Name		string
+	SaltedPass 	string
+	BudgetSpent int64
+}
 
 // Creates an in-memory database used by the coordinator to
 // retrieve and insert data
@@ -50,7 +56,13 @@ func (db *Database) CreateUserTable() {
 	db.checkErr(err)
 }
 
-func (db *Database) InsertUser(username string, saltedHash string, budgetSpent int64) error {
+// Inserts a new user to the table
+//
+// user: User struc containing the id, name, salted password hash, & budget spent
+func (db *Database) InsertUser(user *User) error {
+	username := user.Name
+	budgetSpent := user.BudgetSpent
+	saltedHash := user.SaltedPass
 	statement, err := db.Database.Prepare("INSERT INTO user (username, salted_hash, budget_spent) VALUES (?, ?, ?)")
 	db.checkErr(err)
 	if err != nil {
@@ -65,7 +77,10 @@ func (db *Database) InsertUser(username string, saltedHash string, budgetSpent i
 	return nil
 }
 
-func (db *Database) GetUserWithUsername(username string) (int64, string, string, int64) {
+// Returns the user with the given username.
+//
+// username: username of the user
+func (db *Database) GetUserWithUsername(username string) *User {
 	row := db.Database.QueryRow("SELECT * FROM user WHERE username=?", username)
 	var id int64
 	var name string
@@ -73,7 +88,8 @@ func (db *Database) GetUserWithUsername(username string) (int64, string, string,
 	var budgetspent int64
 	err := row.Scan(&id, &name, &saltedpass, &budgetspent)
 	db.checkErr(err)
-	return id, name, saltedpass, budgetspent
+	user := User{id, name, saltedpass, budgetspent}
+	return &user
 }
 
 // TODO: add site query was sent to

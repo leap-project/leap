@@ -21,6 +21,7 @@ func setup() {
 	database, _ := sql.Open("sqlite3", "test-db"+":mode=memory")
 	db.Database = database
 	db.CreateQueryTable()
+	db.CreateUserTable()
 }
 
 func teardown() {
@@ -115,5 +116,30 @@ func TestGetNonExistentQuery(t *testing.T) {
 
 	if len(queries) != 0 {
 		t.Errorf("Length of queries returned != 0")
+	}
+}
+
+func TestInsertUser(t *testing.T) {
+	err := db.InsertUser(&sqlite.User{Id: 1, Name: "Bob", SaltedPass: "pass123", BudgetSpent: 0})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	user := db.GetUserWithUsername("Bob")
+	// Check user
+	if user.Id != 1 {
+		t.Errorf("User Id not inserted correctly")
+	}
+
+	if user.Name != "Bob" {
+		t.Errorf("Username not inserted correctly")
+	}
+
+	if user.SaltedPass != "pass123" {
+		t.Errorf("SaltedPass not inserted correctly")
+	}
+
+	if user.BudgetSpent != 0 {
+		t.Errorf("BudgetSpent not inserted correctly")
 	}
 }

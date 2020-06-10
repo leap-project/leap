@@ -22,6 +22,7 @@ func setup() {
 	db.Database = database
 	db.CreateQueryTable()
 	db.CreateUserTable()
+	db.CreateSiteAccessTable()
 }
 
 func teardown() {
@@ -145,5 +146,120 @@ func TestInsertUser(t *testing.T) {
 
 	if user.Role != "admin" {
 		t.Errorf("User role not inserted correctly")
+	}
+}
+
+func TestInsertMultipleUsers(t *testing.T) {
+	err := db.InsertUser(&sqlite.User{Id: 2, Name: "Sally", SaltedPass: "pass234", BudgetSpent: 1})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	err = db.InsertUser(&sqlite.User{Id: 3, Name: "Alex", SaltedPass: "pw1234", BudgetSpent: 2})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	user := db.GetUserWithUsername("Sally")
+	// Check user
+	if user.Id != 2 {
+		t.Errorf("User Id not inserted correctly")
+	}
+
+	if user.Name != "Sally" {
+		t.Errorf("Username not inserted correctly")
+	}
+
+	if user.SaltedPass != "pass234" {
+		t.Errorf("SaltedPass not inserted correctly")
+	}
+
+	if user.BudgetSpent != 1 {
+		t.Errorf("BudgetSpent not inserted correctly")
+	}
+
+	user = db.GetUserWithUsername("Alex")
+	// Second user
+	if user.Id != 3 {
+		t.Errorf("User Id not inserted correctly")
+	}
+
+	if user.Name != "Alex" {
+		t.Errorf("Username not inserted correctly")
+	}
+
+	if user.SaltedPass != "pw1234" {
+		t.Errorf("SaltedPass not inserted correctly")
+	}
+
+	if user.BudgetSpent != 2 {
+		t.Errorf("BudgetSpent not inserted correctly")
+	}
+}
+
+func TestInsertSiteAccess(t *testing.T) {
+	err := db.InsertSiteAccess(&sqlite.SiteAccess{Id: 1, SiteId: 5, UserId: 1})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	siteaccesses, err := db.GetSiteAccessFromUser(1)
+
+	// Check site access
+	if siteaccesses[0].Id != 1 {
+		t.Errorf("Site access id not inserted correctly")
+	}
+
+	if siteaccesses[0].SiteId != 5 {
+		t.Errorf("Site id not inserted correctly")
+	}
+
+	if siteaccesses[0].UserId != 1 {
+		t.Errorf("User id not inserted correctly")
+	}
+}
+
+func TestInsertMultipleSiteAccess(t *testing.T) {
+	err := db.InsertSiteAccess(&sqlite.SiteAccess{Id: 2, SiteId: 1, UserId: 3})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	err = db.InsertSiteAccess(&sqlite.SiteAccess{Id: 3, SiteId: 4, UserId: 3})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	siteaccesses, err := db.GetSiteAccessFromUser(3)
+	// Check site accesses
+	if len(siteaccesses) != 2 {
+		t.Errorf("Two site accesses not inserted")
+	}
+
+	// Check site access
+	if siteaccesses[0].Id != 2 {
+		t.Errorf("Site access id not inserted correctly")
+	}
+
+	if siteaccesses[0].SiteId != 1 {
+		t.Errorf("Site id not inserted correctly")
+	}
+
+	if siteaccesses[0].UserId != 3 {
+		t.Errorf("User id not inserted correctly")
+	}
+
+
+	// Second site access
+	if siteaccesses[1].Id != 3 {
+		t.Errorf("Site access id not inserted correctly")
+	}
+
+	if siteaccesses[1].SiteId != 4 {
+		t.Errorf("Site id not inserted correctly")
+	}
+
+	if siteaccesses[1].UserId != 3 {
+		t.Errorf("User id not inserted correctly")
 	}
 }

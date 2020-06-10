@@ -99,7 +99,7 @@ class DistributedLeap(Leap):
 
         # Computed remotely
         metadata = []
-        metadata.append(('authorization', 'Bearer ' + self.auth_token))
+        metadata.append(('authorization', self.auth_token))
         result = compute_stub.Compute(request, None, metadata=metadata)
 
         result = json.loads(result.response)

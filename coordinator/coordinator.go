@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -221,18 +223,55 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 	}
 }
 
+// This function is a middleware (interceptor) that runs
+// before each grpc request. It is only effectively triggered
+// in Compute requests and validates the token being used by
+// a user,
+//
+// ctx: Request context containing metada
+// req: The grpc request received
+// info: Contains request on the endpoint for the request
+// handler: interceptor handler
 func authenticate(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {
 
 	if info.FullMethod == "/proto.Coordinator/Compute" {
-		_, ok := metadata.FromIncomingContext(ctx)
+		md, ok := metadata.FromIncomingContext(ctx)
 
 		if !ok {
 			return nil, errors.New("Missing metadata.")
 		}
+
+		token, err := jwt.Parse(md["authorization"][0], validateAlg)
+
+		if err != nil {
+			return nil, errors.New("Token could not be authenticated")
+		}
+
+		_, ok = token.Claims.(jwt.MapClaims)
+
+		if ok && token.Valid {
+			return handler(ctx, req)
+		} else {
+			return nil, errors.New("Token could not be authenticated")
+		}
 	}
 
 	return handler(ctx, req)
+}
+
+// Helper function that checks whether the jwt token is using
+// the algorithm we expect.
+//
+// token: Jwt token
+func validateAlg(token *jwt.Token) (interface{}, error) {
+	if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+		errorMsg := fmt.Sprintf("Unexpected signing method: %v", token.Header["alg"])
+		return nil, errors.New(errorMsg)
+	}
+
+	// TODO: Generate secret key for signing instead of using testSecret
+	return []byte("testSecret"), nil
 }
 
 // TODO: Add request id to checkErr

@@ -34,6 +34,12 @@ const ADMIN = "admin"
 const DP_ONLY = "dp_only"
 const NON_DP  = "non_dp"
 
+type SiteAccess struct {
+	Id     int
+	SiteId int64
+	UserId int64
+}
+
 // Creates an in-memory database used by the coordinator to
 // retrieve and insert data
 //
@@ -165,6 +171,51 @@ func (db *Database) CreateSiteAccessTable() {
 	db.checkErr(err)
 	_, err = statement.Exec()
 	db.checkErr(err)
+}
+
+// Inserts a new site access to the table
+//
+// siteaccess: SiteAccess struc containing ids
+func (db *Database) InsertSiteAccess(siteAccess *SiteAccess) error {
+	statement, err := db.Database.Prepare("INSERT INTO site_access (id, site_id, user_id) VALUES (?, ?, ?)")
+	db.checkErr(err)
+	if err != nil {
+		return err
+	}
+
+	_, err = statement.Exec(siteAccess.Id, siteAccess.SiteId, siteAccess.UserId)
+	db.checkErr(err)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Returns all sites accessible for the user with the given ID.
+//
+// userId: Id of the user to return sites accessible
+func (db *Database) GetSiteAccessFromUser(userId int) ([]SiteAccess, error) {
+	rows, err := db.Database.Query("SELECT * FROM site_access WHERE user_id=?", userId)
+	db.checkErr(err)
+
+	if err != nil {
+		return []SiteAccess{}, err
+	}
+
+	lenRows := 0
+	site_accesses := []SiteAccess{}
+	for rows.Next() {
+		siteAccess := SiteAccess{}
+		rows.Scan(&siteAccess.Id, &siteAccess.SiteId, &siteAccess.UserId)
+		site_accesses = append(site_accesses, siteAccess)
+		lenRows++
+	}
+
+	if lenRows == 0 {
+		return []SiteAccess{}, errors.New("No site access for user")
+	}
+
+	return site_accesses, nil
 }
 
 // Logs an error.

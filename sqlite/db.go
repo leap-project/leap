@@ -22,9 +22,9 @@ type Query struct {
 }
 
 type User struct {
-	Id			int64
-	Name		string
-	SaltedPass 	string
+	Id          int64
+	Name        string
+	SaltedPass  string
 	BudgetSpent int64
 	Role        string
 }
@@ -32,7 +32,7 @@ type User struct {
 // Roles for users
 const ADMIN = "admin"
 const DP_ONLY = "dp_only"
-const NON_DP  = "non_dp"
+const NON_DP = "non_dp"
 
 type SiteAccess struct {
 	Id     int
@@ -55,7 +55,6 @@ func CreateDatabase(dbname string, log *logrus.Entry) *Database {
 	db.CreateQueryTable()
 	return &db
 }
-
 
 // Creates a table used to hold Leap users, their login
 // information and their role.

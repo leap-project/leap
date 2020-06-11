@@ -175,7 +175,7 @@ func (c *Coordinator) Serve() {
 
 		opts := []grpc.ServerOption{
 			grpc.Creds(creds),
-			grpc.UnaryInterceptor(authenticate),
+			grpc.UnaryInterceptor(c.interceptor),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -183,7 +183,7 @@ func (c *Coordinator) Serve() {
 	} else {
 
 		opts := []grpc.ServerOption{
-			grpc.UnaryInterceptor(authenticate),
+			grpc.UnaryInterceptor(c.interceptor),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -226,38 +226,66 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 // This function is a middleware (interceptor) that runs
 // before each grpc request. It is only effectively triggered
 // in Compute requests and validates the token being used by
-// a user,
+// a user and checks if user has permission to execute query.
 //
 // ctx: Request context containing metada
 // req: The grpc request received
-// info: Contains request on the endpoint for the request
+// info: Tells endpoint of request
 // handler: interceptor handler
-func authenticate(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
+func (c *Coordinator) interceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler) (interface{}, error) {
 
+	err := c.authenticate(ctx, info, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return handler(ctx, req)
+}
+
+// This function is called by the grpc interceptor and verifies
+// the token being used by the user.
+//
+// ctx: Request context containing metadata.
+// info: Tells endpoint of the request
+func (c *Coordinator) authenticate(ctx context.Context, info *grpc.UnaryServerInfo, req interface{}) error {
 	if info.FullMethod == "/proto.Coordinator/Compute" {
 		md, ok := metadata.FromIncomingContext(ctx)
 
 		if !ok {
-			return nil, errors.New("Missing metadata.")
+			return errors.New("Missing metadata.")
 		}
 
 		token, err := jwt.Parse(md["authorization"][0], validateAlg)
 
 		if err != nil {
-			return nil, errors.New("Token could not be authenticated")
+			return errors.New("Token could not be authenticated")
 		}
 
-		_, ok = token.Claims.(jwt.MapClaims)
+		claims, ok := token.Claims.(jwt.MapClaims)
 
-		if ok && token.Valid {
-			return handler(ctx, req)
-		} else {
-			return nil, errors.New("Token could not be authenticated")
+		if !ok || !token.Valid {
+			return errors.New("Token could not be authenticated")
+		}
+		err = c.checkPermissions(req.(*pb.ComputeRequest), claims)
+		checkErr(c, err)
+		if err != nil {
+			return err
 		}
 	}
+	return nil
+}
 
-	return handler(ctx, req)
+// Check role permissions
+//
+// claims: Claims carried over on jwt token.
+func (c *Coordinator) checkPermissions(req *pb.ComputeRequest, claims jwt.MapClaims) error {
+	username := claims["sub"].(string)
+	user := c.Database.GetUserWithUsername(username)
+	if user.Role == sqlite.DP_ONLY && req.LeapType != pb.LeapTypes_PRIVATE_PREDEFINED {
+		return errors.New("Permission mismatch: user tried to access non-dp query with role=" + user.Role)
+	}
+	return nil
 }
 
 // Helper function that checks whether the jwt token is using

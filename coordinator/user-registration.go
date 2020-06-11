@@ -6,8 +6,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 	pb "leap/proto"
-	"time"
 	"leap/sqlite"
+	"time"
 )
 
 type User struct {
@@ -60,9 +60,9 @@ func (c *Coordinator) AuthUser(ctx context.Context, req *pb.UserAuthReq) (*pb.Us
 	// Create token that lasts for 15 minutes
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"issuer": "leap",
-		"sub": req.User.Username,
-		"exp": time.Now().Add(15 * time.Minute),
-		"iat": time.Now().UTC().Unix(),
+		"sub":    req.User.Username,
+		"exp":    time.Now().Add(15 * time.Minute),
+		"iat":    time.Now().UTC().Unix(),
 	})
 
 	// TODO: Generate secret key for signing instead of using testSecret

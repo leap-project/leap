@@ -2,9 +2,9 @@ package leaptests
 
 import (
 	"database/sql"
+	"leap/sqlite"
 	"os"
 	"testing"
-	"leap/sqlite"
 )
 
 var db sqlite.Database

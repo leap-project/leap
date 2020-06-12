@@ -17,11 +17,13 @@ from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
 import cloudalgo.functions.privacy as leap_privacy
 import csv
+import requests
 
 import proto as pb
 from proto import site_algos_pb2_grpc
 from proto import computation_msgs_pb2
 from proto import availability_msgs_pb2
+from sitealgo import rc_sql_gen
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -189,8 +191,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # req: A leap request containing the selector to retrieve
     #      the data.
     def get_data(self, req):
-        s_filter = req["selector"]
-        data = self.get_data_from_src(s_filter)
+        selector = req["selector"]
+        data = self.get_data_from_src(selector)
         return data
 
 
@@ -198,11 +200,11 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # the records to perform a computation on.
     #
     # filter: The filter that is used to retrieve the Redcap data.
-    def get_data_from_src(self, filter=""):
+    def get_data_from_src(self, selector=""):
         if self.config["csv_true"] == "1":
             return self.get_csv_data()
         else:
-            return self.get_redcap_data(redCapUrl, redCapToken, filter)
+            return self.get_redcap_data(redCapUrl, redCapToken, selector)
 
 
     # TODO: Actually filter the data according to a user selector
@@ -218,10 +220,50 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # url: Url of the RedCap project
     # token: Token used to access RedCap project given in the url
-    # filterLogic: The filter to be applied to the results."""
-    def get_redcap_data(self, url, token, filter_logic):
-        # project = redcap.Project(url, token)
-        # patients = project.export_records(filter_logic=filter_logic)
-        # return patients
-        return [1,2,3,4]
+    # selector: 
+    def get_redcap_data(self, url, token, selector):
+        if type(selector) == "string":
+            return self.get_redcap_data_result(selector)
+        elif selector["type"] == "default":
+            return self.get_redcap_data_result(selector["filter"], selector["fields"])
+        elif selector["type"] == "sql":
+            query = rc_sql_gen.generator_map[selector["sql_func"]](selector["sql_options"])
+            return self.get_redcap_query_result(query)
+        return None
 
+    # Contacts a redCap project and returns the filtered records
+    # from this project
+    #
+    # filterLogic: The filter to be applied to the results.
+    def get_redcap_data_result(self, filter_logic = "", selected_fields = ""):
+        # Use the external module to get filtered data
+        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&page=getData"
+        form_data = {'auth': self.config["redcap_auth"], 'filters': filter_logic, 'fields': selected_fields}
+        r = requests.post(url, data = form_data)
+        jsondata = json.loads(r.text)
+
+        # if successful, return data as a dataframe
+        if (jsondata['success'] == True):
+            log.info("Successfully retrieved data from REDCap")
+            df = pandas.DataFrame(jsondata['data'])
+            return df
+        # if it failed, return None
+        log.error("Failed to retrieve data from REDCap, check your filter logic")
+        return None
+
+    # Runs the query on REDCap and gets the result of the query as a dataframe
+    #
+    # query: the SQL query that will run on REDCap
+    def get_redcap_query_result(self, query):
+        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&page=getQueryResult"
+        form_data = {'auth': self.config["redcap_auth"], 'query': query}
+        r = requests.post(url, data = form_data)
+        jsondata = json.loads(r.text)
+
+        # if successful, return data as a dataframe
+        if (jsondata['success'] == True):
+            log.info("Successfully executed SQL query and retrieved data from REDCap")
+            df = pandas.DataFrame(jsondata['data'])
+            return df
+        log.error("Failed to query REDCap, check your SQL")
+        return None

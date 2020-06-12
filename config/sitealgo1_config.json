@@ -5,5 +5,7 @@
   "secure_with_tls": "n",
   "cert": "../certs/sitealgo.crt",
   "key": "../certs/sitealgo.key",
-  "certificate_authority": "../certs/myCA.crt"
+  "certificate_authority": "../certs/myCA.crt",
+  "redcap_url": "http://localhost:8888/redcap91/api",
+  "redcap_auth": "f6f64571429a9d0050c4a56386f2b862"
 }

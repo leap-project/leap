@@ -17,6 +17,7 @@ type Query struct {
 	Id      int
 	ReqId   int64
 	UserId  int
+	SiteId  int
 	Epsilon float64
 	Delta   float64
 }
@@ -27,6 +28,11 @@ type User struct {
 	SaltedPass  string
 	BudgetSpent int64
 	Role        string
+}
+
+type Site struct {
+	Id		int64
+	Budget	float64
 }
 
 // Roles for users
@@ -51,6 +57,7 @@ func CreateDatabase(dbname string, log *logrus.Entry) *Database {
 	db.checkErr(err)
 	db.Database = database
 	db.CreateUserTable()
+	db.CreateSiteTable()
 	db.CreateSiteAccessTable()
 	db.CreateQueryTable()
 	return &db
@@ -111,7 +118,7 @@ func (db *Database) GetUserWithUsername(username string) *User {
 //
 // No args.
 func (db *Database) CreateQueryTable() {
-	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS query (id INTEGER PRIMARY KEY, req_id INTEGER, user_id INTEGER, epsilon REAL, delta REAL, FOREIGN KEY (user_id) REFERENCES user (id))")
+	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS query (id INTEGER PRIMARY KEY, req_id INTEGER, user_id INTEGER, site_id INTEGER, epsilon REAL, delta REAL, FOREIGN KEY (user_id) REFERENCES user (id))")
 	db.checkErr(err)
 	_, err = statement.Exec()
 	db.checkErr(err)
@@ -121,13 +128,13 @@ func (db *Database) CreateQueryTable() {
 //
 // query: Query struc containing the eps and delta values
 func (db *Database) InsertQuery(query Query) error {
-	statement, err := db.Database.Prepare("INSERT INTO query (req_id, user_id, epsilon, delta) VALUES (?, ?, ?, ?)")
+	statement, err := db.Database.Prepare("INSERT INTO query (req_id, user_id, site_id, epsilon, delta) VALUES (?, ?, ?, ?, ?)")
 	db.checkErr(err)
 	if err != nil {
 		return err
 	}
 
-	_, err = statement.Exec(query.ReqId, query.UserId, query.Epsilon, query.Delta)
+	_, err = statement.Exec(query.ReqId, query.UserId, query.SiteId, query.Epsilon, query.Delta)
 	db.checkErr(err)
 	if err != nil {
 		return err
@@ -150,7 +157,7 @@ func (db *Database) GetQueriesFromUser(userId int) ([]Query, error) {
 	queries := []Query{}
 	for rows.Next() {
 		query := Query{}
-		rows.Scan(&query.Id, &query.ReqId, &query.UserId, &query.Epsilon, &query.Delta)
+		rows.Scan(&query.Id, &query.ReqId, &query.UserId, &query.SiteId, &query.Epsilon, &query.Delta)
 		queries = append(queries, query)
 		lenRows++
 	}
@@ -166,7 +173,7 @@ func (db *Database) GetQueriesFromUser(userId int) ([]Query, error) {
 //
 // No args.
 func (db *Database) CreateSiteAccessTable() {
-	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS site_access (id INTEGER PRIMARY KEY, site_id INTEGER, user_id INTEGER, FOREIGN KEY (user_id) REFERENCES user (id))")
+	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS site_access (id INTEGER PRIMARY KEY, site_id INTEGER, user_id INTEGER, FOREIGN KEY (user_id) REFERENCES user (id), FOREIGN KEY (site_id) REFERENCES site_id (id))")
 	db.checkErr(err)
 	_, err = statement.Exec()
 	db.checkErr(err)
@@ -215,6 +222,66 @@ func (db *Database) GetSiteAccessFromUser(userId int) ([]SiteAccess, error) {
 	}
 
 	return site_accesses, nil
+}
+
+// Creates a table containing all the sites and privacy budgets
+//
+// No args.
+func (db *Database) CreateSiteTable() {
+	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS site (id INTEGER PRIMARY KEY, budget REAL)")
+	db.checkErr(err)
+	_, err = statement.Exec()
+	db.checkErr(err)
+}
+
+// Inserts a new site to the table
+//
+// site Site struc containing id and budget
+func (db *Database) InsertSite(site *Site) error {
+	statement, err := db.Database.Prepare("INSERT INTO site (id, budget) VALUES (?, ?)")
+	db.checkErr(err)
+	if err != nil {
+		return err
+	}
+
+	_, err = statement.Exec(site.Id, site.Budget)
+	db.checkErr(err)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Returns the site with the given site id.
+//
+// siteId: id of the site
+func (db *Database) GetSiteFromId(siteId int) Site {
+	row := db.Database.QueryRow("SELECT * FROM site WHERE id=?", siteId)
+	var id int64
+	var budget float64
+	err := row.Scan(&id, &budget)
+	db.checkErr(err)
+	site := Site{id, budget}
+	return site
+}
+
+// Returns the budget spent so far by a user for a specific site
+//
+// siteId: id of the site that is queried
+// userId: id of the user who has issued queries
+func (db* Database) GetSiteBudgetSpentByUser(siteId int, userId int) (float64, float64) {
+	rows, err := db.Database.Query("SELECT * FROM query WHERE user_id=? AND site_id=?", userId, siteId)
+	db.checkErr(err)
+
+	epsilonSum := float64(0)
+	deltaSum := float64(0)
+	for rows.Next() {
+		query := Query{}
+		rows.Scan(&query.Id, &query.ReqId, &query.UserId, &query.SiteId, &query.Epsilon, &query.Delta)
+		epsilonSum += query.Epsilon
+		deltaSum += query.Delta
+	}
+	return epsilonSum, deltaSum
 }
 
 // Logs an error.

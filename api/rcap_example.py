@@ -19,14 +19,13 @@ def predef_count_selector_sql():
     leap_predef.selector = selector
     return leap_predef
 
-def distributed(sites, username):
-    filter_fn = predef_count_selector_sql()
-    dist_leap = leap.DistributedLeap(filter_fn, "127.0.0.1:50000", username)
-    print("Count using REDCap's getData method with filters:")
+def distributed(sites, auth_token):
+    leap_fn = predef_count_selector_sql()
+    dist_leap = leap.DistributedLeap(leap_fn, "127.0.0.1:50000", auth_token)
     print(dist_leap.get_result(sites))
 
 
 if __name__ == "__main__":
-    # user_reg.register_user("TestUser1", "123456", "127.0.0.1:50000")
-    # auth_res = user_reg.authenticate_user("TestUser1", "123456", "127.0.0.1:50000")
-    distributed([1], "TestUser1")
+    #user_reg.register_user("TestUser2", "1234561", "127.0.0.1:50000")
+    auth_res = user_reg.authenticate_user("TestUser", "123456", "127.0.0.1:50000")
+    distributed([1], auth_res.token)

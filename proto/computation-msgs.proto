@@ -62,4 +62,6 @@ enum AlgoCodes {
     VARIANCE_ALGO = 4;
     FEDERATED_LEARNING_ALGO = 5;
     QUANTILE_ALGO = 6;
+    COUNT_ALGO_RC = 7;
+    COUNT_ALGO_RC_QUERY = 8;
 }

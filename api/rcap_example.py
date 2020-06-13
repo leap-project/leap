@@ -8,13 +8,13 @@ import api.register.user.registration as user_reg
 from proto import computation_msgs_pb2
 
 def predef_count_selector():
-    leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.COUNT_ALGO)
+    leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.COUNT_ALGO_RC)
     selector = {"type": "default", "filter": "[pain_past3backpain] = 1 and [yrbirth] < 1931"}
     leap_predef.selector = selector
     return leap_predef
 
 def predef_count_selector_sql():
-    leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.COUNT_ALGO)
+    leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.COUNT_ALGO_RC_QUERY)
     selector = {"type": "sql", "sql_func": "count", "sql_options": {"project_id": 13, "filter" : {'pain_past3backpain': "= 1", 'yrbirth': "< 1931"}}}
     leap_predef.selector = selector
     return leap_predef
@@ -27,5 +27,6 @@ def distributed(sites, username):
 
 
 if __name__ == "__main__":
-    user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
-    distributed([1], "TestUser")
+    # user_reg.register_user("TestUser1", "123456", "127.0.0.1:50000")
+    # auth_res = user_reg.authenticate_user("TestUser1", "123456", "127.0.0.1:50000")
+    distributed([1], "TestUser1")

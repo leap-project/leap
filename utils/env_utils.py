@@ -44,6 +44,10 @@ def load_from_fn_generator(gen_fn_name, fn_name, req, context, module=None, gen_
 def convert_algo_code(pb_enum):
     if pb_enum is computation_msgs_pb2.AlgoCodes.COUNT_ALGO:
         return "count_fn"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.COUNT_ALGO_RC:
+        return "count_fn_redcap"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.COUNT_ALGO_RC_QUERY:
+        return "count_fn_redcap_query"
     elif pb_enum is computation_msgs_pb2.AlgoCodes.PRIVATE_SITE_COUNT_ALGO:
         return "count_fn_site_dp"
     elif pb_enum is computation_msgs_pb2.AlgoCodes.PRIVATE_CLOUD_COUNT_ALGO:

@@ -31,8 +31,9 @@ type User struct {
 }
 
 type Site struct {
-	Id		int64
-	Budget	float64
+	Id				int64
+	EpsilonBudget	float64
+	DeltaBudget		float64
 }
 
 // Roles for users
@@ -228,7 +229,7 @@ func (db *Database) GetSiteAccessFromUser(userId int) ([]SiteAccess, error) {
 //
 // No args.
 func (db *Database) CreateSiteTable() {
-	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS site (id INTEGER PRIMARY KEY, budget REAL)")
+	statement, err := db.Database.Prepare("CREATE TABLE IF NOT EXISTS site (id INTEGER PRIMARY KEY, epsilon_budget REAL, delta_budget REAL)")
 	db.checkErr(err)
 	_, err = statement.Exec()
 	db.checkErr(err)
@@ -238,13 +239,13 @@ func (db *Database) CreateSiteTable() {
 //
 // site Site struc containing id and budget
 func (db *Database) InsertSite(site *Site) error {
-	statement, err := db.Database.Prepare("INSERT INTO site (id, budget) VALUES (?, ?)")
+	statement, err := db.Database.Prepare("INSERT INTO site (id, epsilon_budget, delta_budget) VALUES (?, ?, ?)")
 	db.checkErr(err)
 	if err != nil {
 		return err
 	}
 
-	_, err = statement.Exec(site.Id, site.Budget)
+	_, err = statement.Exec(site.Id, site.EpsilonBudget, site.DeltaBudget)
 	db.checkErr(err)
 	if err != nil {
 		return err
@@ -258,10 +259,11 @@ func (db *Database) InsertSite(site *Site) error {
 func (db *Database) GetSiteFromId(siteId int) Site {
 	row := db.Database.QueryRow("SELECT * FROM site WHERE id=?", siteId)
 	var id int64
-	var budget float64
-	err := row.Scan(&id, &budget)
+	var epsilonBudget float64
+	var deltaBudget float64
+	err := row.Scan(&id, &epsilonBudget, &deltaBudget)
 	db.checkErr(err)
-	site := Site{id, budget}
+	site := Site{id, epsilonBudget, deltaBudget}
 	return site
 }
 

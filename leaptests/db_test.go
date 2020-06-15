@@ -211,7 +211,7 @@ func TestInsertMultipleUsers(t *testing.T) {
 }
 
 func TestInsertSite(t *testing.T) {
-	err := db.InsertSite(&sqlite.Site{Id: 5, Budget: 2.5})
+	err := db.InsertSite(&sqlite.Site{Id: 5, EpsilonBudget: 2.5, DeltaBudget: 0.5})
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -222,18 +222,22 @@ func TestInsertSite(t *testing.T) {
 		t.Errorf("Site id not inserted correctly")
 	}
 
-	if site.Budget != 2.5 {
-		t.Errorf("Site budget not inserted correctly")
+	if site.EpsilonBudget != 2.5 {
+		t.Errorf("Site epsilon budget not inserted correctly")
+	}
+
+	if site.DeltaBudget != 0.5 {
+		t.Errorf("Site delta budget not inserted correctly")
 	}
 }
 
 func TestInsertMultipleSites(t *testing.T) {
-	err := db.InsertSite(&sqlite.Site{Id: 1, Budget: 0})
+	err := db.InsertSite(&sqlite.Site{Id: 1, EpsilonBudget: 0, DeltaBudget: 0.1})
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 
-	err = db.InsertSite(&sqlite.Site{Id: 4, Budget: 0.5})
+	err = db.InsertSite(&sqlite.Site{Id: 4, EpsilonBudget: 0.5, DeltaBudget: 0.75})
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -244,8 +248,12 @@ func TestInsertMultipleSites(t *testing.T) {
 		t.Errorf("Site id not inserted correctly")
 	}
 
-	if site.Budget != 0 {
-		t.Errorf("Site budget not inserted correctly")
+	if site.EpsilonBudget != 0 {
+		t.Errorf("Site epsilon budget not inserted correctly")
+	}
+
+	if site.DeltaBudget != 0.1 {
+		t.Errorf("Site delta budget not inserted correctly")
 	}
 
 	site = db.GetSiteFromId(4)
@@ -254,8 +262,12 @@ func TestInsertMultipleSites(t *testing.T) {
 		t.Errorf("Site id not inserted correctly")
 	}
 
-	if site.Budget != 0.5 {
-		t.Errorf("Site budget not inserted correctly")
+	if site.EpsilonBudget != 0.5 {
+		t.Errorf("Site epsilon budget not inserted correctly")
+	}
+
+	if site.DeltaBudget != 0.75 {
+		t.Errorf("Site delta budget not inserted correctly")
 	}
 }
 
@@ -324,4 +336,13 @@ func TestInsertMultipleSiteAccess(t *testing.T) {
 	if siteaccesses[1].UserId != 3 {
 		t.Errorf("User id not inserted correctly")
 	}
+}
+
+func TestGetSiteBudgetSpentByUser(t *testing.T) {
+	// TODO
+	// insert new site
+	// insert new user
+	// insert new siteaccess
+	// insert some queries
+	// sum up epsilon & deltas
 }

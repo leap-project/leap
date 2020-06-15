@@ -288,6 +288,34 @@ func (c *Coordinator) checkPermissions(req *pb.ComputeRequest, claims jwt.MapCla
 	return nil
 }
 
+// Check if query issued will go over budget for a site
+//
+// req: The grpc computation request received
+func (c *Coordinator) checkSiteBudget(req *pb.ComputeRequest) error {
+	// todo: get current request budget & add to spent budget
+	// todo: get userId from proto message
+	userId := 0
+	sites := req.GetSites()
+	newQueryEpsilon := float64(0)
+	newQueryDelta := float64(0)
+
+	// Check budget for all sites
+	for _, site := range sites {
+		siteId := int(site)
+		site := c.Database.GetSiteFromId(siteId)
+		epsilonBudget := site.EpsilonBudget
+		deltaBudget := site.DeltaBudget
+		epsilonSpent, deltaSpent := c.Database.GetSiteBudgetSpentByUser(siteId, userId)
+		if epsilonSpent + newQueryEpsilon > epsilonBudget {
+			return errors.New("Budget error: user tried to issue query with insufficient epsilon budget")
+		}
+		if deltaSpent + newQueryDelta > deltaBudget {
+			return errors.New("Budget error: user tried to issue query with insufficient delta budget")
+		}
+	}
+	return nil
+}
+
 // Helper function that checks whether the jwt token is using
 // the algorithm we expect.
 //

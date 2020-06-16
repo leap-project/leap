@@ -64,4 +64,6 @@ enum AlgoCodes {
     QUANTILE_ALGO = 6;
     COUNT_ALGO_RC = 7;
     COUNT_ALGO_RC_QUERY = 8;
+    MAX_ALGO_RC = 9;
+    MEAN_ALGO = 10;
 }

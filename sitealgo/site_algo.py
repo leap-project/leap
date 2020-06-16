@@ -225,7 +225,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         if type(selector) == "string":
             return self.get_redcap_data_result(selector)
         elif selector["type"] == "default":
-            return self.get_redcap_data_result(selector["filter"], selector["fields"])
+            return self.get_redcap_data_result(selector.get("filter", ""), selector.get("fields", ""))
         elif selector["type"] == "sql":
             query = rc_sql_gen.generator_map[selector["sql_func"]](selector["sql_options"])
             return self.get_redcap_query_result(query)
@@ -248,7 +248,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             df = pandas.DataFrame(jsondata['data'])
             return df
         # if it failed, return None
-        log.error("Failed to retrieve data from REDCap, check your filter logic")
+        log.error("Failed to retrieve data from REDCap:")
+        log.error(jsondata["error"])
         return None
 
     # Runs the query on REDCap and gets the result of the query as a dataframe
@@ -265,5 +266,6 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             log.info("Successfully executed SQL query and retrieved data from REDCap")
             df = pandas.DataFrame(jsondata['data'])
             return df
-        log.error("Failed to query REDCap, check your SQL")
+        log.error("Failed to query REDCap:")
+        log.error(jsondata["error"])
         return None

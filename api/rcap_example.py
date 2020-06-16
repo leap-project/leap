@@ -19,8 +19,29 @@ def predef_count_selector_sql():
     leap_predef.selector = selector
     return leap_predef
 
+def predef_max_selector_sql():
+    leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.MAX_ALGO_RC)
+    selector = {"type": "sql", "sql_func": "max", "sql_options": {"project_id": 13, "filter" : {'pain_past3backpain': "= 1", 'yrbirth': "< 1931"}, "field": "yrbirth"}}
+    leap_predef.selector = selector
+    return leap_predef
+
+def predef_mean_selector_sql():
+    leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.MEAN_ALGO)
+    selector = {"type": "default",  "filter": "[pain_past3backpain] = 1 and [yrbirth] < 1960"}
+    
+    # def init_state_fn():
+    #     state = {
+    #         "i": 0,
+    #         "col": "yrbirth"
+    #     }
+    #     return state
+    
+    # leap_predef.init_state_fn = init_state_fn
+    leap_predef.selector = selector
+    return leap_predef
+
 def distributed(sites, auth_token):
-    leap_fn = predef_count_selector_sql()
+    leap_fn = predef_mean_selector_sql()
     dist_leap = leap.DistributedLeap(leap_fn, "127.0.0.1:50000", auth_token)
     print(dist_leap.get_result(sites))
 

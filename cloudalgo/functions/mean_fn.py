@@ -9,8 +9,8 @@ def map_fns():
     def map_fn1(data, state):
         col = data[state["col"]].values.astype('float')
         result = {
-            "sum": np.sum(data[col]),
-            "count": len(data[col])
+            "sum": np.sum(col),
+            "count": len(col)
         }
         return json.dumps(result)
     return [map_fn1]
@@ -46,11 +46,11 @@ def stop_fn(agg_result, state):
 def postprocessing_fn(agg_result, state):
     return agg_result
 
-# def init_state_fn():
-#     state = {
-#         "i": 0,
-#         "col": "yrbirth"
-#     }
-#     return state
+def init_state_fn():
+    state = {
+        "i": 0,
+        "col": "yrbirth"
+    }
+    return state
 
 

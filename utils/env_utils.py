@@ -60,4 +60,8 @@ def convert_algo_code(pb_enum):
         return "fl_fn"
     elif pb_enum is computation_msgs_pb2.AlgoCodes.QUANTILE_ALGO:
         return "quantile_fn"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.MAX_ALGO_RC:
+        return "max_fn"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.MEAN_ALGO:
+        return "mean_fn"
 

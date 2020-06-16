@@ -7,9 +7,8 @@ import numpy as np
 def map_fns():
     # Sum a particular column
     def map_fn1(data, state):
-        col = data[state["col"]].values.astype('float')
         result = {
-            "max": np.max(data[col])
+            "max": int(data.iloc[0][0])
         }
         return json.dumps(result)
     return [map_fn1]
@@ -44,11 +43,10 @@ def stop_fn(agg_result, state):
 def postprocessing_fn(agg_result, state):
     return agg_result
 
-# def init_state_fn():
-#     state = {
-#         "i": 0,
-#         "col": "yrbirth"
-#     }
-#     return state
+def init_state_fn():
+    state = {
+        "i": 0
+    }
+    return state
 
 

@@ -114,7 +114,7 @@ def fed_learn_exp():
     return leap_fed_learn
 
 def distributed(sites, auth_token):
-    leap_exp_fn = predef_count_exp()
+    leap_exp_fn = predef_private_cloud_count_exp()
     dist_leap = leap.DistributedLeap(leap_exp_fn, "127.0.0.1:50000", auth_token)
     print(dist_leap.get_result(sites))
 

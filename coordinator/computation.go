@@ -24,7 +24,6 @@ type ResultFromSite struct {
 // req: Compute request specifying the algo to be used.
 func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.ComputeResponse, error) {
 	c.Log.Info("Received compute request.")
-
 	c.ReqCounterMux.Lock()
 	req.Id = c.ReqCounter
 	c.ReqCounter++

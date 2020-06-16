@@ -164,8 +164,8 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         request.id = req.id
         request.leap_type = req.leap_type
         request.algo_code = req.algo_code
-
         request.sites.extend(sites)
+
         return request
 
     # Gets the grpc stub to send a message to the coordinator.

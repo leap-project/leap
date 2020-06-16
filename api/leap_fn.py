@@ -167,8 +167,8 @@ class PrivatePredefinedFunction(PredefinedFunction):
     # delta: Privacy parameter
     def __init__(self, algo_code, epsilon, delta):
         super().__init__(algo_code)
-        self.epsilon = epsilon
-        self.delta = delta
+        self.eps = epsilon
+        self.delt = delta
         self.leap_type = pb.computation_msgs_pb2.LeapTypes.PRIVATE_PREDEFINED
 
     def validate(self):
@@ -177,8 +177,8 @@ class PrivatePredefinedFunction(PredefinedFunction):
     # Creates a request with epsilon and delta.
     def create_request(self):
         req = super().create_request()
-        req["epsilon"] = self.epsilon
-        req["delta"] = self.delta
+        req["epsilon"] = self.eps
+        req["delta"] = self.delt
         return req
 
 

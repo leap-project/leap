@@ -117,6 +117,13 @@ class DistributedLeap(Leap):
 
         if hasattr(self.leap_function, 'algo_code'):
             request.algo_code = self.leap_function.algo_code
+
+        if hasattr(self.leap_function, "eps"):
+            request.eps = self.leap_function.eps
+
+        if hasattr(self.leap_function, "delt"):
+            request.delt = self.leap_function.delt
+
         request.leap_type = self.leap_function.leap_type
         request.sites.extend(sites)
         return request

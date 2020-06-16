@@ -9,14 +9,16 @@ message ComputeRequest {
     string req = 2;
     LeapTypes leap_type = 3;
     AlgoCodes algo_code = 4;
-    repeated int64 sites = 5;
+    float eps = 5;
+    float delt = 6;
+    repeated int64 sites = 7;
 }
 
 // A generic JSON encoded response
 message ComputeResponse {
     string response = 1;
-    int64 eps = 2;
-    int64 delt = 3;
+    float eps = 2;
+    float delt = 3;
     bool private = 4;
     repeated int64 unavailable_sites = 5;
 }
@@ -27,14 +29,12 @@ message MapRequest {
     string req = 2;
     LeapTypes leap_type = 3;
     AlgoCodes algo_code = 4;
-    repeated int64 sites = 5;
+    repeated int64 sites = 7;
 }
 
 // A response from a map computation
 message MapResponse {
     string response = 1;
-    int64 eps = 2;
-    int64 delt = 3;
 }
 
 // The map responses returned by the algorithms in different sites.

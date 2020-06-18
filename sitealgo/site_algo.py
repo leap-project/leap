@@ -227,7 +227,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         elif selector["type"] == "default":
             return self.get_redcap_data_result(selector.get("filter", ""), selector.get("fields", ""))
         elif selector["type"] == "sql":
-            query = rc_sql_gen.generator_map[selector["sql_func"]](selector["sql_options"])
+            query_gen_func = rc_sql_gen.generator_map[selector["sql_func"]](selector["sql_options"])
+            query = query_gen_func["generate"]()
             return self.get_redcap_query_result(query)
         return None
 

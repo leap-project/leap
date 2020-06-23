@@ -271,7 +271,7 @@ func (db *Database) GetSiteFromId(siteId int) Site {
 //
 // siteId: id of the site that is queried
 // userId: id of the user who has issued queries
-func (db* Database) GetSiteBudgetSpentByUser(siteId int, userId int) (float64, float64) {
+func (db* Database) GetSiteBudgetSpentByUser(siteId int, userId int64) (float64, float64) {
 	rows, err := db.Database.Query("SELECT * FROM query WHERE user_id=? AND site_id=?", userId, siteId)
 	db.checkErr(err)
 

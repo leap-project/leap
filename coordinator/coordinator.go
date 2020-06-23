@@ -290,14 +290,33 @@ func (c *Coordinator) checkPermissions(req *pb.ComputeRequest, claims jwt.MapCla
 
 // Check if query issued will go over budget for a site
 //
-// req: The grpc computation request received
-func (c *Coordinator) checkSiteBudget(req *pb.ComputeRequest) error {
-	// todo: get current request budget & add to spent budget
-	// todo: get userId from proto message
-	userId := 0
+// req: The compute request received
+func (c *Coordinator) checkSiteBudget(ctx context.Context, req *pb.ComputeRequest) error {
+	// TODO: clean up duplicated code for extracting user id from jwt token
+	// Get user id from metadata
+	md, ok := metadata.FromIncomingContext(ctx)
+
+	if !ok {
+		return errors.New("Missing metadata.")
+	}
+
+	token, err := jwt.Parse(md["authorization"][0], validateAlg)
+
+	if err != nil {
+		return errors.New("Token could not be authenticated")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return errors.New("Token could not be authenticated")
+	}
+
+	username := claims["sub"].(string)
+	user := c.Database.GetUserWithUsername(username)
+	userId := user.Id
 	sites := req.GetSites()
-	newQueryEpsilon := float64(0)
-	newQueryDelta := float64(0)
+	queryEpsilon := float64(req.Eps)
+	queryDelta := float64(req.Delt)
 
 	// Check budget for all sites
 	for _, site := range sites {
@@ -306,10 +325,10 @@ func (c *Coordinator) checkSiteBudget(req *pb.ComputeRequest) error {
 		epsilonBudget := site.EpsilonBudget
 		deltaBudget := site.DeltaBudget
 		epsilonSpent, deltaSpent := c.Database.GetSiteBudgetSpentByUser(siteId, userId)
-		if epsilonSpent + newQueryEpsilon > epsilonBudget {
+		if epsilonSpent + queryEpsilon > epsilonBudget {
 			return errors.New("Budget error: user tried to issue query with insufficient epsilon budget")
 		}
-		if deltaSpent + newQueryDelta > deltaBudget {
+		if deltaSpent + queryDelta > deltaBudget {
 			return errors.New("Budget error: user tried to issue query with insufficient delta budget")
 		}
 	}

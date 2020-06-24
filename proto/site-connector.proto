@@ -4,6 +4,7 @@ option go_package=".;proto";
 
 import "proto/computation-msgs.proto";
 import "proto/availability-msgs.proto";
+import "proto/selector-verification-msgs.proto";
 
 // RPC service at a site connector that will handle requests from site algorithms
 service SiteConnector {
@@ -13,5 +14,8 @@ service SiteConnector {
 
     // Pinged by the coordinator to determine whether a site is available
     rpc SiteAvailable (SiteAvailableReq) returns (SiteAvailableRes) {}
+
+    // Sends a request to the site to verify the selector
+    rpc VerifySelector (SelectorVerificationReq) returns (SelectorVerificationRes) {}
 
 }

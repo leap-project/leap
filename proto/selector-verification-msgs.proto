@@ -1,0 +1,26 @@
+syntax = "proto3";
+package proto;
+option go_package = ".;proto";
+
+// Message sent to a site asking it to verify the selector
+message SelectorVerificationReq {
+  string selector = 2;
+  bool isSelectorString = 3;
+}
+
+// Message returned from a site indicating whether verification was successful
+message SelectorVerificationRes {
+  bool success = 2;
+  string error = 3;
+}
+
+// Message sent to verify the selector across all the sites 
+message SelectorVerificationsReq {
+  string selector = 1;
+  bool isSelectorString = 2;
+}
+
+// Message returned with a list of verification results
+message SelectorVerificationsRes {
+  repeated SelectorVerificationRes responses = 1;
+}

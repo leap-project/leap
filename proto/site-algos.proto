@@ -4,6 +4,7 @@ option go_package=".;proto";
 
 import "proto/computation-msgs.proto";
 import "proto/availability-msgs.proto";
+import "proto/selector-verification-msgs.proto";
 
 // To compile the protobuf to Go run the following inside the protoBuf folder:
 // protoc -I=. --go_out=plugins=grpc:.  site-algos.proto
@@ -20,5 +21,8 @@ service SiteAlgo {
 
     // Pinged by the site-connector to determine whether the site-algo is on
     rpc SiteAvailable (SiteAvailableReq) returns (SiteAvailableRes) {}
+
+    // Perfroms verification on the selector and returns a success
+    rpc VerifySelector (SelectorVerificationReq) returns (SelectorVerificationRes) {}
 
 }

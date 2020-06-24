@@ -23,7 +23,8 @@ import proto as pb
 from proto import site_algos_pb2_grpc
 from proto import computation_msgs_pb2
 from proto import availability_msgs_pb2
-from sitealgo import rc_sql_gen
+from proto import selector_verification_msgs_pb2
+from sitealgo import rc_sql_gen, codes
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -145,6 +146,33 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         res.site.available = True
         return res
 
+    #TODO: complete this
+    def VerifySelector(self, request, context):
+        log.info("Recieved request to verify selector")
+        res = selector_verification_msgs_pb2.SelectorVerificationRes()
+        selector = request.selector
+        if (request.isSelectorString): 
+            #TODO: test string for valid REDCap getData filter format
+            res.success = True
+        else:
+            try:
+                selector_object = json.loads(selector)
+            except ValueError as e:
+                res.success = False
+                res.error = "Invalid JSON"
+
+            if selector_object["type"] == codes.SQL:
+                gen_fn = rc_sql_gen.generator_map[selector_object["sql_func"]](selector_object["sql_options"])
+                validation_res = gen_fn["validate"]()
+                res.success = validation_res["valid"]
+                res.error = validation_res["error"]
+                
+            else: 
+                #TODO: check DEFAULT case
+                res.success = False
+        
+        return res
+        
 
     # Gets the protobuf message for a map response
     #

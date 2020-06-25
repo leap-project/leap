@@ -34,7 +34,6 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	if err == nil {
 		c.Log.Info("Sufficient budget for compute request.")
 	} else {
-		c.Log.Error(err)
 		return nil, err
 	}
 

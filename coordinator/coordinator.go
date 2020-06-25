@@ -317,6 +317,7 @@ func (c *Coordinator) checkSiteBudget(ctx context.Context, req *pb.ComputeReques
 	sites := req.GetSites()
 	queryEpsilon := float64(req.Eps)
 	queryDelta := float64(req.Delt)
+	allSitesOverBudget := true
 
 	// Check budget for all sites
 	for _, site := range sites {
@@ -325,12 +326,16 @@ func (c *Coordinator) checkSiteBudget(ctx context.Context, req *pb.ComputeReques
 		epsilonBudget := site.EpsilonBudget
 		deltaBudget := site.DeltaBudget
 		epsilonSpent, deltaSpent := c.Database.GetSiteBudgetSpentByUser(siteId, userId)
-		if epsilonSpent + queryEpsilon > epsilonBudget {
-			return errors.New("Budget error: user tried to issue query with insufficient epsilon budget")
+		if (epsilonSpent + queryEpsilon > epsilonBudget) || (deltaSpent + queryDelta > deltaBudget) {
+			c.Log.WithFields(logrus.Fields{"site-id": siteId}).Info("Budget error: user tried to issue query with insufficient budget at site")
+		} else {
+			// has sufficient budget for at least 1 site
+			allSitesOverBudget = false
 		}
-		if deltaSpent + queryDelta > deltaBudget {
-			return errors.New("Budget error: user tried to issue query with insufficient delta budget")
-		}
+	}
+
+	if allSitesOverBudget {
+		return errors.New("Budget error: user tried to issue query with insufficient budget at all sites")
 	}
 	return nil
 }

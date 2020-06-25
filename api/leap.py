@@ -133,3 +133,55 @@ class DistributedLeap(Leap):
     def _create_request_obj(self):
         request = pb.computation_msgs_pb2.ComputeRequest()
         return request
+
+class DistributedSelectorVerification():
+
+    # Constructor
+    #
+    # leap_function: An algorithm to be run in Leap.
+    def __init__(self, selector, coord_ip_port, auth_token):
+        self.selector = selector
+        self.coord_ip_port = coord_ip_port
+        self.auth_token = auth_token
+
+    # Gets the result of performing the selected algorithm
+    # on the filtered data.
+    def get_result(self, sites):
+        request = self._create_computation_request(sites)
+
+        compute_stub = self._get_compute_stub()
+
+        # Computed remotely
+        metadata = []
+        metadata.append(('authorization', self.auth_token))
+        result = compute_stub.VerifySelector(request, None, metadata=metadata)
+        res = []
+        for resp in result.responses:
+            res.append({"success": resp.success, "error": resp.error})
+
+        return res
+
+    # Uses protobuf to create a computation request.
+    def _create_computation_request(self, sites):
+        request = self._create_request_obj()
+
+        request.selector = json.dumps(self.selector)
+        if (type(self.selector) == "string"):
+            request.isSelectorString = True
+        else:
+            request.isSelectorString = False
+
+        return request
+
+    # Gets the stub from the cloud grpc service. This stub
+    # is used to send messages to the cloud algos.
+    def _get_compute_stub(self):
+        # TODO: Don't harcode ip address
+        channel = grpc.insecure_channel(self.coord_ip_port)
+        stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
+        return stub
+
+    # Creates a protobuf request object for selector verification
+    def _create_request_obj(self):
+        request = pb.selector_verification_msgs_pb2.SelectorVerificationsReq()
+        return request

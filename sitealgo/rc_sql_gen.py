@@ -19,8 +19,6 @@ def gen_count(options):
             return {"valid": False, "error": "project_id is missing in sql-options"}
         elif ("filter" not in options):
             return {"valid": False, "error": "filter is missing in sql-options"}
-        elif (type(options["project_id"]) != "number"):
-            return {"valid": False, "error": "project_id is not a number"}
         else:
             return {"valid": True}
 
@@ -50,8 +48,6 @@ def gen_max(options):
             return {"valid": False, "error": "'filter' is missing in sql-options"}
         elif ("field" not in options):
             return {"valid": False, "error": "'field' to pick max from is missing in sql-options"}
-        elif (type(options["project_id"]) != "number"):
-            return {"valid": False, "error": "project_id is not a number"}
         else:
             return {"valid": True}
 

@@ -9,6 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	pb "leap/proto"
 	"strconv"
+	"leap/sqlite"
 )
 
 // TODO: Do we assume a site cannot register with another site's id?
@@ -34,6 +35,13 @@ func (c *Coordinator) RegisterSite(ctx context.Context, req *pb.SiteRegReq) (*pb
 			ipPort:    ipPort,
 		}
 		c.SiteConnectors.Set(siteId, site)
+
+		// TODO: set budget per site
+		err := c.Database.InsertSite(&sqlite.Site{Id: siteId, EpsilonBudget: 1, DeltaBudget: 1})
+		if err != nil {
+			return &pb.SiteRegRes{Success: false}, err
+		}
+
 		msg := "Site " + strconv.Itoa(int(siteId)) + " registered successfully"
 		response := pb.SiteRegRes{Success: true, Msg: msg}
 		c.Log.WithFields(logrus.Fields{"site-id": req.SiteId}).Info("Site successfully registered.")

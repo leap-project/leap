@@ -29,6 +29,14 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	c.ReqCounter++
 	c.ReqCounterMux.Unlock()
 
+	err := c.checkSiteBudget(ctx, req)
+	checkErr(c, err)
+	if err == nil {
+		c.Log.Info("Sufficient budget for compute request.")
+	} else {
+		return nil, err
+	}
+
 	conn, err := c.Dial(c.Conf.CloudAlgoIpPort, c.Conf.CloudAlgoCN)
 
 	checkErr(c, err)

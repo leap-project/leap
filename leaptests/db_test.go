@@ -22,6 +22,7 @@ func setup() {
 	db.Database = database
 	db.CreateQueryTable()
 	db.CreateUserTable()
+	db.CreateSiteTable()
 	db.CreateSiteAccessTable()
 }
 
@@ -31,7 +32,7 @@ func teardown() {
 }
 
 func TestInsertQuery(t *testing.T) {
-	err := db.InsertQuery(sqlite.Query{ReqId: 1, UserId: 2, Epsilon: 0.1, Delta: 0})
+	err := db.InsertQuery(sqlite.Query{ReqId: 1, UserId: 2, SiteId: 3, Epsilon: 0.1, Delta: 0})
 
 	if err != nil {
 		t.Errorf(err.Error())
@@ -50,6 +51,10 @@ func TestInsertQuery(t *testing.T) {
 		t.Errorf("User id not inserted correctly")
 	}
 
+	if queries[0].SiteId != 3 {
+		t.Errorf("Site id not inserted correctly")
+	}
+
 	if queries[0].Epsilon != 0.1 {
 		t.Errorf("Epsilon not inserted correctly")
 	}
@@ -61,12 +66,12 @@ func TestInsertQuery(t *testing.T) {
 
 func TestMultipleInserts(t *testing.T) {
 
-	err := db.InsertQuery(sqlite.Query{ReqId: 2, UserId: 4, Epsilon: 0.1, Delta: 0})
+	err := db.InsertQuery(sqlite.Query{ReqId: 2, UserId: 4, SiteId: 5, Epsilon: 0.1, Delta: 0})
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 
-	err = db.InsertQuery(sqlite.Query{ReqId: 3, UserId: 4, Epsilon: 0.2, Delta: 0.3})
+	err = db.InsertQuery(sqlite.Query{ReqId: 3, UserId: 4, SiteId: 6, Epsilon: 0.2, Delta: 0.3})
 	if err != nil {
 		t.Errorf(err.Error())
 	}
@@ -86,6 +91,10 @@ func TestMultipleInserts(t *testing.T) {
 		t.Errorf("User id not inserted correctly")
 	}
 
+	if queries[0].SiteId != 5 {
+		t.Errorf("Site id not inserted correctly")
+	}
+
 	if queries[0].Epsilon != 0.1 {
 		t.Errorf("Epsilon not inserted correctly")
 	}
@@ -101,6 +110,10 @@ func TestMultipleInserts(t *testing.T) {
 
 	if queries[1].UserId != 4 {
 		t.Errorf("User id not inserted correctly")
+	}
+
+	if queries[1].SiteId != 6 {
+		t.Errorf("Site id not inserted correctly")
 	}
 
 	if queries[1].Epsilon != 0.2 {
@@ -197,6 +210,67 @@ func TestInsertMultipleUsers(t *testing.T) {
 	}
 }
 
+func TestInsertSite(t *testing.T) {
+	err := db.InsertSite(&sqlite.Site{Id: 5, EpsilonBudget: 2.5, DeltaBudget: 0.5})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	site := db.GetSiteFromId(5)
+	// Check site
+	if site.Id != 5 {
+		t.Errorf("Site id not inserted correctly")
+	}
+
+	if site.EpsilonBudget != 2.5 {
+		t.Errorf("Site epsilon budget not inserted correctly")
+	}
+
+	if site.DeltaBudget != 0.5 {
+		t.Errorf("Site delta budget not inserted correctly")
+	}
+}
+
+func TestInsertMultipleSites(t *testing.T) {
+	err := db.InsertSite(&sqlite.Site{Id: 1, EpsilonBudget: 0, DeltaBudget: 0.1})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	err = db.InsertSite(&sqlite.Site{Id: 4, EpsilonBudget: 0.5, DeltaBudget: 0.75})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	site := db.GetSiteFromId(1)
+	// First site
+	if site.Id != 1 {
+		t.Errorf("Site id not inserted correctly")
+	}
+
+	if site.EpsilonBudget != 0 {
+		t.Errorf("Site epsilon budget not inserted correctly")
+	}
+
+	if site.DeltaBudget != 0.1 {
+		t.Errorf("Site delta budget not inserted correctly")
+	}
+
+	site = db.GetSiteFromId(4)
+	// Second site
+	if site.Id != 4 {
+		t.Errorf("Site id not inserted correctly")
+	}
+
+	if site.EpsilonBudget != 0.5 {
+		t.Errorf("Site epsilon budget not inserted correctly")
+	}
+
+	if site.DeltaBudget != 0.75 {
+		t.Errorf("Site delta budget not inserted correctly")
+	}
+}
+
 func TestInsertSiteAccess(t *testing.T) {
 	err := db.InsertSiteAccess(&sqlite.SiteAccess{Id: 1, SiteId: 5, UserId: 1})
 	if err != nil {
@@ -261,5 +335,47 @@ func TestInsertMultipleSiteAccess(t *testing.T) {
 
 	if siteaccesses[1].UserId != 3 {
 		t.Errorf("User id not inserted correctly")
+	}
+}
+
+func TestGetSiteBudgetSpentByUser(t *testing.T) {
+	// insert new site
+	err := db.InsertSite(&sqlite.Site{Id: 11, EpsilonBudget: 0.5, DeltaBudget: 0.1})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	// insert new user
+	err = db.InsertUser(&sqlite.User{Id: 22, Name: "Max", SaltedPass: "pw123", BudgetSpent: 0, Role: "admin"})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	// insert new siteaccess
+	err = db.InsertSiteAccess(&sqlite.SiteAccess{Id: 5, SiteId: 11, UserId: 22})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	// insert some queries
+	err = db.InsertQuery(sqlite.Query{Id: 200, ReqId: 10, UserId: 22, SiteId: 11, Epsilon: 0, Delta: 0})
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+	eps, delta := db.GetSiteBudgetSpentByUser(11, 22)
+	if eps != 0 {
+		t.Errorf("Epsilon for site is retrieved incorrectly")
+	}
+	if delta != 0 {
+		t.Errorf("Delta for site is retrieved incorrectly")
+	}
+
+	err = db.InsertQuery(sqlite.Query{Id: 201, ReqId: 11, UserId: 22, SiteId: 11, Epsilon: 1.0, Delta: 0.9})
+	err = db.InsertQuery(sqlite.Query{Id: 202, ReqId: 12, UserId: 22, SiteId: 11, Epsilon: 0.1, Delta: 1.3})
+
+	// sum up epsilon & deltas
+	eps, delta = db.GetSiteBudgetSpentByUser(11, 22)
+	if eps != 1.1 {
+		t.Errorf("Epsilon for site is retrieved incorrectly")
+	}
+	if delta != 2.2 {
+		t.Errorf("Delta for site is retrieved incorrectly")
 	}
 }

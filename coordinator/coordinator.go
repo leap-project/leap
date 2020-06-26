@@ -288,6 +288,58 @@ func (c *Coordinator) checkPermissions(req *pb.ComputeRequest, claims jwt.MapCla
 	return nil
 }
 
+// Check if query issued will go over budget for a site
+//
+// req: The compute request received
+func (c *Coordinator) checkSiteBudget(ctx context.Context, req *pb.ComputeRequest) error {
+	// TODO: clean up duplicated code for extracting user id from jwt token
+	// Get user id from metadata
+	md, ok := metadata.FromIncomingContext(ctx)
+
+	if !ok {
+		return errors.New("Missing metadata.")
+	}
+
+	token, err := jwt.Parse(md["authorization"][0], validateAlg)
+
+	if err != nil {
+		return errors.New("Token could not be authenticated")
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok || !token.Valid {
+		return errors.New("Token could not be authenticated")
+	}
+
+	username := claims["sub"].(string)
+	user := c.Database.GetUserWithUsername(username)
+	userId := user.Id
+	sites := req.GetSites()
+	queryEpsilon := float64(req.Eps)
+	queryDelta := float64(req.Delt)
+	allSitesOverBudget := true
+
+	// Check budget for all sites
+	for _, site := range sites {
+		siteId := int(site)
+		site := c.Database.GetSiteFromId(siteId)
+		epsilonBudget := site.EpsilonBudget
+		deltaBudget := site.DeltaBudget
+		epsilonSpent, deltaSpent := c.Database.GetSiteBudgetSpentByUser(siteId, userId)
+		if (epsilonSpent + queryEpsilon > epsilonBudget) || (deltaSpent + queryDelta > deltaBudget) {
+			c.Log.WithFields(logrus.Fields{"site-id": siteId}).Info("Budget error: user tried to issue query with insufficient budget at site")
+		} else {
+			// has sufficient budget for at least 1 site
+			allSitesOverBudget = false
+		}
+	}
+
+	if allSitesOverBudget {
+		return errors.New("Budget error: user tried to issue query with insufficient budget at all sites")
+	}
+	return nil
+}
+
 // Helper function that checks whether the jwt token is using
 // the algorithm we expect.
 //

@@ -4,7 +4,11 @@ import api.leap as leap
 import api.register.user.registration as user_reg
 
 def distributed(sites, auth_token):
-    selector = {"type": "sql", "sql_func": "count", "sql_options": {"project_id": 13, "filter" : {'pain_past3backpain': "= 1", 'yrbirth': "< 1931"}}}
+    selector = {
+        "type": "sql", 
+        "sql_func": "count", 
+        "sql_options": {"filter" : {'pain_past3backpain': "= 1", 'yrbirth': "< 1931"}
+        }}
     dist_leap = leap.DistributedSelectorVerification(selector, "127.0.0.1:50000", auth_token)
     result = dist_leap.get_result(sites)
     print(result)

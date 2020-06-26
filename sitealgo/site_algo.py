@@ -154,6 +154,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         if (request.isSelectorString): 
             #TODO: test string for valid REDCap getData filter format
             res.success = True
+            res.error = "None"
         else:
             try:
                 selector_object = json.loads(selector)
@@ -165,11 +166,14 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
                 gen_fn = rc_sql_gen.generator_map[selector_object["sql_func"]](selector_object["sql_options"])
                 validation_res = gen_fn["validate"]()
                 res.success = validation_res["valid"]
-                res.error = validation_res["error"]
-                
+                if res.success:
+                    res.error = "None"
+                else:
+                    res.error = validation_res["error"] 
             else: 
                 #TODO: check DEFAULT case
                 res.success = False
+                res.error = "Default case"
         
         return res
         

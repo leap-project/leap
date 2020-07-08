@@ -41,7 +41,7 @@ func (c *Coordinator) VerifySelector(ctx context.Context, req *pb.SelectorVerifi
 // site: A site struct containing the id of a site.
 // ch: The channel where the response is sent to.
 func (c *Coordinator) verifySelector(reqs *pb.SelectorVerificationsReq, site SiteConnector, ch chan *pb.SelectorVerificationRes) {
-	req := pb.SelectorVerificationReq{Selector: reqs.GetSelector(), IsSelectorString: reqs.IsSelectorString}
+	req := pb.SelectorVerificationReq{SiteId: site.id, Selector: reqs.GetSelector(), IsSelectorString: reqs.IsSelectorString}
 
 	conn, err := c.Dial(site.ipPort, c.Conf.SiteConnCN)
 	checkErr(c, err)
@@ -55,8 +55,9 @@ func (c *Coordinator) verifySelector(reqs *pb.SelectorVerificationsReq, site Sit
 
 	if err != nil {
 		res := pb.SelectorVerificationRes{
+			SiteId:  site.id,
 			Success: false,
-			Error:   "Site failed to respond",
+			Error:   err.Error(),
 		}
 		ch <- &res
 	} else {

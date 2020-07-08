@@ -150,17 +150,18 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     def VerifySelector(self, request, context):
         log.info("Recieved request to verify selector")
         res = selector_verification_msgs_pb2.SelectorVerificationRes()
+        res.siteId = request.siteId
         selector = request.selector
         if (request.isSelectorString): 
             #TODO: test string for valid REDCap getData filter format
             res.success = True
-            res.error = "None"
+            res.error = "None - selector is a string"
         else:
             try:
                 selector_object = json.loads(selector)
             except ValueError as e:
                 res.success = False
-                res.error = "Invalid JSON"
+                res.error = "Invalid JSON encoding, check for special characters"
 
             if selector_object["type"] == codes.SQL:
                 gen_fn = rc_sql_gen.generator_map[selector_object["sql_func"]](selector_object["sql_options"])
@@ -170,14 +171,22 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
                     res.error = "None"
                 else:
                     res.error = validation_res["error"] 
-            else: 
-                #TODO: check DEFAULT case
+            elif selector_object["type"] == codes.DEFAULT:
+                if ("filter" in selector_object) and (type(selector_object["filter"]) != "string"):
+                    res.success = False
+                    res.error = "filter must be a correctly formatted string"
+                elif "fields" in selector_object:
+                    if (type(selector_object["fields"]) == "list") and (not (all(isinstance(item, str) for item in selector_object["fields"]))):
+                        res.success = False
+                        res.error = "all field names must be string values"
+                    elif (type(selector_object["fields"]) != "string"):
+                        res.success = False
+                        res.error = "fields is not a list or a string"
+            else:
                 res.success = False
-                res.error = "Default case"
-        
+                res.error = "Type of selector is invalid"
         return res
         
-
     # Gets the protobuf message for a map response
     #
     # No args

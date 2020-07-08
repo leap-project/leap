@@ -3,14 +3,10 @@ package proto;
 option go_package=".;proto";
 
 import "proto/computation-msgs.proto";
-import "proto/selector-verification-msgs.proto";
 
 // RPC service at a cloud algo that performs the necessary computation.
 service CloudAlgo {
     // Performs the appropriate computation at the host algo and returns the result.
     rpc Compute (ComputeRequest) returns (ComputeResponse) {}
-
-    // Sends a request to all sites to verify the selector
-    rpc VerifySelector (SelectorVerificationsReq) returns (SelectorVerificationsRes) {}
 
 }

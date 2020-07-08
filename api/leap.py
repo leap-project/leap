@@ -144,8 +144,7 @@ class DistributedSelectorVerification():
         self.coord_ip_port = coord_ip_port
         self.auth_token = auth_token
 
-    # Gets the result of performing the selected algorithm
-    # on the filtered data.
+    # Gets the result of performing the verification on the selector
     def get_result(self, sites):
         request = self._create_computation_request(sites)
 
@@ -157,7 +156,7 @@ class DistributedSelectorVerification():
         result = compute_stub.VerifySelector(request, None, metadata=metadata)
         res = []
         for resp in result.responses:
-            res.append({"success": resp.success, "error": resp.error})
+            res.append({"siteId": resp.siteId, "success": resp.success, "error": resp.error})
 
         return res
 
@@ -165,6 +164,7 @@ class DistributedSelectorVerification():
     def _create_computation_request(self, sites):
         request = self._create_request_obj()
 
+        #Json dumps will automatically escape characters
         request.selector = json.dumps(self.selector)
         if (type(self.selector) == "string"):
             request.isSelectorString = True

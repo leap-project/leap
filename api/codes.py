@@ -11,6 +11,7 @@ SUM_ALGO = "sum_fn"
 VARIANCE_ALGO = "var_fn"
 FEDERATED_LEARNING_ALGO = "fl_fn"
 QUANTILE_ALGO = "quantile_fn"
+LOG_REG = "log_reg_fn"
 
 # Leap Types
 UDF = 1

@@ -64,4 +64,6 @@ def convert_algo_code(pb_enum):
         return "max_fn"
     elif pb_enum is computation_msgs_pb2.AlgoCodes.MEAN_ALGO:
         return "mean_fn"
+    elif pb_enum is computation_msgs_pb2.AlgoCodes.LOG_REG:
+        return "log_reg_fn"
 

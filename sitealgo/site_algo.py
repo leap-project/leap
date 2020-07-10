@@ -18,6 +18,7 @@ import utils.env_manager as env_manager
 import cloudalgo.functions.privacy as leap_privacy
 import csv
 import requests
+import numpy as np
 
 import proto as pb
 from proto import site_algos_pb2_grpc
@@ -201,12 +202,13 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     def map_logic(self, request):
         req_id = request.id
         req = json.loads(request.req)
-
+        
         state = req["state"]
                 
         choice = choice_fn(state)
         data = self.get_data(req)
         if 'dataprep_fn' in globals():
+            log.withFields({"request-id": req_id}).info("Applying dataprep func")
             data = dataprep_fn(data)
         
         # Adding logic for private udf functions
@@ -223,6 +225,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             target_attribute = req["target_attribute"]
             map_result = leap_privacy.exponential(epsilon, delta, target_attribute, score_fn[choice], data, state)
         else:
+            log.withFields({"request-id": req_id}).info("Applying map func")
             map_result = map_fn[choice](data, state)
         return map_result
 
@@ -243,7 +246,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # filter: The filter that is used to retrieve the Redcap data.
     def get_data_from_src(self, selector=""):
         if self.config["csv_true"] == "1":
-            return self.get_csv_data()
+            log.info("Loading data")
+            return self.get_csv_data(selector)
         else:
             return self.get_redcap_data(redCapUrl, redCapToken, selector)
 
@@ -251,9 +255,13 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # TODO: Actually filter the data according to a user selector
     # Gets the data from a csv file and returns the records to
     # perform a computation on.
-    def get_csv_data(self):
-        patients = pandas.read_csv("data.csv")
-        return patients
+    def get_csv_data(self, selector):
+        if (selector == ""):
+            data = pandas.read_csv("data.csv")
+        else:
+            data = pandas.read_csv(selector["csv"][(self.config["site-id"]-1)])
+        log.info("Completed loading data")
+        return data
 
 
     # Contacts a redCap project and returns the filtered records

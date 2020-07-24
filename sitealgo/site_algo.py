@@ -44,6 +44,7 @@ redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 
 # Class for starting a site algo
 class SiteAlgo():
+
     def __init__(self, config_path):
         self.config = self.get_config(config_path)
 
@@ -96,6 +97,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         self.connector_ip_port = connector_ip_port
         self.config = config
         self.live_requests = {}
+        self.localDataCache = {}
 
 
     # RPC requesting for a map function to be run
@@ -236,7 +238,13 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #      the data.
     def get_data(self, req):
         selector = req["selector"]
-        data = self.get_data_from_src(selector)
+        # TODO: do not always load from local data
+        if (selector["useLocalData"]) and ("data" in self.localDataCache.keys()):
+            data = self.localDataCache["data"]
+        else:
+            data = self.get_data_from_src(selector)
+            if (selector["useLocalData"]):
+                self.localDataCache["data"] = data
         return data
 
 
@@ -245,8 +253,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # filter: The filter that is used to retrieve the Redcap data.
     def get_data_from_src(self, selector=""):
-        if self.config["csv_true"] == "1":
-            log.info("Loading data")
+        if self.config["csv_true"] == "1" or selector["type"] == "csv":
             return self.get_csv_data(selector)
         else:
             return self.get_redcap_data(redCapUrl, redCapToken, selector)
@@ -259,7 +266,12 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         if (selector == ""):
             data = pandas.read_csv("data.csv")
         else:
-            data = pandas.read_csv(selector["csv"][(self.config["site-id"]-1)])
+            url = selector["options"][(self.config["site-id"]-1)]
+            if url in self.localDataCache:
+                data = self.localDataCache[url]
+            else:
+                data = pandas.read_csv(url)
+                self.localDataCache[url] = data
         log.info("Completed loading data")
         return data
 

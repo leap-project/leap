@@ -298,16 +298,26 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # filterLogic: The filter to be applied to the results.
     def get_redcap_data_result(self, filter_logic = "", selected_fields = ""):
+        pid = self.config["redcap_pid"]
+        if pid in self.localDataCache:
+            return self.localDataCache[pid]
+
         # Use the external module to get filtered data
-        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&page=getData"
-        form_data = {'auth': self.config["redcap_auth"], 'filters': filter_logic, 'fields': selected_fields}
+        log.info("Getting data from REDCap")
+        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&NOAUTH&page=getData"
+        form_data = {'auth': self.config["redcap_auth"], 'pid': self.config["redcap_pid"], 'filters': filter_logic, 'fields': selected_fields}
+        log.info("Sending req to REDCap")
         r = requests.post(url, data = form_data)
+        log.info("Got data from REDCap")
         jsondata = json.loads(r.text)
 
         # if successful, return data as a dataframe
         if (jsondata['success'] == True):
             log.info("Successfully retrieved data from REDCap")
             df = pandas.DataFrame(jsondata['data'])
+            df = df.dropna().infer_objects()
+            log.info("Loaded dataframe of shape: "+str(df.shape))
+            self.localDataCache[pid] = df
             return df
         # if it failed, return None
         log.error("Failed to retrieve data from REDCap:")
@@ -318,7 +328,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # query: the SQL query that will run on REDCap
     def get_redcap_query_result(self, query):
-        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&page=getQueryResult"
+        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&NOAUTH&page=getQueryResult"
         form_data = {'auth': self.config["redcap_auth"], 'query': query}
         r = requests.post(url, data = form_data)
         jsondata = json.loads(r.text)

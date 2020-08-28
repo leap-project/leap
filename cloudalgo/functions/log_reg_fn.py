@@ -8,18 +8,21 @@ import random
 def map_fns():
     # Sum a particular column
     def map_fn1(data, state):
+        data = data.drop(columns=state["dropCols"])
         y = data[state["targetCol"]]
-        X = data.drop(columns=[state["targetCol"]])
-        n_samples, n_features = X.shape
+        X_1 = data.drop(columns=[state["targetCol"]])
+        n_samples, n_features = X_1.shape
         if (state["i"] == 0):
             # Set initial weights and biases
-            print("setting initial values")
             state["weights"] = np.zeros(n_features)
         weights_loc = state["weights"]
         bias_loc = state["bias"]
-        dw_loc_list = []
-        db_loc_list = []
+        n_samples_loc = state['n']
         for i in range(state["sub_i"]):
+            # Randomly sample some rows every iteration
+            data = data.sample(n = n_samples_loc)
+            y = data[state["targetCol"]]
+            X = data.drop(columns=[state["targetCol"]])
             # approximate y with linear combination of weights and x, plus bias
             linear_model = np.dot(X, weights_loc) + bias_loc
             # apply sigmoid function
@@ -27,15 +30,10 @@ def map_fns():
             # compute gradients
             dw_loc = np.dot(X.T, (y_predicted - y))
             db_loc = np.sum(y_predicted - y)
-            # push dw_loc and db_loc into an array:
-            # dw_loc_list.append(dw_loc)
-            # db_loc_list.append(db_loc)
             # update weights and biases
-            weights_loc -= state["lr"]*np.array((1/n_samples)*dw_loc)
-            bias_loc -= state["lr"]*(1/n_samples)*db_loc
+            weights_loc -= state["lr"]*np.array((1/n_samples_loc)*dw_loc)
+            bias_loc -= state["lr"]*(1/n_samples_loc)*db_loc
 
-        # dw_loc_avg = np.sum(dw_loc_list)/len(dw_loc_list)
-        # db_loc_avg = np.sum(db_loc_list)/len(db_loc_list)
         result = {
             "features": n_features,
             "count": n_samples,
@@ -68,8 +66,8 @@ def update_fns():
             result = json.loads(result)
             total_count += result["count"]
         # Get weighted weights and biases
-        w_global = np.zeros(1)
-        b_global = 0
+        w_global = np.array(state["weights"])
+        b_global = np.float64(state["bias"])
         for result in c_results:
             result = json.loads(result)
             w_loc = np.array(result["w_loc"])
@@ -91,6 +89,7 @@ def choice_fn(site_state):
     return 0
 
 def dataprep_fn(data):
+    data[data.columns] = data[data.columns].apply(pd.to_numeric, errors='coerce')
     return data
 
 def stop_fn(agg_result, state):
@@ -108,9 +107,11 @@ def init_state_fn():
         "weights": [],
         "bias": 0,
         "lr": 0.001,
-        "iter": 100,
-        "targetCol": "osi",
-        "sub_i": 100,
-        "C": 1
+        "iter": 1000,
+        "n": 500,
+        "targetCol": "rfi",
+        "dropCols": ["record_id", "pid", "data_complete"],
+        "sub_i": 1,
+        "C": 3
     }
     return state

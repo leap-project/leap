@@ -14,7 +14,7 @@ from proto import computation_msgs_pb2
 def predef_log_reg():
     leap_predef = leap_fn.PredefinedFunction(computation_msgs_pb2.AlgoCodes.LOG_REG)
     selector = {
-        "type": "default",
+        "type": codes.DEFAULT,
         "useLocalData": True
     }
     leap_predef.selector = selector

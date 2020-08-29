@@ -8,6 +8,5 @@
   "certificate_authority": "../certs/myCA.crt",
   "redcap_url": "http://13.66.175.181/redcap/api", 
   "redcap_auth": "",
-  "redcap_pid": 15,
-  "site-id": 1
+  "redcap_pid": 15
 }

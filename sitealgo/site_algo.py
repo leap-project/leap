@@ -149,7 +149,12 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         res.site.available = True
         return res
 
-    #TODO: complete this
+    # This function implements selector validation.
+    # See api/selector_verification_example.py
+    #
+    # request: A protobuf with a selector to verify
+    # context: Boilerplate for grpc containing the context
+    #          of the RPC.
     def VerifySelector(self, request, context):
         log.info("Recieved request to verify selector")
         res = selector_verification_msgs_pb2.SelectorVerificationRes()
@@ -174,6 +179,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
                     res.error = "None"
                 else:
                     res.error = validation_res["error"] 
+
             elif selector_object["type"] == codes.DEFAULT:
                 if ("filter" in selector_object) and (type(selector_object["filter"]) != "string"):
                     res.success = False
@@ -208,7 +214,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         state = req["state"]
                 
         choice = choice_fn(state)
-        data = self.get_data(req)
+        data = self.get_data(req_id, req)
         if 'dataprep_fn' in globals():
             log.withFields({"request-id": req_id}).info("Applying dataprep func")
             data = dataprep_fn(data)
@@ -234,25 +240,31 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
 
     # Gets the data from the database
     #
+    # req_id: Request ID of leap request
     # req: A leap request containing the selector to retrieve
     #      the data.
-    def get_data(self, req):
+    def get_data(self, req_id, req):
         selector = req["selector"]
-        # TODO: do not always load from local data
-        if (selector["useLocalData"]) and ("data" in self.localDataCache.keys()):
-            data = self.localDataCache["data"]
+
+        # Note: this is only for old examples
+        if (type(selector) == str):
+            return pandas.read_csv("data.csv")
+
+        useLocalData = ("useLocalData" in selector.keys()) and (selector["useLocalData"])
+        if useLocalData and ("data"+str(req_id) in self.localDataCache.keys()):
+            data = self.localDataCache["data"+str(req_id)]
         else:
             data = self.get_data_from_src(selector)
-            if (selector["useLocalData"]):
-                self.localDataCache["data"] = data
+            if useLocalData:
+                self.localDataCache["data"+str(req_id)] = data
         return data
 
 
     # Gets the data from a database or csv file and returns
     # the records to perform a computation on.
     #
-    # filter: The filter that is used to retrieve the Redcap data.
-    def get_data_from_src(self, selector=""):
+    # selector: the options for retrieving data
+    def get_data_from_src(self, selector):
         if self.config["csv_true"] == "1" or selector["type"] == "csv":
             return self.get_csv_data(selector)
         else:
@@ -263,16 +275,12 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # Gets the data from a csv file and returns the records to
     # perform a computation on.
     def get_csv_data(self, selector):
-        if (selector == ""):
-            data = pandas.read_csv("data.csv")
+        # if a custom source is provied, use that
+        if ("src" in selector.keys()):
+            url = selector["src"]
+            data = pandas.read_csv(url)
         else:
-            url = selector["options"][(self.config["site-id"]-1)]
-            if url in self.localDataCache:
-                data = self.localDataCache[url]
-            else:
-                data = pandas.read_csv(url)
-                self.localDataCache[url] = data
-        log.info("Completed loading data")
+            data = pandas.read_csv("data.csv")
         return data
 
 
@@ -283,9 +291,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # token: Token used to access RedCap project given in the url
     # selector: 
     def get_redcap_data(self, url, token, selector):
-        if type(selector) == "string":
-            return self.get_redcap_data_result(selector)
-        elif selector["type"] == "default":
+        if selector["type"] == "default":
             return self.get_redcap_data_result(selector.get("filter", ""), selector.get("fields", ""))
         elif selector["type"] == "sql":
             query_gen_func = rc_sql_gen.generator_map[selector["sql_func"]](selector["sql_options"])
@@ -298,27 +304,20 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # filterLogic: The filter to be applied to the results.
     def get_redcap_data_result(self, filter_logic = "", selected_fields = ""):
-        pid = self.config["redcap_pid"]
-        if pid in self.localDataCache:
-            return self.localDataCache[pid]
-
         # Use the external module to get filtered data
         log.info("Getting data from REDCap")
         url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&NOAUTH&page=getData"
         form_data = {'auth': self.config["redcap_auth"], 'pid': self.config["redcap_pid"], 'filters': filter_logic, 'fields': selected_fields}
-        log.info("Sending req to REDCap")
         r = requests.post(url, data = form_data)
-        log.info("Got data from REDCap")
         jsondata = json.loads(r.text)
 
         # if successful, return data as a dataframe
         if (jsondata['success'] == True):
-            log.info("Successfully retrieved data from REDCap")
             df = pandas.DataFrame(jsondata['data'])
             df = df.dropna().infer_objects()
-            log.info("Loaded dataframe of shape: "+str(df.shape))
-            self.localDataCache[pid] = df
+            log.info("Successfully retrieved data from REDCap")
             return df
+        
         # if it failed, return None
         log.error("Failed to retrieve data from REDCap:")
         log.error(jsondata["error"])
@@ -328,6 +327,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # query: the SQL query that will run on REDCap
     def get_redcap_query_result(self, query):
+        log.info("Getting data from REDCap query")
+
         url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&NOAUTH&page=getQueryResult"
         form_data = {'auth': self.config["redcap_auth"], 'query': query}
         r = requests.post(url, data = form_data)
@@ -335,9 +336,10 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
 
         # if successful, return data as a dataframe
         if (jsondata['success'] == True):
-            log.info("Successfully executed SQL query and retrieved data from REDCap")
             df = pandas.DataFrame(jsondata['data'])
+            log.info("Successfully executed SQL query and retrieved data from REDCap")
             return df
+        
         log.error("Failed to query REDCap:")
         log.error(jsondata["error"])
         return None

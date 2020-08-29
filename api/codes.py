@@ -24,3 +24,4 @@ FEDERATED_LEARNING = 6
 # Selector Types
 SQL = "sql"
 CSV = "csv"
+DEFAULT = "default"

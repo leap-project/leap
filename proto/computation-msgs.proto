@@ -66,4 +66,5 @@ enum AlgoCodes {
     COUNT_ALGO_RC_QUERY = 8;
     MAX_ALGO_RC = 9;
     MEAN_ALGO = 10;
+    LOG_REG = 11;
 }

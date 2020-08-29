@@ -18,6 +18,7 @@ import utils.env_manager as env_manager
 import cloudalgo.functions.privacy as leap_privacy
 import csv
 import requests
+import numpy as np
 
 import proto as pb
 from proto import site_algos_pb2_grpc
@@ -43,6 +44,7 @@ redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 
 # Class for starting a site algo
 class SiteAlgo():
+
     def __init__(self, config_path):
         self.config = self.get_config(config_path)
 
@@ -95,6 +97,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         self.connector_ip_port = connector_ip_port
         self.config = config
         self.live_requests = {}
+        self.localDataCache = {}
 
 
     # RPC requesting for a map function to be run
@@ -201,12 +204,13 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     def map_logic(self, request):
         req_id = request.id
         req = json.loads(request.req)
-
+        
         state = req["state"]
                 
         choice = choice_fn(state)
         data = self.get_data(req)
         if 'dataprep_fn' in globals():
+            log.withFields({"request-id": req_id}).info("Applying dataprep func")
             data = dataprep_fn(data)
         
         # Adding logic for private udf functions
@@ -223,6 +227,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             target_attribute = req["target_attribute"]
             map_result = leap_privacy.exponential(epsilon, delta, target_attribute, score_fn[choice], data, state)
         else:
+            log.withFields({"request-id": req_id}).info("Applying map func")
             map_result = map_fn[choice](data, state)
         return map_result
 
@@ -233,7 +238,13 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #      the data.
     def get_data(self, req):
         selector = req["selector"]
-        data = self.get_data_from_src(selector)
+        # TODO: do not always load from local data
+        if (selector["useLocalData"]) and ("data" in self.localDataCache.keys()):
+            data = self.localDataCache["data"]
+        else:
+            data = self.get_data_from_src(selector)
+            if (selector["useLocalData"]):
+                self.localDataCache["data"] = data
         return data
 
 
@@ -242,8 +253,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # filter: The filter that is used to retrieve the Redcap data.
     def get_data_from_src(self, selector=""):
-        if self.config["csv_true"] == "1":
-            return self.get_csv_data()
+        if self.config["csv_true"] == "1" or selector["type"] == "csv":
+            return self.get_csv_data(selector)
         else:
             return self.get_redcap_data(redCapUrl, redCapToken, selector)
 
@@ -251,9 +262,18 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # TODO: Actually filter the data according to a user selector
     # Gets the data from a csv file and returns the records to
     # perform a computation on.
-    def get_csv_data(self):
-        patients = pandas.read_csv("data.csv")
-        return patients
+    def get_csv_data(self, selector):
+        if (selector == ""):
+            data = pandas.read_csv("data.csv")
+        else:
+            url = selector["options"][(self.config["site-id"]-1)]
+            if url in self.localDataCache:
+                data = self.localDataCache[url]
+            else:
+                data = pandas.read_csv(url)
+                self.localDataCache[url] = data
+        log.info("Completed loading data")
+        return data
 
 
     # Contacts a redCap project and returns the filtered records
@@ -278,16 +298,26 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # filterLogic: The filter to be applied to the results.
     def get_redcap_data_result(self, filter_logic = "", selected_fields = ""):
+        pid = self.config["redcap_pid"]
+        if pid in self.localDataCache:
+            return self.localDataCache[pid]
+
         # Use the external module to get filtered data
-        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&page=getData"
-        form_data = {'auth': self.config["redcap_auth"], 'filters': filter_logic, 'fields': selected_fields}
+        log.info("Getting data from REDCap")
+        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&NOAUTH&page=getData"
+        form_data = {'auth': self.config["redcap_auth"], 'pid': self.config["redcap_pid"], 'filters': filter_logic, 'fields': selected_fields}
+        log.info("Sending req to REDCap")
         r = requests.post(url, data = form_data)
+        log.info("Got data from REDCap")
         jsondata = json.loads(r.text)
 
         # if successful, return data as a dataframe
         if (jsondata['success'] == True):
             log.info("Successfully retrieved data from REDCap")
             df = pandas.DataFrame(jsondata['data'])
+            df = df.dropna().infer_objects()
+            log.info("Loaded dataframe of shape: "+str(df.shape))
+            self.localDataCache[pid] = df
             return df
         # if it failed, return None
         log.error("Failed to retrieve data from REDCap:")
@@ -298,7 +328,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # query: the SQL query that will run on REDCap
     def get_redcap_query_result(self, query):
-        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&page=getQueryResult"
+        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&NOAUTH&page=getQueryResult"
         form_data = {'auth': self.config["redcap_auth"], 'query': query}
         r = requests.post(url, data = form_data)
         jsondata = json.loads(r.text)

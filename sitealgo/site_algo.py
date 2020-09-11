@@ -263,7 +263,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # Gets the data from a database or csv file and returns
     # the records to perform a computation on.
     #
-    # selector: the options for retrieving data
+    # selector: the options for retrieving data from the request
     def get_data_from_src(self, selector):
         if self.config["csv_true"] == "1" or selector["type"] == "csv":
             return self.get_csv_data(selector)
@@ -271,9 +271,10 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             return self.get_redcap_data(redCapUrl, redCapToken, selector)
 
 
-    # TODO: Actually filter the data according to a user selector
-    # Gets the data from a csv file and returns the records to
-    # perform a computation on.
+    # Gets data from a CSV file. If the selector contains 
+    # a source, then use that, else use the default data file.
+    #
+    # selector: the options for retrieving data from the request
     def get_csv_data(self, selector):
         # if a custom source is provied, use that
         if ("src" in selector.keys()):
@@ -289,7 +290,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # url: Url of the RedCap project
     # token: Token used to access RedCap project given in the url
-    # selector: 
+    # selector: the full selector object from the request
     def get_redcap_data(self, url, token, selector):
         if selector["type"] == "default":
             return self.get_redcap_data_result(selector.get("filter", ""), selector.get("fields", ""))
@@ -302,7 +303,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # Contacts a redCap project and returns the filtered records
     # from this project
     #
-    # filterLogic: The filter to be applied to the results.
+    # filter_logic: The filter to be applied to the results.
+    # selected_fields: A list of fields (table columns) to retrieve from REDCap.
     def get_redcap_data_result(self, filter_logic = "", selected_fields = ""):
         # Use the external module to get filtered data
         log.info("Getting data from REDCap")

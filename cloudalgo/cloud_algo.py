@@ -8,7 +8,6 @@ import json
 import logging
 from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
-import random
 
 from proto import cloud_algos_pb2_grpc
 from proto import computation_msgs_pb2

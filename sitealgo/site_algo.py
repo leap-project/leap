@@ -17,11 +17,15 @@ from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
 import cloudalgo.functions.privacy as leap_privacy
 import csv
+import requests
+import numpy as np
 
 import proto as pb
 from proto import site_algos_pb2_grpc
 from proto import computation_msgs_pb2
 from proto import availability_msgs_pb2
+from proto import selector_verification_msgs_pb2
+from sitealgo import rc_sql_gen, codes
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -40,6 +44,7 @@ redCapToken = "3405DC778F3D3B9639E53C1A3394EC09"
 
 # Class for starting a site algo
 class SiteAlgo():
+
     def __init__(self, config_path):
         self.config = self.get_config(config_path)
 
@@ -92,6 +97,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         self.connector_ip_port = connector_ip_port
         self.config = config
         self.live_requests = {}
+        self.localDataCache = {}
 
 
     # RPC requesting for a map function to be run
@@ -143,7 +149,53 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         res.site.available = True
         return res
 
+    # This function implements selector validation.
+    # See api/selector_verification_example.py
+    #
+    # request: A protobuf with a selector to verify
+    # context: Boilerplate for grpc containing the context
+    #          of the RPC.
+    def VerifySelector(self, request, context):
+        log.info("Recieved request to verify selector")
+        res = selector_verification_msgs_pb2.SelectorVerificationRes()
+        res.siteId = request.siteId
+        selector = request.selector
+        if (request.isSelectorString): 
+            #TODO: test string for valid REDCap getData filter format
+            res.success = True
+            res.error = "None - selector is a string"
+        else:
+            try:
+                selector_object = json.loads(selector)
+            except ValueError as e:
+                res.success = False
+                res.error = "Invalid JSON encoding, check for special characters"
 
+            if selector_object["type"] == codes.SQL:
+                gen_fn = rc_sql_gen.generator_map[selector_object["sql_func"]](selector_object["sql_options"])
+                validation_res = gen_fn["validate"]()
+                res.success = validation_res["valid"]
+                if res.success:
+                    res.error = "None"
+                else:
+                    res.error = validation_res["error"] 
+
+            elif selector_object["type"] == codes.DEFAULT:
+                if ("filter" in selector_object) and (type(selector_object["filter"]) != "string"):
+                    res.success = False
+                    res.error = "filter must be a correctly formatted string"
+                elif "fields" in selector_object:
+                    if (type(selector_object["fields"]) == "list") and (not (all(isinstance(item, str) for item in selector_object["fields"]))):
+                        res.success = False
+                        res.error = "all field names must be string values"
+                    elif (type(selector_object["fields"]) != "string"):
+                        res.success = False
+                        res.error = "fields is not a list or a string"
+            else:
+                res.success = False
+                res.error = "Type of selector is invalid"
+        return res
+        
     # Gets the protobuf message for a map response
     #
     # No args
@@ -158,12 +210,13 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     def map_logic(self, request):
         req_id = request.id
         req = json.loads(request.req)
-
+        
         state = req["state"]
                 
         choice = choice_fn(state)
-        data = self.get_data(req)
+        data = self.get_data(req_id, req)
         if 'dataprep_fn' in globals():
+            log.withFields({"request-id": req_id}).info("Applying dataprep func")
             data = dataprep_fn(data)
         
         # Adding logic for private udf functions
@@ -180,37 +233,56 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             target_attribute = req["target_attribute"]
             map_result = leap_privacy.exponential(epsilon, delta, target_attribute, score_fn[choice], data, state)
         else:
+            log.withFields({"request-id": req_id}).info("Applying map func")
             map_result = map_fn[choice](data, state)
         return map_result
 
 
     # Gets the data from the database
     #
+    # req_id: Request ID of leap request
     # req: A leap request containing the selector to retrieve
     #      the data.
-    def get_data(self, req):
-        s_filter = req["selector"]
-        data = self.get_data_from_src(s_filter)
+    def get_data(self, req_id, req):
+        selector = req["selector"]
+
+        # Note: this is only for old examples
+        if (type(selector) == str):
+            return pandas.read_csv("data.csv")
+
+        useLocalData = ("useLocalData" in selector.keys()) and (selector["useLocalData"])
+        if useLocalData and ("data"+str(req_id) in self.localDataCache.keys()):
+            data = self.localDataCache["data"+str(req_id)]
+        else:
+            data = self.get_data_from_src(selector)
+            if useLocalData:
+                self.localDataCache["data"+str(req_id)] = data
         return data
 
 
     # Gets the data from a database or csv file and returns
     # the records to perform a computation on.
     #
-    # filter: The filter that is used to retrieve the Redcap data.
-    def get_data_from_src(self, filter=""):
-        if self.config["csv_true"] == "1":
-            return self.get_csv_data()
+    # selector: the options for retrieving data from the request
+    def get_data_from_src(self, selector):
+        if self.config["csv_true"] == "1" or selector["type"] == "csv":
+            return self.get_csv_data(selector)
         else:
-            return self.get_redcap_data(redCapUrl, redCapToken, filter)
+            return self.get_redcap_data(redCapUrl, redCapToken, selector)
 
 
-    # TODO: Actually filter the data according to a user selector
-    # Gets the data from a csv file and returns the records to
-    # perform a computation on.
-    def get_csv_data(self):
-        patients = pandas.read_csv("data.csv")
-        return patients
+    # Gets data from a CSV file. If the selector contains 
+    # a source, then use that, else use the default data file.
+    #
+    # selector: the options for retrieving data from the request
+    def get_csv_data(self, selector):
+        # if a custom source is provied, use that
+        if ("src" in selector.keys()):
+            url = selector["src"]
+            data = pandas.read_csv(url)
+        else:
+            data = pandas.read_csv("data.csv")
+        return data
 
 
     # Contacts a redCap project and returns the filtered records
@@ -218,10 +290,58 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # url: Url of the RedCap project
     # token: Token used to access RedCap project given in the url
-    # filterLogic: The filter to be applied to the results."""
-    def get_redcap_data(self, url, token, filter_logic):
-        # project = redcap.Project(url, token)
-        # patients = project.export_records(filter_logic=filter_logic)
-        # return patients
-        return [1,2,3,4]
+    # selector: the full selector object from the request
+    def get_redcap_data(self, url, token, selector):
+        if selector["type"] == "default":
+            return self.get_redcap_data_result(selector.get("filter", ""), selector.get("fields", ""))
+        elif selector["type"] == "sql":
+            query_gen_func = rc_sql_gen.generator_map[selector["sql_func"]](selector["sql_options"])
+            query = query_gen_func["generate"]()
+            return self.get_redcap_query_result(query)
+        return None
 
+    # Contacts a redCap project and returns the filtered records
+    # from this project
+    #
+    # filter_logic: The filter to be applied to the results.
+    # selected_fields: A list of fields (table columns) to retrieve from REDCap.
+    def get_redcap_data_result(self, filter_logic = "", selected_fields = ""):
+        # Use the external module to get filtered data
+        log.info("Getting data from REDCap")
+        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&NOAUTH&page=getData"
+        form_data = {'auth': self.config["redcap_auth"], 'pid': self.config["redcap_pid"], 'filters': filter_logic, 'fields': selected_fields}
+        r = requests.post(url, data = form_data)
+        jsondata = json.loads(r.text)
+
+        # if successful, return data as a dataframe
+        if (jsondata['success'] == True):
+            df = pandas.DataFrame(jsondata['data'])
+            df = df.dropna().infer_objects()
+            log.info("Successfully retrieved data from REDCap")
+            return df
+        
+        # if it failed, return None
+        log.error("Failed to retrieve data from REDCap:")
+        log.error(jsondata["error"])
+        return None
+
+    # Runs the query on REDCap and gets the result of the query as a dataframe
+    #
+    # query: the SQL query that will run on REDCap
+    def get_redcap_query_result(self, query):
+        log.info("Getting data from REDCap query")
+
+        url = self.config["redcap_url"] + "/?type=module&prefix=leap_connector&NOAUTH&page=getQueryResult"
+        form_data = {'auth': self.config["redcap_auth"], 'query': query}
+        r = requests.post(url, data = form_data)
+        jsondata = json.loads(r.text)
+
+        # if successful, return data as a dataframe
+        if (jsondata['success'] == True):
+            df = pandas.DataFrame(jsondata['data'])
+            log.info("Successfully executed SQL query and retrieved data from REDCap")
+            return df
+        
+        log.error("Failed to query REDCap:")
+        log.error(jsondata["error"])
+        return None

@@ -12,6 +12,10 @@ protoc -I=.  --python_out=.  proto/registration-msgs.proto
 protoc -I=.  --go_out=proto/  proto/availability-msgs.proto
 protoc -I=.  --python_out=.  proto/availability-msgs.proto
 
+# Compile selector-verification-msgs.proto
+protoc -I=.  --go_out=proto/  proto/selector-verification-msgs.proto
+protoc -I=.  --python_out=.  proto/selector-verification-msgs.proto
+
 # Compile coordinator.proto
 protoc -I=. --go_out=plugins=grpc:proto/ proto/coordinator.proto
 python -m grpc_tools.protoc -I=. --python_out=. --grpc_python_out=. proto/coordinator.proto

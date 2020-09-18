@@ -140,3 +140,51 @@ class DistributedLeap(Leap):
     def _create_request_obj(self):
         request = pb.computation_msgs_pb2.ComputeRequest()
         return request
+
+class DistributedSelectorVerification(DistributedLeap):
+
+    # Constructor
+    #
+    # selector: The selector that has to be verified by the site
+    def __init__(self, selector, coord_ip_port, auth_token):
+        self.selector = selector
+        self.coord_ip_port = coord_ip_port
+        self.auth_token = auth_token
+
+    # Gets the result of performing the verification on the selector
+    #
+    # sites: the list of site Ids where the verification is run
+    def get_result(self, sites):
+        request = self._create_computation_request(sites)
+
+        compute_stub = super()._get_compute_stub()
+
+        # Computed remotely
+        metadata = []
+        metadata.append(('authorization', self.auth_token))
+        result = compute_stub.VerifySelector(request, None, metadata=metadata)
+        res = []
+        for resp in result.responses:
+            res.append({"siteId": resp.siteId, "success": resp.success, "error": resp.error})
+
+        return res
+
+    # Uses protobuf to create a computation request.
+    # 
+    # sites: the list of site Ids where the verification is run
+    def _create_computation_request(self, sites):
+        request = self._create_request_obj()
+
+        #Json dumps will automatically escape characters
+        request.selector = json.dumps(self.selector)
+        if (type(self.selector) == "string"):
+            request.isSelectorString = True
+        else:
+            request.isSelectorString = False
+
+        return request
+
+    # Creates a protobuf request object for selector verification
+    def _create_request_obj(self):
+        request = pb.selector_verification_msgs_pb2.SelectorVerificationsReq()
+        return request

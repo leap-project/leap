@@ -8,4 +8,5 @@ import "proto/computation-msgs.proto";
 service CloudAlgo {
     // Performs the appropriate computation at the host algo and returns the result.
     rpc Compute (ComputeRequest) returns (ComputeResponse) {}
+
 }

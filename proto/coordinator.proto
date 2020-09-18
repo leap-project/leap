@@ -6,6 +6,7 @@ import "proto/computation-msgs.proto";
 import "proto/registration-msgs.proto";
 import "proto/availability-msgs.proto";
 import "proto/user-msgs.proto";
+import "proto/selector-verification-msgs.proto";
 
 // RPC service at the coordinator that will handle requests from sites and cloud algos
 service Coordinator {
@@ -18,6 +19,9 @@ service Coordinator {
 
     // Pinged by others to determine what sites are available
     rpc SitesAvailable (SitesAvailableReq) returns (SitesAvailableRes) {}
+
+    // Sends a request to all sites to verify the selector
+    rpc VerifySelector (SelectorVerificationsReq) returns (SelectorVerificationsRes) {}
 
     // Sends computation request to cloud algo
     rpc Compute (ComputeRequest) returns (ComputeResponse) {}

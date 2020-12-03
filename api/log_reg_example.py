@@ -54,6 +54,6 @@ def distributed(sites, auth_token):
     runEval(np.array(result["weights"]), result["bias"])
 
 if __name__ == "__main__":
-    #user_reg.register_user("TestUser2", "1234561", "127.0.0.1:50000")
+    #user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
     auth_res = user_reg.authenticate_user("TestUser", "123456", "127.0.0.1:50000")
     distributed([1,2,3], auth_res.token)

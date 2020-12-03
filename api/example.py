@@ -2,6 +2,7 @@
 
 import sys
 sys.path.append("../")
+import api.codes as codes
 import api.leap as leap
 import api.leap_fn as leap_fn
 import cloudalgo.functions as cloud_functions
@@ -95,7 +96,10 @@ def quantile_exp():
 
 def fed_learn_exp():
     module = leap_functions.fl_fn
-    selector = "[age] > 50 and [bmi] < 25"
+    selector = {
+        "type": codes.DEFAULT,
+        "useLocalData": True
+    }
     leap_fed_learn = leap_fn.FedLearnFunction()
     leap_fed_learn.selector = selector
     leap_fed_learn.get_model = module.get_model
@@ -114,7 +118,7 @@ def fed_learn_exp():
     return leap_fed_learn
 
 def distributed(sites, auth_token):
-    leap_exp_fn = predef_private_cloud_count_exp()
+    leap_exp_fn = fed_learn_exp()
     dist_leap = leap.DistributedLeap(leap_exp_fn, "127.0.0.1:50000", auth_token)
     print(dist_leap.get_result(sites))
 
@@ -131,6 +135,6 @@ def local():
 
 if __name__ == "__main__":
     #local()
-    user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
+    #user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
     auth_res = user_reg.authenticate_user("TestUser", "123456", "127.0.0.1:50000")
     distributed([1], auth_res.token)

@@ -206,7 +206,6 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
 
             # Get result from each site through coordinator
             results = coord_stub.Map(site_request)
-
             eps, delt = self.accumulate_priv_values(req_body, eps, delt, len(results.responses))
 
             extracted_responses = self._extract_map_responses(results.responses)

@@ -41,6 +41,7 @@ class SiteEnvironment(Environment):
     # req: The request containing the functions to be loaded.
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
+        import random
         import numpy as np
         context["np"] = np
         import pandas as pd
@@ -188,6 +189,7 @@ class CloudEnvironment(Environment):
     # req: The request containing the functions to be loaded.
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
+        import random
         import json
         context["json"] = json
         import numpy as np

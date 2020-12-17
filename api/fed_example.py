@@ -1,6 +1,7 @@
 import sys
 sys.path.append("../")
 import api.leap as leap
+import api.register.user.registration as user_reg
 import api.leap_fn as leap_fn
 import api.local.functions as leap_functions
 
@@ -8,6 +9,10 @@ import api.local.functions as leap_functions
 if __name__ == "__main__":
     leap_fed_learn = leap_fn.FedLearnFunction()
     selector = "[age] > 50 and [bmi] < 25"
+    #selector = {
+    #    "type": codes.DEFAULT,
+    #    "useLocalData": True
+    #}
     leap_fed_learn.selector = selector
 
     module = leap_functions.fl_fn
@@ -21,11 +26,14 @@ if __name__ == "__main__":
         "d_x": 2, # input dimension
         "d_y": 1, # output dimension
         "batch_size": 1,
-        "max_iters": 4,
+        "max_iters": 100,
         "iters_per_epoch":1
     }
     leap_fed_learn.hyperparams = hyperparams
 
-    leap = leap.DistributedLeap(leap_fed_learn)
-    result = leap.get_result()
+    #user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
+    auth_res = user_reg.authenticate_user("TestUser", "123456", "127.0.0.1:50000")
+    leap = leap.DistributedLeap(leap_fed_learn, "127.0.0.1:50000", auth_res.token)
+    sites = [1]
+    result = leap.get_result(sites)
     print(result)

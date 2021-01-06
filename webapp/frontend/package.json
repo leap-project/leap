@@ -7,7 +7,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "flexbox-react": "^4.4.0",
     "google-protobuf": "^3.11.3",
     "grpc-web": "^1.0.7",

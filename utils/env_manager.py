@@ -42,6 +42,7 @@ class SiteEnvironment(Environment):
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
         import random
+        context["random"] = random
         import numpy as np
         context["np"] = np
         import pandas as pd
@@ -162,6 +163,17 @@ class SiteFederatedLearningEnvironment(SitePredefinedEnvironment):
         context["pd"] = pd        
         context["AverageMeter"] = leap_fn.fl_fn.AverageMeter
 
+        import torchvision
+        context["torchvision"] = torchvision
+        import requests
+        context["requests"] = requests
+        import io
+        context["io"] = io
+        from redcap import Project
+        context["Project"] = Project
+        from PIL import Image
+        context["Image"] = Image
+        
         hyperparams = json.loads(req_body["hyperparams"])
         context["hyperparams"] = hyperparams
 
@@ -190,6 +202,7 @@ class CloudEnvironment(Environment):
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
         import random
+        context["random"] = random
         import json
         context["json"] = json
         import numpy as np
@@ -292,7 +305,6 @@ class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
         super().set_env(context, req_body, req_id, req)
-
         import torch
         globals()["torch"] = torch
         context["torch"] = torch
@@ -300,6 +312,17 @@ class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
         hyperparams = json.loads(req_body["hyperparams"])
         context["hyperparams"] = hyperparams
 
+        import torchvision
+        context["torchvision"] = torchvision
+        import requests
+        context["requests"] = requests
+        import io
+        context["io"] = io
+        from redcap import Project
+        context["Project"] = Project
+        from PIL import Image
+        context["Image"] = Image
+        
         # pass in context as second argument so that get_model has access to context variables
         env_utils.load_from_fn_generator("get_model", "model", req_body, context, gen_fn_args=[hyperparams])
         params = context["model"].parameters()

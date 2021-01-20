@@ -312,7 +312,6 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         form_data = {'auth': self.config["redcap_auth"], 'pid': self.config["redcap_pid"], 'filters': filter_logic, 'fields': selected_fields}
         r = requests.post(url, data = form_data)
         jsondata = json.loads(r.text)
-
         # if successful, return data as a dataframe
         if (jsondata['success'] == True):
             df = pandas.DataFrame(jsondata['data'])
@@ -335,7 +334,6 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         form_data = {'auth': self.config["redcap_auth"], 'query': query}
         r = requests.post(url, data = form_data)
         jsondata = json.loads(r.text)
-
         # if successful, return data as a dataframe
         if (jsondata['success'] == True):
             df = pandas.DataFrame(jsondata['data'])

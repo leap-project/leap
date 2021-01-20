@@ -8,8 +8,7 @@ from PIL import Image
 def get_model(hyperparams):
     model = torchvision.models.resnet18(pretrained=True)
     in_features = model.fc.in_features
-    model.fc = nn.Linear(in_features)
-    
+    model.fc = torch.nn.Linear(in_features, hyperparams["d_y"])
     return model
 
 def get_optimizer(params, hyperparams):
@@ -19,6 +18,12 @@ def get_criterion(hyperparams):
     return torch.nn.CrossEntropyLoss()
 
 def get_dataloader(hyperparams, data):
+    
+    def custom_collate(batch):
+        batch = torch.utils.data.dataloader.default_collate(batch)
+        batch[1] = batch[1].reshape(-1, 1)
+        return batch
+
     class HAMDataset(torch.utils.data.Dataset):
     
         def __init__(self, ids, transform=None):
@@ -50,7 +55,7 @@ def get_dataloader(hyperparams, data):
             if self.transform:
                 sample["image"] = self.transform(sample["image"])
     
-            return sample
+            return (sample["image"], torch.tensor(sample["lesion_type"]))
         
         def export_file(self, record_id):
             data = {'token': self.token,
@@ -91,6 +96,6 @@ def get_dataloader(hyperparams, data):
     random_ids = random.sample(ids, 10000)
     train_ids = random_ids[:8000]
     dataset = HAMDataset(train_ids, transform=transforms)
-    dataloader = DataLoader(dataset, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
     
     return dataloader

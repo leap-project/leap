@@ -5,3 +5,4 @@ import api.local.functions.quantile_fn
 import api.local.functions.quantile_fn_exp
 import api.local.functions.seq_var_fn
 import api.local.functions.sum_fn
+import api.local.functions.resnet

@@ -135,7 +135,7 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 	defer conn.Close()
 
 	client := pb.NewSiteConnectorClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*150)
 	defer cancel()
 
 	response, err := client.Map(ctx, req)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 	pb "leap/proto"
 	"leap/utils"
@@ -24,7 +25,8 @@ func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRe
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)
-	res, err := client.Map(context.Background(), req)
+	maxSizeOption := grpc.MaxCallRecvMsgSize(32*10e8)
+	res, err := client.Map(context.Background(), req, maxSizeOption)
 
 	if utils.IsUnavailableError(err) {
 		sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("Site Algo is unavailable.")

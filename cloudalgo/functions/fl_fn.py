@@ -34,11 +34,12 @@ def map_fns():
             model_weights = state["model_weights"]
             for i, (name, params) in enumerate(model.named_parameters()):
                 params.data = torch.tensor(model_weights[i])
+        
         # Accumulate gradients
         loss_meter = AverageMeter()
         for i, (X, Y) in enumerate(dataloader):
-            X = X.float()
-            Y = Y.float()
+            X = X
+            Y = Y
             output = model(X)
             loss = criterion(output, Y)
             loss_meter.update(loss.item())
@@ -116,10 +117,11 @@ def choice_fn(state):
 # Formats the raw data into data usable by map_fn
 # ex: Converting types, extracting rows/columns
 def dataprep_fn(data):
-    data = pd.DataFrame(data)
-    X = data[["age", "bmi"]].astype('float').to_numpy()
-    Y = data["grade"].astype('long').to_numpy()
-    return X, Y
+    return data
+    #data = pd.DataFrame(data)
+    #X = data[].astype('float').to_numpy()
+    #Y = data["grade"].astype('long').to_numpy()
+    #return X, Y
 
 def stop_fn(agg_result, state):
     return state["i"] == hyperparams["max_iters"]

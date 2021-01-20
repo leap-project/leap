@@ -124,10 +124,11 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 env = env_manager.CloudPrivatePredefinedEnvironment()
             elif leap_type == computation_msgs_pb2.LeapTypes.FEDERATED_LEARNING:
                 env = env_manager.CloudFedereatedLearningEnvironment()
+            
             env.set_env(globals(), req, request.id, request)
 
             result, eps, delt = self._compute_logic(req, coord_stub, sites, request)
-
+        
             res = computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(result)
 
@@ -193,7 +194,6 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # sites: The sites where the map function will run
     def _compute_logic(self, req_body, coord_stub, sites, req):
         state = init_state_fn()
-
         stop = False
         eps = 0
         delt = 0

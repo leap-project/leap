@@ -174,7 +174,7 @@ func (sc *SiteConnector) Register() {
 	defer conn.Close()
 
 	client := pb.NewCoordinatorClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*150)
 	defer cancel()
 
 	siteRegReq := pb.SiteRegReq{SiteId: sc.Conf.SiteId, SiteIpPort: sc.Conf.IpPort}

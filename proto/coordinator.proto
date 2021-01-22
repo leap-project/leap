@@ -15,7 +15,8 @@ service Coordinator {
     rpc RegisterSite (SiteRegReq) returns (SiteRegRes) {}
 
     // Relays a computation request from the cloud to appropriate sites
-    rpc Map (MapRequest) returns (MapResponses) {}
+    //rpc Map (MapRequest) returns (MapResponses) {}
+    rpc Map (MapRequest) returns (stream MapResponsesChunk) {}
 
     // Pinged by others to determine what sites are available
     rpc SitesAvailable (SitesAvailableReq) returns (SitesAvailableRes) {}

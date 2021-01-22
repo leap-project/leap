@@ -46,6 +46,7 @@ def map_fns():
             loss.backward()
             if i == hyperparams["iters_per_epoch"]:
                 break
+        
         # Store gradient as list
         client_grad = []
         for name, params in model.named_parameters():

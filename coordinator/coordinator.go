@@ -176,6 +176,8 @@ func (c *Coordinator) Serve() {
 		opts := []grpc.ServerOption{
 			grpc.Creds(creds),
 			grpc.UnaryInterceptor(c.interceptor),
+			grpc.MaxRecvMsgSize(4000000000),
+			grpc.MaxSendMsgSize(4000000000),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -201,6 +203,10 @@ func (c *Coordinator) Serve() {
 // addr: The address where you want to establish a connection
 // serverName: The common name of the server to be contacted
 func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, error) {
+	opts := []grpc.DialOption{
+		grpc.WithMaxMsgSize(4000000000),
+	}
+
 	if c.Conf.Secure {
 		cert, err := tls.LoadX509KeyPair(c.Conf.Crt, c.Conf.Key)
 		checkErr(c, err)
@@ -216,10 +222,12 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 			RootCAs:      certPool,
 		})
 
-		return grpc.Dial(addr, grpc.WithTransportCredentials(creds))
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+		return grpc.Dial(addr, opts...)
 
 	} else {
-		return grpc.Dial(addr, grpc.WithInsecure())
+		opts = append(opts, grpc.WithInsecure())
+		return grpc.Dial(addr, opts...)
 	}
 }
 

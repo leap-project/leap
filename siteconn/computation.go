@@ -25,9 +25,8 @@ func (sc *SiteConnector) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapRe
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)
-	maxSizeOption := grpc.MaxCallRecvMsgSize(32*10e8)
+	maxSizeOption := grpc.MaxCallRecvMsgSize(32*10e10)
 	res, err := client.Map(context.Background(), req, maxSizeOption)
-
 	if utils.IsUnavailableError(err) {
 		sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("Site Algo is unavailable.")
 		checkErr(sc, err)

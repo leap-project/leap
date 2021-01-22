@@ -23,6 +23,7 @@ message ComputeResponse {
     repeated int64 unavailable_sites = 5;
 }
 
+
 // A request for a map computation
 message MapRequest {
     int64 id = 1;
@@ -35,6 +36,11 @@ message MapRequest {
 // A response from a map computation
 message MapResponse {
     string response = 1;
+}
+
+// Chunked compute response so we can transmit large files
+message MapResponsesChunk {
+    bytes chunk = 1;    
 }
 
 // The map responses returned by the algorithms in different sites.

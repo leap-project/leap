@@ -3,6 +3,7 @@ package coordinator
 import (
 	"context"
 	"github.com/sirupsen/logrus"
+	"github.com/golang/protobuf/proto"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	pb "leap/proto"
@@ -62,15 +63,32 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 // ctx: Carries value and cancellation signals across API
 //      boundaries.
 // req: Map request containing user defined functions.
-func (c *Coordinator) Map(ctx context.Context, req *pb.MapRequest) (*pb.MapResponses, error) {
+func (c *Coordinator) Map(req *pb.MapRequest, stream pb.Coordinator_MapServer) error {
 	if c.SiteConnectors.Length() == 0 {
 		c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("No sites have been registered.")
-		return nil, status.Error(codes.Unavailable, "There have been no sites registered.")
+		return status.Error(codes.Unavailable, "There have been no sites registered.")
 	}
 
 	results, err := c.getResultsFromSites(req)
 
-	return &results, err
+	// Send response in chunks
+	buf, err := proto.Marshal(&results)
+	chunkSize := 64 * 1024
+	chunk := &pb.MapResponsesChunk{}
+	for currByte := 0; currByte < len(buf); currByte += chunkSize {
+	    if currByte + chunkSize > len(buf) {
+	        chunk.Chunk = buf[currByte:len(buf)]
+	    } else {
+	        chunk.Chunk = buf[currByte: currByte + chunkSize]
+	    }
+
+	    if err = stream.Send(chunk); err != nil {
+	        return err
+	    }
+	}
+
+
+	return nil
 }
 
 // Spawns a goroutine that sends a request to each site. The
@@ -139,7 +157,6 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 	defer cancel()
 
 	response, err := client.Map(ctx, req)
-
 	// If site unavailable, update its available to false
 	if utils.IsUnavailableError(err) {
 		site.availableMux.Lock()

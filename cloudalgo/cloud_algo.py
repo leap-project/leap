@@ -46,6 +46,7 @@ class CloudAlgo():
     # No args
     def serve(self):
         cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config)
+        maxMsgLength = 1024 * 1024 * 1024
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
         if self.config["secure_with_tls"] == "y":
@@ -107,7 +108,6 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     def Compute(self, request, context):
         log.withFields({"request-id": request.id}).info("Received a computation request.")
         try:
-            coord_stub = self._get_coord_stub()
             req = json.loads(request.req)
             sites = request.sites
 
@@ -127,11 +127,10 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             
             env.set_env(globals(), req, request.id, request)
 
-            result, eps, delt = self._compute_logic(req, coord_stub, sites, request)
+            result, eps, delt = self._compute_logic(req, sites, request)
         
             res = computation_msgs_pb2.ComputeResponse()
             res.response = json.dumps(result)
-
             if 'epsilon' in req:
                 res.eps = eps
                 res.private = True
@@ -173,14 +172,30 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     def _get_coord_stub(self):
         channel = None
 
+        maxMsgLength = 271000000 
         if self.config["secure_with_tls"] == "y":
             creds = grpc.ssl_channel_credentials(root_certificates=self.ca, private_key=self.key, certificate_chain=self.cert)
-            channel = grpc.secure_channel(self.coordinator_ip_port, creds, options=(('grpc.ssl_target_name_override', self.config["coord_cn"],),))
+            channel = grpc.secure_channel(self.coordinator_ip_port, creds, 
+                    options=(('grpc.ssl_target_name_override', self.config["coord_cn"],)))
         else:
             channel = grpc.insecure_channel(self.coordinator_ip_port)
-
+       
         coord_stub = coordinator_pb2_grpc.CoordinatorStub(channel)
         return coord_stub
+
+
+    # Extracts map responses from a stream
+    #
+    # chunks: Stream of chunks from grpc call
+    def _extract_chunks(self, chunks):
+        buf = bytes() 
+        for chunk in chunks:
+            buf += chunk.chunk
+
+        responses = computation_msgs_pb2.MapResponses()
+        responses.ParseFromString(buf)
+        return responses 
+
 
 
     # Contains the logic for aggregating and performing the
@@ -192,7 +207,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # coord_stub: The stub used to send a message to the
     #             coordinator.
     # sites: The sites where the map function will run
-    def _compute_logic(self, req_body, coord_stub, sites, req):
+    def _compute_logic(self, req_body, sites, req):
         state = init_state_fn()
         stop = False
         eps = 0
@@ -202,10 +217,13 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
 
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
+            print("About to call map")
             site_request = self._create_map_request(req_body, state, sites, req)
-
+            print("Got map result")
             # Get result from each site through coordinator
+            coord_stub = self._get_coord_stub()
             results = coord_stub.Map(site_request)
+            results = self._extract_chunks(results)
             eps, delt = self.accumulate_priv_values(req_body, eps, delt, len(results.responses))
 
             extracted_responses = self._extract_map_responses(results.responses)

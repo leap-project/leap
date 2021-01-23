@@ -15,3 +15,5 @@ ProtoBuf/src/
 *.csr
 *.srl
 *leap-db*
+exe/data.csv
+sitealgo/bleh.py

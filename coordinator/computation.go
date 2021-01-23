@@ -1,6 +1,7 @@
 package coordinator
 
 import (
+	"fmt"
 	"context"
 	"github.com/sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -9,6 +10,7 @@ import (
 	pb "leap/proto"
 	"leap/utils"
 	"time"
+	"io"
 )
 
 type ResultFromSite struct {
@@ -63,29 +65,50 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 // ctx: Carries value and cancellation signals across API
 //      boundaries.
 // req: Map request containing user defined functions.
-func (c *Coordinator) Map(req *pb.MapRequest, stream pb.Coordinator_MapServer) error {
+func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
+        fmt.Println("About to stream request")
+	recvBuf := []byte{}
+	for {
+	    chunk, err := stream.Recv()
+	    if err == io.EOF {
+	        break
+	    }
+
+	    if err != nil {
+	        return err
+	    }
+
+	    recvBuf = append(recvBuf, chunk.Chunk...)
+	}
+	fmt.Println("Finished streaming request")
+
+	req := &pb.MapRequest{}
+	proto.Unmarshal(recvBuf, req)
 	if c.SiteConnectors.Length() == 0 {
 		c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("No sites have been registered.")
 		return status.Error(codes.Unavailable, "There have been no sites registered.")
 	}
-
+	
+	fmt.Println("Getting results from sites")
 	results, err := c.getResultsFromSites(req)
-
+	fmt.Println("Got results")
 	// Send response in chunks
-	buf, err := proto.Marshal(&results)
+	sendBuf, err := proto.Marshal(&results)
 	chunkSize := 64 * 1024
 	chunk := &pb.MapResponsesChunk{}
-	for currByte := 0; currByte < len(buf); currByte += chunkSize {
-	    if currByte + chunkSize > len(buf) {
-	        chunk.Chunk = buf[currByte:len(buf)]
+	fmt.Println("Streaming response")
+	for currByte := 0; currByte < len(sendBuf); currByte += chunkSize {
+	    if currByte + chunkSize > len(sendBuf) {
+	        chunk.Chunk = sendBuf[currByte:len(sendBuf)]
 	    } else {
-	        chunk.Chunk = buf[currByte: currByte + chunkSize]
+	        chunk.Chunk = sendBuf[currByte: currByte + chunkSize]
 	    }
 
 	    if err = stream.Send(chunk); err != nil {
 	        return err
 	    }
 	}
+	fmt.Println("Finished streaming response")
 
 
 	return nil

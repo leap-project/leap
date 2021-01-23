@@ -196,7 +196,26 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         responses.ParseFromString(buf)
         return responses 
 
+    def _get_chunks_to_send(self, request):
+        chunk_size = 64 * 1024
+        buf = request.SerializeToString()
+        chunks = []
+        for curr_byte in range(0, len(buf), chunk_size):
+            if curr_byte + chunk_size > len(buf):
+                chunk = computation_msgs_pb2.MapRequestChunk()
+                chunk.chunk = buf[curr_byte: len(buf)]
+                chunks.append(chunk)
+            else:
+                chunk = computation_msgs_pb2.MapRequestChunk()
+                chunk.chunk = buf[curr_byte: curr_byte + chunk_size]
+                chunks.append(chunk)
+        
+        return chunks
 
+    def _generate_chunk_iterator(self, chunks):
+        for chunk in chunks:
+            yield chunk
+        
 
     # Contains the logic for aggregating and performing the
     # general algorithmic portion of Leap that happens in the
@@ -219,21 +238,25 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             choice = choice_fn(state)
             print("About to call map")
             site_request = self._create_map_request(req_body, state, sites, req)
-            print("Got map result")
             # Get result from each site through coordinator
             coord_stub = self._get_coord_stub()
-            results = coord_stub.Map(site_request)
+            chunks = self._get_chunks_to_send(site_request) 
+            chunk_iterator = self._generate_chunk_iterator(chunks)
+            results = coord_stub.Map(chunk_iterator)
+            print("result returned")
             results = self._extract_chunks(results)
+            print("extracted chunks")
             eps, delt = self.accumulate_priv_values(req_body, eps, delt, len(results.responses))
-
+            print("accumulated priv values")
             extracted_responses = self._extract_map_responses(results.responses)
-
+            print("extracted responses")
+            print("this is the result")
             # Aggregate results from each site
             agg_result = agg_fn[choice](extracted_responses)
-
+            print("aggredated stuff")
             # Update the state
             state = update_fn[choice](agg_result, state)
-
+            print("updated model")
             # Decide to stop or continue
             stop = stop_fn(agg_result, state)
         post_result = postprocessing_fn(agg_result, state)

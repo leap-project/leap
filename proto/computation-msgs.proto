@@ -23,6 +23,9 @@ message ComputeResponse {
     repeated int64 unavailable_sites = 5;
 }
 
+message MapRequestChunk {
+    bytes chunk = 1;
+}
 
 // A request for a map computation
 message MapRequest {

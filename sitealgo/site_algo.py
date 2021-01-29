@@ -106,8 +106,9 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #          computed
     # context: Boilerplate for grpc containing the context
     #          of the RPC."""
-    def Map(self, request, context):
+    def Map(self, chunks, context):
         try:
+            request = self._extract_chunks(chunks)
             self.live_requests[request.id] = None
             log.withFields({"request-id": request.id}).info("Got map request")
 
@@ -127,11 +128,16 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
                 env = env_manager.SiteFederatedLearningEnvironment()
             env.set_env(globals(), req, request.id, request)
             log.withFields({"request-id": request.id}).info("Loaded all necessary environment")
+            start = time.time()
             map_result = self.map_logic(request)
+            end = time.time()
+            print("Time to compute: " + str(end - start))
             res = self._get_response_obj()
             res.response = map_result
             self.live_requests.pop(request.id)
-            return res
+            chunks = self._get_chunks_to_send(res)
+            for chunk in chunks:
+                yield chunk
         except BaseException as e:
             log.withFields({"request-id": request.id}).error(e)
             raise e
@@ -343,3 +349,32 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         log.error("Failed to query REDCap:")
         log.error(jsondata["error"])
         return None
+    
+    # Extracts map responses from a stream
+    #
+    # chunks: Stream of chunks from grpc call
+    def _extract_chunks(self, chunks):
+        buf = bytes() 
+        for chunk in chunks:
+            buf += chunk.chunk
+
+        responses = computation_msgs_pb2.MapRequest()
+        responses.ParseFromString(buf)
+        return responses 
+    
+    def _get_chunks_to_send(self, response):
+        chunk_size = 64 * 1024
+        buf = response.SerializeToString()
+        chunks = []
+        for curr_byte in range(0, len(buf), chunk_size):
+            if curr_byte + chunk_size > len(buf):
+                chunk = computation_msgs_pb2.MapResponseChunk()
+                chunk.chunk = buf[curr_byte: len(buf)]
+                chunks.append(chunk)
+            else:
+                chunk = computation_msgs_pb2.MapResponseChunk()
+                chunk.chunk = buf[curr_byte: curr_byte + chunk_size]
+                chunks.append(chunk)
+        
+        return chunks
+

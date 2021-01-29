@@ -36,6 +36,11 @@ message MapRequest {
     repeated int64 sites = 7;
 }
 
+// Chunked compute response so we can transmit large files
+message MapResponseChunk {
+    bytes chunk = 1;    
+}
+
 // A response from a map computation
 message MapResponse {
     string response = 1;

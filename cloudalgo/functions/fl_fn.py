@@ -25,16 +25,47 @@ class AverageMeter(object):
 def map_fns():
     # Expects model, dataloader, optimizer, criterion to be predefined
     def map_fn1(data, state):
-        dataloader = get_dataloader(hyperparams, data)
+        dataloader, dataloader_val = get_dataloader(hyperparams, data)
         if 'loss_history' in state:
             print("loss: {}".format(state["loss_history"][-1]))
 
+        def unquantize(min_val, max_val, gradients):
+            interval = (max_val - min_val) / 2**8
+            unquantized_grads = interval * torch.tensor(gradients, dtype=torch.float) + min_val
+            return unquantized_grads.cpu().tolist()
+        
         # Update model with new weights
         if 'model_weights' in state:
             model_weights = state["model_weights"]
+            min_max_list = state["min_max"]
             for i, (name, params) in enumerate(model.named_parameters()):
-                params.data = torch.tensor(model_weights[i])
+                unquantized_weights = unquantize(min_max_list[i]["min"], min_max_list[i]["max"], model_weights[i])
+                params.data = torch.tensor(unquantized_weights)
         
+        # Get validation loss        
+        def measure_acc(dataloader, model):
+            with torch.no_grad():
+                val_sum = 0
+                val_total = 0
+                for i, (X, Y) in enumerate(dataloader, 0):
+                    target = Y
+                    image = X
+            
+                    output = model(image)
+                    correct_sum, total = acc_sum(output, target)
+                    val_sum += correct_sum
+                    val_total += total
+                print("Acc: " + str(val_sum / val_total))
+        
+        def acc_sum(pred, target):
+            with torch.no_grad():
+                pred_softmax = torch.log_softmax(pred, dim=1)
+                _, pred_tags = torch.max(pred_softmax, dim=1)
+                correct_pred = (pred_tags == target).float()
+                return correct_pred.sum(), len(correct_pred)
+        
+        measure_acc(dataloader_val, model)
+
         # Accumulate gradients
         loss_meter = AverageMeter()
         for i, (X, Y) in enumerate(dataloader):
@@ -47,16 +78,29 @@ def map_fns():
             if i == hyperparams["iters_per_epoch"]:
                 break
         
+        def quantize(min_val, max_val, gradients):
+            interval = (max_val - min_val) / 2**8
+            quantized_grads = torch.round((gradients - min_val) / interval).type(torch.uint8)
+            return quantized_grads
+        
         # Store gradient as list
         client_grad = []
+        min_max_list = []
         for name, params in model.named_parameters():
             if params.requires_grad:
-                client_grad.append(params.grad.cpu().tolist())
-
+                min_v = torch.min(params.grad)
+                max_v = torch.max(params.grad)
+                grad = quantize(min_v, max_v, params.grad).cpu().tolist()
+                min_max = {"min": min_v.cpu().tolist(), "max": max_v.cpu().tolist()}
+                client_grad.append(grad)
+                min_max_list.append(min_max)
+        
         result = {
             "grads": client_grad,
+            "min_max": min_max_list,
             "loss": loss_meter.avg
         }
+
         result = json.dumps(result)
         return result
 
@@ -64,16 +108,26 @@ def map_fns():
 
 def agg_fns():
     def agg_fn1(map_results):
+        def unquantize(min_val, max_val, gradients):
+            interval = (max_val - min_val) / 2**8
+            unquantized_grads = interval * torch.tensor(gradients, dtype=torch.float) + min_val
+            return unquantized_grads.cpu().tolist()
+
         first_result = json.loads(map_results[0])
-        agg_grad = first_result['grads']
+        agg_grad = first_result["grads"]
+        for j in range(len(agg_grad)):
+            agg_grad[j] = unquantize(first_result["min_max"][j]["min"], first_result["min_max"][j]["max"], agg_grad[j])
+        
         loss_meter = AverageMeter()
         loss_meter.update(first_result['loss'])
 
         for i in range(1,len(map_results)):
             map_result = json.loads(map_results[i])
             grad_result = map_result['grads']
+            
             for j in range(len(agg_grad)):
-                agg_grad[j] += grad_result[j]
+                agg_grad[j] += unquantize(map_result[j]["min"], map_result[j]["max"], grad_result[j])
+            
             loss_meter.update(map_result['loss'])
 
         result = {
@@ -87,6 +141,12 @@ def agg_fns():
 def update_fns():
     # Expects model and optimizer in global state
     def update_fn1(agg_result, state):
+        
+        def quantize(min_val, max_val, gradients):
+            interval = (max_val - min_val) / 2**8
+            quantized_grads = torch.round((gradients - min_val) / interval).type(torch.uint8)
+            return quantized_grads
+        
         state["i"] += 1
         if "loss_history" in state:
             state["loss_history"].append(agg_result["loss"])
@@ -103,10 +163,17 @@ def update_fns():
             optimizer.step()
             optimizer.zero_grad()
         model_weights = []
+        min_max_list = []
+
         for name, params in model.named_parameters():
-            model_weights.append(params.cpu().tolist())
+            min_v = torch.min(params)
+            max_v = torch.max(params)
+            quantized_params = quantize(min_v, max_v, params).cpu().tolist()
+            model_weights.append(quantized_params)
+            min_max_list.append({"min": min_v.cpu().tolist(), "max": max_v.cpu().tolist()})
 
         state["model_weights"] = model_weights
+        state["min_max"] = min_max_list
         return state
 
     return [update_fn1]

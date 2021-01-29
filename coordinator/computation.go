@@ -2,6 +2,7 @@ package coordinator
 
 import (
 	"fmt"
+	"time"
 	"context"
 	"github.com/sirupsen/logrus"
 	"github.com/golang/protobuf/proto"
@@ -9,7 +10,6 @@ import (
 	"google.golang.org/grpc/status"
 	pb "leap/proto"
 	"leap/utils"
-	"time"
 	"io"
 )
 
@@ -62,56 +62,30 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 // map request and returns the results of computing the map
 // function on multiple sites.
 //
-// ctx: Carries value and cancellation signals across API
-//      boundaries.
-// req: Map request containing user defined functions.
+// stream: Stream used to receive and send bytes to cloud algo.
 func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
-        fmt.Println("About to stream request")
-	recvBuf := []byte{}
-	for {
-	    chunk, err := stream.Recv()
-	    if err == io.EOF {
-	        break
-	    }
+	// Receive request in chunks
+	startReceive := time.Now()
+	req, err := receiveMapRequestStream(stream)
+	elapsed := time.Since(startReceive)
+	fmt.Println("Elapsed receive request from cloud algo: %s", elapsed)
+	checkErr(c, err)
 
-	    if err != nil {
-	        return err
-	    }
-
-	    recvBuf = append(recvBuf, chunk.Chunk...)
-	}
-	fmt.Println("Finished streaming request")
-
-	req := &pb.MapRequest{}
-	proto.Unmarshal(recvBuf, req)
 	if c.SiteConnectors.Length() == 0 {
 		c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("No sites have been registered.")
 		return status.Error(codes.Unavailable, "There have been no sites registered.")
 	}
-	
-	fmt.Println("Getting results from sites")
+
 	results, err := c.getResultsFromSites(req)
-	fmt.Println("Got results")
+
 	// Send response in chunks
-	sendBuf, err := proto.Marshal(&results)
-	chunkSize := 64 * 1024
-	chunk := &pb.MapResponsesChunk{}
-	fmt.Println("Streaming response")
-	for currByte := 0; currByte < len(sendBuf); currByte += chunkSize {
-	    if currByte + chunkSize > len(sendBuf) {
-	        chunk.Chunk = sendBuf[currByte:len(sendBuf)]
-	    } else {
-	        chunk.Chunk = sendBuf[currByte: currByte + chunkSize]
-	    }
+	startSend := time.Now()
+	err = sendMapResponseStream(&results, stream)
+	elapsed = time.Since(startSend)
+	fmt.Println("Elapsed send request to cloud algo: %s", elapsed)
+	checkErr(c, err)
 
-	    if err = stream.Send(chunk); err != nil {
-	        return err
-	    }
-	}
-	fmt.Println("Finished streaming response")
-
-
-	return nil
+	return err
 }
 
 // Spawns a goroutine that sends a request to each site. The
@@ -176,10 +150,16 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 	defer conn.Close()
 
 	client := pb.NewSiteConnectorClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*150)
+	//ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1000)
 	defer cancel()
 
-	response, err := client.Map(ctx, req)
+	stream, err := client.Map(ctx)
+	err = sendMapRequestStream(req, stream)
+	checkErr(c, err)
+	response, err := receiveMapResponseStream(stream)
+	checkErr(c, err)
+
 	// If site unavailable, update its available to false
 	if utils.IsUnavailableError(err) {
 		site.availableMux.Lock()
@@ -224,4 +204,92 @@ func getSuccessfulResponses(results []ResultFromSite) pb.MapResponses {
 		}
 	}
 	return successfulResponses
+}
+
+// Receives a stream of bytes from the cloud algo
+//
+// stream: Stream containing the bytes to be received
+func receiveMapRequestStream(stream pb.Coordinator_MapServer) (*pb.MapRequest, error) {
+	recvBuf := []byte{}
+	for {
+	    chunk, err := stream.Recv()
+	    if err == io.EOF {
+	        break
+	    }
+
+	    if err != nil {
+	        return nil, err
+	    }
+
+	    recvBuf = append(recvBuf, chunk.Chunk...)
+	}
+
+	req := &pb.MapRequest{}
+	proto.Unmarshal(recvBuf, req)
+	return req, nil
+}
+
+// Sends a stream of bytes to cloud algo
+//
+// results: List of map responses to turn into a bytes stream
+// stream:  Grpc stream where the bytes are sent
+func sendMapResponseStream(results *pb.MapResponses, stream pb.Coordinator_MapServer) error {
+	startMarshalling := time.Now()
+	sendBuf, err := proto.Marshal(results)
+	fmt.Println("Time for marshalling response: %s", time.Since(startMarshalling))
+	chunkSize := 64 * 1024
+	for currByte := 0; currByte < len(sendBuf); currByte += chunkSize {
+	    chunk := &pb.MapResponsesChunk{}
+	    if currByte + chunkSize > len(sendBuf) {
+	        chunk.Chunk = sendBuf[currByte:len(sendBuf)]
+	    } else {
+	        chunk.Chunk = sendBuf[currByte: currByte + chunkSize]
+	    }
+
+	    if err = stream.Send(chunk); err != nil {
+	        return err
+	    }
+	}
+	return nil
+}
+
+func sendMapRequestStream(req *pb.MapRequest, stream pb.SiteConnector_MapClient) error {
+	sendBuf, err := proto.Marshal(req)
+	chunkSize := 64 * 1024
+	for currByte := 0; currByte < len(sendBuf); currByte += chunkSize {
+	    chunk := &pb.MapRequestChunk{}
+	    if currByte + chunkSize > len(sendBuf) {
+	        chunk.Chunk = sendBuf[currByte:len(sendBuf)]
+	    } else {
+	        chunk.Chunk = sendBuf[currByte: currByte + chunkSize]
+	    }
+
+	    if err = stream.Send(chunk); err != nil {
+	        return err
+	    }
+	}
+	stream.CloseSend()
+	return nil
+
+}
+
+func receiveMapResponseStream(stream pb.SiteConnector_MapClient) (*pb.MapResponse, error) {
+	recvBuf := []byte{}
+	for {
+	    chunk, err := stream.Recv()
+	    if err == io.EOF {
+		break
+	    }
+
+	    if err != nil {
+	        return nil, err
+	    }
+
+	    recvBuf = append(recvBuf, chunk.Chunk...)
+	}
+
+	req := &pb.MapResponse{}
+	proto.Unmarshal(recvBuf, req)
+	return req, nil
+
 }

@@ -17,7 +17,7 @@ import "proto/selector-verification-msgs.proto";
 service SiteAlgo {
 
     // Performs the appropriate computation at the host algo and returns the result.
-    rpc Map (MapRequest) returns (MapResponse) {}
+    rpc Map (stream MapRequestChunk) returns (stream MapResponseChunk) {}
 
     // Pinged by the site-connector to determine whether the site-algo is on
     rpc SiteAvailable (SiteAvailableReq) returns (SiteAvailableRes) {}

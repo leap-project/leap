@@ -85,17 +85,19 @@ def get_dataloader(hyperparams, data):
             elif lesion_type == "vasc":
                 return 0
      
-    transforms = torchvision.transforms.Compose([torchvision.transforms.Resize((224,224)), 
+    transforms_train = torchvision.transforms.Compose([torchvision.transforms.Resize((224,224)), 
                                           torchvision.transforms.RandomHorizontalFlip(),
                                           torchvision.transforms.RandomVerticalFlip(),
                                           torchvision.transforms.RandomRotation(20),
                                           torchvision.transforms.ColorJitter(brightness=0.1, contrast=0.1, hue=0.1),
                                           torchvision.transforms.ToTensor(),
                                           torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    ids = list(range(1,10001))
-    random_ids = random.sample(ids, 10000)
-    train_ids = random_ids[:8000]
-    dataset = HAMDataset(train_ids, transform=transforms)
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
+    transforms_val = torchvision.transforms.Compose([torchvision.transforms.Resize((224,224)), 
+                                          torchvision.transforms.ToTensor(),
+                                          torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     
-    return dataloader
+    dataset_train = HAMDataset(hyperparams["train_ids"], transform=transforms_train)
+    dataset_val = HAMDataset(hyperparams["val_ids"], transform=transforms_val)
+    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
+    dataloader_val = torch.utils.data.DataLoader(dataset_val, batch_size=hyperparams["batch_size"], shuffle=False, num_workers=4)
+    return dataloader_train, dataloader_val

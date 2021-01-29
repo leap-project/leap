@@ -10,7 +10,7 @@ import "proto/selector-verification-msgs.proto";
 service SiteConnector {
 
     // Relays a computation request from the coordinator to appropriate algorithm in site
-    rpc Map (MapRequest) returns (MapResponse) {}
+    rpc Map (stream MapRequestChunk) returns (stream MapResponseChunk) {}
 
     // Pinged by the coordinator to determine whether a site is available
     rpc SiteAvailable (SiteAvailableReq) returns (SiteAvailableRes) {}

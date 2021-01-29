@@ -5,6 +5,7 @@ import api.register.user.registration as user_reg
 import api.leap_fn as leap_fn
 import api.codes as codes
 import api.local.functions as leap_functions
+import random
 
 if __name__ == "__main__":
     leap_fed_learn = leap_fn.FedLearnFunction()
@@ -22,13 +23,20 @@ if __name__ == "__main__":
     leap_fed_learn.get_criterion = module.get_criterion
     leap_fed_learn.get_dataloader = module.get_dataloader
 
+    ids = list(range(1,10001))
+    random_ids = random.sample(ids, 10000)
+    train_ids = random_ids[:8000]
+    val_ids = random_ids[8000:]
+    
     hyperparams = {
-        "lr": 1e-3,
+        "lr": 1e-4,
         "d_x": 224, # input dimension
         "d_y": 2, # output dimension
         "batch_size": 16,
         "max_iters": 100,
-        "iters_per_epoch":1
+        "iters_per_epoch": 100,
+        "train_ids": train_ids,
+        "val_ids": val_ids
     }
     leap_fed_learn.hyperparams = hyperparams
 

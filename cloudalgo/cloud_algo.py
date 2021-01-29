@@ -236,27 +236,19 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
 
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
-            print("About to call map")
             site_request = self._create_map_request(req_body, state, sites, req)
             # Get result from each site through coordinator
             coord_stub = self._get_coord_stub()
             chunks = self._get_chunks_to_send(site_request) 
             chunk_iterator = self._generate_chunk_iterator(chunks)
             results = coord_stub.Map(chunk_iterator)
-            print("result returned")
             results = self._extract_chunks(results)
-            print("extracted chunks")
             eps, delt = self.accumulate_priv_values(req_body, eps, delt, len(results.responses))
-            print("accumulated priv values")
             extracted_responses = self._extract_map_responses(results.responses)
-            print("extracted responses")
-            print("this is the result")
             # Aggregate results from each site
             agg_result = agg_fn[choice](extracted_responses)
-            print("aggredated stuff")
             # Update the state
             state = update_fn[choice](agg_result, state)
-            print("updated model")
             # Decide to stop or continue
             stop = stop_fn(agg_result, state)
         post_result = postprocessing_fn(agg_result, state)

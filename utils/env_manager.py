@@ -326,6 +326,7 @@ class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
         # pass in context as second argument so that get_model has access to context variables
         env_utils.load_from_fn_generator("get_model", "model", req_body, context, gen_fn_args=[hyperparams])
         params = context["model"].parameters()
+        env_utils.load_fn("get_dataloader", req_body, context)
         env_utils.load_from_fn_generator("get_optimizer", "optimizer", req_body, context, gen_fn_args=[params, hyperparams])
         env_utils.load_from_fn_generator("get_criterion", "criterion", req_body, context, gen_fn_args=[hyperparams])
         self.logger.withFields({"request-id": req_id}).info("Loaded cloud environment variables for federated learning.")

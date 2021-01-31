@@ -1,5 +1,6 @@
 import sys
 sys.path.append("../")
+import pickle
 import api.leap as leap
 import api.register.user.registration as user_reg
 import api.leap_fn as leap_fn
@@ -33,8 +34,8 @@ if __name__ == "__main__":
         "d_x": 224, # input dimension
         "d_y": 2, # output dimension
         "batch_size": 16,
-        "max_iters": 100,
-        "iters_per_epoch": 100,
+        "max_iters": 80,
+        "iters_per_epoch": 1,
         "train_ids": train_ids,
         "val_ids": val_ids
     }

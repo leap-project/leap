@@ -42,30 +42,6 @@ def map_fns():
                 unquantized_weights = unquantize(min_max_list[i]["min"], min_max_list[i]["max"], model_weights[i])
                 params.data = torch.tensor(unquantized_weights)
         
-        # Get validation loss        
-        def measure_acc(dataloader, model):
-            with torch.no_grad():
-                val_sum = 0
-                val_total = 0
-                for i, (X, Y) in enumerate(dataloader, 0):
-                    target = Y
-                    image = X
-            
-                    output = model(image)
-                    correct_sum, total = acc_sum(output, target)
-                    val_sum += correct_sum
-                    val_total += total
-                print("Acc: " + str(val_sum / val_total))
-        
-        def acc_sum(pred, target):
-            with torch.no_grad():
-                pred_softmax = torch.log_softmax(pred, dim=1)
-                _, pred_tags = torch.max(pred_softmax, dim=1)
-                correct_pred = (pred_tags == target).float()
-                return correct_pred.sum(), len(correct_pred)
-        
-        measure_acc(dataloader_val, model)
-
         # Accumulate gradients
         loss_meter = AverageMeter()
         for i, (X, Y) in enumerate(dataloader):

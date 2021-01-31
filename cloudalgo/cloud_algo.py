@@ -6,6 +6,7 @@ import grpc
 import concurrent.futures as futures
 import json
 import logging
+import pickle
 from pylogrus import PyLogrus, TextFormatter
 import utils.env_manager as env_manager
 
@@ -189,6 +190,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # chunks: Stream of chunks from grpc call
     def _extract_chunks(self, chunks):
         buf = bytes() 
+        
         for chunk in chunks:
             buf += chunk.chunk
 
@@ -231,7 +233,11 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         stop = False
         eps = 0
         delt = 0
+    
+        loss_list = [{"time": 0.0, "acc": 0.0}]
+        
         while not stop:
+            start = time.time()
             map_results = []
 
             # Choose which map/agg/update_fn to use
@@ -250,8 +256,16 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             # Update the state
             state = update_fn[choice](agg_result, state)
             # Decide to stop or continue
+            acc = self.get_validation_loss()        
+            end = time.time()
+            loss_list.append({"time": end - start, "acc": acc})
             stop = stop_fn(agg_result, state)
+        
+        with open('loss_list.pkl', 'wb') as f:
+            pickle.dump(loss_list, f)
+        
         post_result = postprocessing_fn(agg_result, state)
+     
         return post_result, eps, delt
 
     def accumulate_priv_values(self, req, eps, delt, num_results):
@@ -261,6 +275,34 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             delt += req['delta'] * num_results
         return eps, delt
 
+    
+    def get_validation_loss(self):
+        _, dataloader_val = get_dataloader(hyperparams, [])
+        self.measure_acc(dataloader_val, model)
+        
+   
+    def measure_acc(self, dataloader, ml_model):
+        with torch.no_grad():
+            val_sum = 0
+            val_total = 0
+            for i, (X, Y) in enumerate(dataloader, 0):
+                target = Y
+                image = X
+        
+                output = ml_model(image)
+                correct_sum, total = self.acc_sum(output, target)
+                val_sum += correct_sum
+                val_total += total
+            print("Acc: " + str(val_sum / val_total))
+    
+    def acc_sum(self, pred, target):
+        with torch.no_grad():
+            pred_softmax = torch.log_softmax(pred, dim=1)
+            _, pred_tags = torch.max(pred_softmax, dim=1)
+            correct_pred = (pred_tags == target).float()
+            return correct_pred.sum(), len(correct_pred)
+        
+    
     # Extracts the protobuf responses into a list.
     #
     # pb_responses: Response message from protobuf.

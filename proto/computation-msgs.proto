@@ -38,7 +38,7 @@ message MapRequest {
 
 // Chunked compute response so we can transmit large files
 message MapResponseChunk {
-    bytes chunk = 1;    
+    bytes chunk = 1;
 }
 
 // A response from a map computation

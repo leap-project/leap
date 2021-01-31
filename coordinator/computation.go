@@ -235,7 +235,7 @@ func receiveMapRequestStream(stream pb.Coordinator_MapServer) (*pb.MapRequest, e
 // stream:  Grpc stream where the bytes are sent
 func sendMapResponseStream(results *pb.MapResponses, stream pb.Coordinator_MapServer) error {
 	startMarshalling := time.Now()
-	sendBuf, err := proto.Marshal(results)
+	sendBuf, _ := proto.Marshal(results)
 	fmt.Println("Time for marshalling response: %s", time.Since(startMarshalling))
 	chunkSize := 64 * 1024
 	for currByte := 0; currByte < len(sendBuf); currByte += chunkSize {
@@ -245,8 +245,7 @@ func sendMapResponseStream(results *pb.MapResponses, stream pb.Coordinator_MapSe
 	    } else {
 	        chunk.Chunk = sendBuf[currByte: currByte + chunkSize]
 	    }
-
-	    if err = stream.Send(chunk); err != nil {
+	    if err := stream.Send(chunk); err != nil {
 	        return err
 	    }
 	}

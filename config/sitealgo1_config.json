@@ -1,13 +1,13 @@
 {
-  "ip_port": "127.0.0.1:60001",
-  "connector_ip_port": "127.0.0.1:50001",
+  "ip_port": "127.0.0.1:60002",
+  "connector_ip_port": "127.0.0.1:50002",
   "csv_true": "0",
   "site_id": 1,
   "secure_with_tls": "n",
   "cert": "../certs/sitealgo.crt",
   "key": "../certs/sitealgo.key",
   "certificate_authority": "../certs/myCA.crt",
-  "redcap_url": "http://localhost/redcap/api", 
-  "redcap_auth": "fa2901c70d5ee07e0eacc9068f46431e",
-  "redcap_pid": 15
+  "redcap_url": "http://52.156.135.67/redcap/api",
+  "redcap_auth": "",
+  "redcap_pid": 13
 }

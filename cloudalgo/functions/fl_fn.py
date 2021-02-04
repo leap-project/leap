@@ -25,6 +25,7 @@ class AverageMeter(object):
 def map_fns():
     # Expects model, dataloader, optimizer, criterion to be predefined
     def map_fn1(data, state):
+        hyperparams["site_id"] = state["site_id"]
         dataloader, dataloader_val = get_dataloader(hyperparams, data)
         if 'loss_history' in state:
             print("loss: {}".format(state["loss_history"][-1]))
@@ -87,7 +88,7 @@ def agg_fns():
         def unquantize(min_val, max_val, gradients):
             interval = (max_val - min_val) / 2**8
             unquantized_grads = interval * torch.tensor(gradients, dtype=torch.float) + min_val
-            return unquantized_grads.cpu().tolist()
+            return unquantized_grads.cpu()
 
         first_result = json.loads(map_results[0])
         agg_grad = first_result["grads"]
@@ -96,16 +97,17 @@ def agg_fns():
         
         loss_meter = AverageMeter()
         loss_meter.update(first_result['loss'])
-
+        
         for i in range(1,len(map_results)):
             map_result = json.loads(map_results[i])
             grad_result = map_result['grads']
             
             for j in range(len(agg_grad)):
-                agg_grad[j] += unquantize(map_result[j]["min"], map_result[j]["max"], grad_result[j])
+                agg_grad[j] = (torch.tensor(agg_grad[j]) +  
+                        unquantize(map_result["min_max"][j]["min"], map_result["min_max"][j]["max"], grad_result[j])).cpu().tolist()
+
             
             loss_meter.update(map_result['loss'])
-
         result = {
             "grad":agg_grad,
             "loss":loss_meter.avg
@@ -122,7 +124,7 @@ def update_fns():
             interval = (max_val - min_val) / 2**8
             quantized_grads = torch.round((gradients - min_val) / interval).type(torch.uint8)
             return quantized_grads
-        
+       
         state["i"] += 1
         if "loss_history" in state:
             state["loss_history"].append(agg_result["loss"])

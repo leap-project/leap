@@ -29,21 +29,22 @@ if __name__ == "__main__":
     train_ids = random_ids[:8000]
     val_ids = random_ids[8000:]
     
+    sites = [0, 1]
     hyperparams = {
         "lr": 1e-4,
         "d_x": 224, # input dimension
         "d_y": 2, # output dimension
         "batch_size": 16,
-        "max_iters": 80,
+        "max_iters": 20,
         "iters_per_epoch": 1,
         "train_ids": train_ids,
-        "val_ids": val_ids
+        "val_ids": val_ids,
+        "num_sites": len(sites)
     }
     leap_fed_learn.hyperparams = hyperparams
 
     #user_reg.register_user("TestUser", "123456", "127.0.0.1:50000")
     auth_res = user_reg.authenticate_user("TestUser", "123456", "127.0.0.1:50000")
     leap = leap.DistributedLeap(leap_fed_learn, "127.0.0.1:50000", auth_res.token)
-    sites = [1]
     result = leap.get_result(sites)
     print(result)

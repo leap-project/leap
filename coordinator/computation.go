@@ -29,9 +29,11 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	c.Log.Info("Received compute request.")
 	c.ReqCounterMux.Lock()
 	req.Id = c.ReqCounter
+	currentTime := time.Now().UnixNano()
+	msg := fmt.Sprintf("StartTiming-%d-%d", req.Id, currentTime)
+	c.Log.Info(msg)
 	c.ReqCounter++
 	c.ReqCounterMux.Unlock()
-
 	err := c.checkSiteBudget(ctx, req)
 	checkErr(c, err)
 	if err == nil {
@@ -54,7 +56,9 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	} else {
 		c.Log.Error(err)
 	}
-
+	currentTime = time.Now().UnixNano()
+	msg = fmt.Sprintf("EndTiming-%d-%d", req.Id, currentTime)
+	c.Log.Info(msg)
 	return response, err
 }
 
@@ -65,10 +69,7 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 // stream: Stream used to receive and send bytes to cloud algo.
 func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
 	// Receive request in chunks
-	startReceive := time.Now()
 	req, err := receiveMapRequestStream(stream)
-	elapsed := time.Since(startReceive)
-	fmt.Println("Elapsed receive request from cloud algo: %s", elapsed)
 	checkErr(c, err)
 
 	if c.SiteConnectors.Length() == 0 {
@@ -79,10 +80,13 @@ func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
 	results, err := c.getResultsFromSites(req)
 
 	// Send response in chunks
-	startSend := time.Now()
+	currentTime := time.Now().UnixNano()
+	msg := fmt.Sprintf("StartSend-%d-%d", req.Id, currentTime)
+	c.Log.Info(msg)
 	err = sendMapResponseStream(&results, stream)
-	elapsed = time.Since(startSend)
-	fmt.Println("Elapsed send request to cloud algo: %s", elapsed)
+	currentTime = time.Now().UnixNano()
+	msg = fmt.Sprintf("EndSend-%d-%d", req.Id, currentTime)
+	c.Log.Info(msg)
 	checkErr(c, err)
 
 	return err
@@ -234,9 +238,7 @@ func receiveMapRequestStream(stream pb.Coordinator_MapServer) (*pb.MapRequest, e
 // results: List of map responses to turn into a bytes stream
 // stream:  Grpc stream where the bytes are sent
 func sendMapResponseStream(results *pb.MapResponses, stream pb.Coordinator_MapServer) error {
-	startMarshalling := time.Now()
 	sendBuf, _ := proto.Marshal(results)
-	fmt.Println("Time for marshalling response: %s", time.Since(startMarshalling))
 	chunkSize := 64 * 1024
 	for currByte := 0; currByte < len(sendBuf); currByte += chunkSize {
 	    chunk := &pb.MapResponsesChunk{}

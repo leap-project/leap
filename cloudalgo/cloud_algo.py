@@ -234,12 +234,11 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         eps = 0
         delt = 0
     
-        loss_list = [{"time": 0.0, "acc": 0.0}]
         
         while not stop:
-            start = time.time()
+            currTime = time.time_ns()
+            log.info("StartIter-" + str(req.id) + "-" + str(currTime))
             map_results = []
-
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
             site_request = self._create_map_request(req_body, state, sites, req)
@@ -257,8 +256,9 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             state = update_fn[choice](agg_result, state)
             # Decide to stop or continue
             acc = self.get_validation_loss()        
-            end = time.time()
-            loss_list.append({"time": end - start, "acc": acc})
+            log.info("Acc-" + str(req.id) + "-" + str(acc))
+            currTime = time.time_ns()
+            log.info("EndIter-" + str(req.id) + "-" + str(currTime))
             stop = stop_fn(agg_result, state)
         
         with open('loss_list.pkl', 'wb') as f:

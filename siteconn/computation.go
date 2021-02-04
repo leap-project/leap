@@ -1,6 +1,7 @@
 package siteconnector
 
 import (
+	"fmt"
 	"time"
 	"context"
 	"github.com/sirupsen/logrus"
@@ -21,6 +22,9 @@ import (
 func (sc *SiteConnector) Map(connectorStream pb.SiteConnector_MapServer) (error) {
 	req, err := receiveMapRequestStream(connectorStream)
 	checkErr(sc, err)
+	currentTime := time.Now().UnixNano()
+	msg := fmt.Sprintf("StartIter-%d-%d", req.Id, currentTime)
+	sc.Log.Info(msg)
 	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
 	sc.PendingRequests.Set(req.Id, req.Id)
 	conn, err := sc.Dial(sc.Conf.AlgoIpPort, sc.Conf.SiteAlgoCN)
@@ -48,7 +52,17 @@ func (sc *SiteConnector) Map(connectorStream pb.SiteConnector_MapServer) (error)
 		return err
 	}
 
+	currentTime = time.Now().UnixNano()
+	msg = fmt.Sprintf("BeginSend-%d-%d", req.Id, currentTime)
+	sc.Log.Info(msg)
 	err = sendMapResponseStream(res, connectorStream)
+	currentTime = time.Now().UnixNano()
+	msg = fmt.Sprintf("EndSend-%d-%d", req.Id, currentTime)
+	sc.Log.Info(msg)
+
+	currentTime = time.Now().UnixNano()
+	msg = fmt.Sprintf("EndIter-%d-%d", req.Id, currentTime)
+	sc.Log.Info(msg)
 	return err
 }
 

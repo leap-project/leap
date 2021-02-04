@@ -96,7 +96,14 @@ def get_dataloader(hyperparams, data):
                                           torchvision.transforms.ToTensor(),
                                           torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     
-    dataset_train = HAMDataset(hyperparams["train_ids"], transform=transforms_train)
+    site_id = hyperparams.get("site_id")
+    train_ids = hyperparams["train_ids"]
+    if site_id is not None:
+        first_id = int(site_id * len(train_ids) / hyperparams["num_sites"])
+        last_id = int((site_id * len(train_ids) / hyperparams["num_sites"]) + (len(train_ids) / hyperparams["num_sites"]))
+        train_ids = train_ids[first_id:last_id]
+    
+    dataset_train = HAMDataset(train_ids, transform=transforms_train)
     dataset_val = HAMDataset(hyperparams["val_ids"], transform=transforms_val)
     dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
     dataloader_val = torch.utils.data.DataLoader(dataset_val, batch_size=hyperparams["batch_size"], shuffle=False, num_workers=4)

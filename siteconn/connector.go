@@ -74,7 +74,7 @@ func NewSiteConnector(config Config) *SiteConnector {
 //
 // No args.
 func GetConfig() Config {
-	configPathPtr := flag.String("config", "../config/conn1-config.json", "The path to the config file")
+	configPathPtr := flag.String("config", "../config/conn0-config.json", "The path to the config file")
 	flag.Parse()
 
 	jsonFile, err := os.Open(*configPathPtr)

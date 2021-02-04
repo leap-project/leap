@@ -61,6 +61,7 @@ pip install -e git+https://github.com/sburns/PyCap.git#egg=PyCap
 pip install numpy
 pip install pylogrus
 pip install torch
+pip install torchvision
 ```
 
 ### Installing MySQL

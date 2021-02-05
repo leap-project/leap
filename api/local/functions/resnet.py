@@ -28,7 +28,7 @@ def get_dataloader(hyperparams, data):
     
         def __init__(self, ids, transform=None):
             self.url = "http://localhost/redcap/api/"
-            self.token = "0F7DCA82F38137780161143CFB6660FC"
+            self.token = "936AF3AE86AEB1FDD2CA231EDE7D2D2D"
             self.project = Project(self.url, self.token) 
             
             records = self.project.export_records(records=ids)

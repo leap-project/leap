@@ -13,7 +13,7 @@ import concurrent.futures as futures
 import redcap
 import json
 import logging
-from pylogrus import PyLogrus, TextFormatter
+from pylogrus import PyLogrus, TextFormatter, JsonFormatter
 import utils.env_manager as env_manager
 import cloudalgo.functions.privacy as leap_privacy
 import csv
@@ -31,10 +31,12 @@ from sitealgo import rc_sql_gen, codes
 logging.setLoggerClass(PyLogrus)
 logger = logging.getLogger(__name__) 
 logger.setLevel(logging.DEBUG)
+
 formatter = TextFormatter(datefmt='Z', colorize=True)
 ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 ch.setFormatter(formatter)
+
 logger.addHandler(ch)
 log = logger.withFields({"node": "site-algo"})
 
@@ -47,7 +49,13 @@ class SiteAlgo():
 
     def __init__(self, config_path):
         self.config = self.get_config(config_path)
-
+        
+        fh = logging.FileHandler("logs/sitealgo" + str(self.config["site_id"]) + ".log", 'w+')
+        fh.setLevel(logging.DEBUG)
+        jsonformatter = JsonFormatter(datefmt='Z')
+        fh.setFormatter(jsonformatter)
+        logger.addHandler(fh)
+        log = logger.withFields({"node": "site-algo"})
 
     def get_config(self, config_path):
         with open(config_path) as json_file:

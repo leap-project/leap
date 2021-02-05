@@ -1,7 +1,6 @@
 package coordinator
 
 import (
-	"fmt"
 	"time"
 	"context"
 	"github.com/sirupsen/logrus"
@@ -30,8 +29,7 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	c.ReqCounterMux.Lock()
 	req.Id = c.ReqCounter
 	currentTime := time.Now().UnixNano()
-	msg := fmt.Sprintf("StartTiming-%d-%d", req.Id, currentTime)
-	c.Log.Info(msg)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("StartTiming")
 	c.ReqCounter++
 	c.ReqCounterMux.Unlock()
 	err := c.checkSiteBudget(ctx, req)
@@ -57,8 +55,7 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 		c.Log.Error(err)
 	}
 	currentTime = time.Now().UnixNano()
-	msg = fmt.Sprintf("EndTiming-%d-%d", req.Id, currentTime)
-	c.Log.Info(msg)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndTiming")
 	return response, err
 }
 
@@ -81,12 +78,10 @@ func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
 
 	// Send response in chunks
 	currentTime := time.Now().UnixNano()
-	msg := fmt.Sprintf("StartSend-%d-%d", req.Id, currentTime)
-	c.Log.Info(msg)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("StartSend")
 	err = sendMapResponseStream(&results, stream)
 	currentTime = time.Now().UnixNano()
-	msg = fmt.Sprintf("EndSend-%d-%d", req.Id, currentTime)
-	c.Log.Info(msg)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndSend")
 	checkErr(c, err)
 
 	return err

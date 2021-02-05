@@ -33,7 +33,7 @@ def map_fns():
         def unquantize(min_val, max_val, gradients):
             interval = (max_val - min_val) / 2**8
             unquantized_grads = interval * torch.tensor(gradients, dtype=torch.float) + min_val
-            return unquantized_grads.cpu().tolist()
+            return unquantized_grads
         
         # Update model with new weights
         if 'model_weights' in state:
@@ -41,7 +41,7 @@ def map_fns():
             min_max_list = state["min_max"]
             for i, (name, params) in enumerate(model.named_parameters()):
                 unquantized_weights = unquantize(min_max_list[i]["min"], min_max_list[i]["max"], model_weights[i])
-                params.data = torch.tensor(unquantized_weights)
+                params.data = unquantized_weights
         
         # Accumulate gradients
         loss_meter = AverageMeter()
@@ -88,7 +88,7 @@ def agg_fns():
         def unquantize(min_val, max_val, gradients):
             interval = (max_val - min_val) / 2**8
             unquantized_grads = interval * torch.tensor(gradients, dtype=torch.float) + min_val
-            return unquantized_grads.cpu()
+            return unquantized_grads
 
         first_result = json.loads(map_results[0])
         agg_grad = first_result["grads"]
@@ -103,7 +103,7 @@ def agg_fns():
             grad_result = map_result['grads']
             
             for j in range(len(agg_grad)):
-                agg_grad[j] = (torch.tensor(agg_grad[j]) +  
+                agg_grad[j] = (agg_grad[j] +  
                         unquantize(map_result["min_max"][j]["min"], map_result["min_max"][j]["max"], grad_result[j])).cpu().tolist()
 
             
@@ -173,7 +173,7 @@ def stop_fn(agg_result, state):
     return state["i"] == hyperparams["max_iters"]
 
 def postprocessing_fn(agg_result, state):
-    return agg_result
+    return agg_result["loss"]
 
 def init_state_fn():
     state = {

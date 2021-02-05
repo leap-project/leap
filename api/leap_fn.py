@@ -5,7 +5,8 @@
 
 import json
 import proto as pb
-from utils import leap_utils
+#from utils import leap_utils
+import utils.leap_utils as leap_utils
 from proto import computation_msgs_pb2
 
 # The main base class for a Leap function.

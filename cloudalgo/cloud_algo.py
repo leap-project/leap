@@ -7,29 +7,36 @@ import concurrent.futures as futures
 import json
 import logging
 import pickle
-from pylogrus import PyLogrus, TextFormatter
+from pylogrus import PyLogrus, TextFormatter, JsonFormatter
 import utils.env_manager as env_manager
 
 from proto import cloud_algos_pb2_grpc
 from proto import computation_msgs_pb2
 from proto import coordinator_pb2_grpc
 
-# Setup logging tool
-logging.setLoggerClass(PyLogrus)
-logger = logging.getLogger(__name__)  # type: PyLogrus
-logger.setLevel(logging.DEBUG)
-formatter = TextFormatter(datefmt='Z', colorize=True)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-log = logger.withFields({"node": "cloud-algo"})
-
-
 class CloudAlgo():
     def __init__(self, config_path):
         self.config = self.get_config(config_path)
 
+        # Setup logging tool
+        logging.setLoggerClass(PyLogrus)
+        logger = logging.getLogger(__name__)  # type: PyLogrus
+        logger.setLevel(logging.DEBUG)
+        
+        formatter = TextFormatter(datefmt='Z', colorize=True)
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(formatter)
+        
+        jsonformatter = JsonFormatter(datefmt='Z')
+        fh = logging.FileHandler("logs/cloudalgo.log", 'w+')
+        fh.setLevel(logging.DEBUG)
+        fh.setFormatter(jsonformatter)
+        
+        logger.addHandler(ch)
+        logger.addHandler(fh)
+        self.log = logger.withFields({"node": "cloud-algo"})
+           
 
     # Loads the file with the configurations for the cloud algo
     #
@@ -46,7 +53,7 @@ class CloudAlgo():
     #
     # No args
     def serve(self):
-        cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config)
+        cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config, self.log)
         maxMsgLength = 1024 * 1024 * 1024
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
@@ -66,15 +73,15 @@ class CloudAlgo():
             server.add_insecure_port((self.config["ip_port"]))
 
         server.start()
-        log.info("Server started")
-        log.withFields({"ip-port": self.config["ip_port"]}).info("Listening for requests")
+        self.log.info("Server started")
+        self.log.withFields({"ip-port": self.config["ip_port"]}).info("Listening for requests")
         while True:
             time.sleep(5)
 
 
 # GRPC service for cloud algos
 class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
-    def __init__(self, ip_port, coordinator_ip_port, config):
+    def __init__(self, ip_port, coordinator_ip_port, config, log):
         self.id_count = 0
         self.live_requests = {}
         self.ip_port = ip_port
@@ -83,6 +90,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         self.cert = None
         self.key = None
         self.ca = None
+        self.log = log
 
 
     # Coordinates computations across multiple local sites and returns result to client
@@ -107,7 +115,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # request: The algorithm to be computed
     # context: Grpc boilerplate
     def Compute(self, request, context):
-        log.withFields({"request-id": request.id}).info("Received a computation request.")
+        self.log.withFields({"request-id": request.id}).info("Received a computation request.")
         try:
             req = json.loads(request.req)
             sites = request.sites
@@ -140,10 +148,10 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 res.private = True
 
         except grpc.RpcError as e:
-            log.withFields({"request-id": request.id}).error(e.details())
+            self.log.withFields({"request-id": request.id}).error(e.details())
             raise e
         except BaseException as e:
-            log.withFields({"request-id": request.id}).error(e)
+            self.log.withFields({"request-id": request.id}).error(e)
             raise e
 
         return res
@@ -237,7 +245,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         
         while not stop:
             currTime = time.time_ns()
-            log.info("StartIter-" + str(req.id) + "-" + str(currTime))
+            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("StartIter")
             map_results = []
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
@@ -256,14 +264,12 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             state = update_fn[choice](agg_result, state)
             # Decide to stop or continue
             acc = self.get_validation_loss()        
-            log.info("Acc-" + str(req.id) + "-" + str(acc))
+            self.log.info("Acc-" + str(req.id) + "-" + str(float(acc)))
+            self.log.withFields({"request-id": req.id, "accuracy": float(acc)}).info("Acc")
             currTime = time.time_ns()
-            log.info("EndIter-" + str(req.id) + "-" + str(currTime))
+            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("EndIter")
             stop = stop_fn(agg_result, state)
-        
-        with open('loss_list.pkl', 'wb') as f:
-            pickle.dump(loss_list, f)
-        
+         
         post_result = postprocessing_fn(agg_result, state)
      
         return post_result, eps, delt
@@ -278,9 +284,10 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     
     def get_validation_loss(self):
         _, dataloader_val = get_dataloader(hyperparams, [])
-        self.measure_acc(dataloader_val, model)
-        
+        val_loss = self.measure_acc(dataloader_val, model)
+        return val_loss
    
+
     def measure_acc(self, dataloader, ml_model):
         with torch.no_grad():
             val_sum = 0
@@ -294,6 +301,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 val_sum += correct_sum
                 val_total += total
             print("Acc: " + str(val_sum / val_total))
+            return val_sum / val_total
     
     def acc_sum(self, pred, target):
         with torch.no_grad():

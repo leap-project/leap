@@ -2,7 +2,8 @@
 
 if [ "$#" -ne 4 ]; then
     echo "Illegal number of parameters (expecting 4):"
-    echo "[n_sites, site_ip_path, cloud_ip_path]"
+    echo "[n_sites, site_ip_path, cloud_ip_path, log_dir_path]"
+
     exit
 fi
 

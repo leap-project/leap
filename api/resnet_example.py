@@ -7,8 +7,14 @@ import api.leap_fn as leap_fn
 import api.codes as codes
 import api.local.functions as leap_functions
 import random
+import argparse
+import numpy as np
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('num_sites', metavar='n', type=int)
+    args = parser.parse_args()
+
     leap_fed_learn = leap_fn.FedLearnFunction()
     
     selector = {
@@ -29,7 +35,7 @@ if __name__ == "__main__":
     train_ids = random_ids[:8000]
     val_ids = random_ids[8000:]
     
-    sites = [0, 1]
+    sites = np.arange(args.num_sites)
     hyperparams = {
         "lr": 1e-4,
         "d_x": 224, # input dimension

@@ -263,8 +263,10 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             # Update the state
             state = update_fn[choice](agg_result, state)
             # Decide to stop or continue
+            currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("ValStart")
             acc = self.get_validation_loss()
+            currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("ValEnd")
             self.log.withFields({"request-id": req.id, "accuracy": float(acc)}).info("Acc")
             currTime = time.time_ns()

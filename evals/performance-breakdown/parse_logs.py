@@ -12,8 +12,14 @@ def parse(coord_file, cloudalgo_file, sites_files):
     total_time = requests["0"]["end-time"] - requests["0"]["start-time"]
     coord_send_time = (np.array(requests["0"]["endsend-coord"]) - np.array(requests["0"]["startsend-coord"])).sum()
     cloud_time = (np.array(requests["0"]["enditer-cloud"]) - np.array(requests["0"]["startiter-cloud"])).sum()
+    validation_time = (np.array(requests["0"]["valend-cloud"]) - np.array(requests["0"]["valstart-cloud"])).sum()
     site_send_time, site_iter_time = get_time_spent_on_sites(requests, "0")
-    plot(total_time, coord_send_time, cloud_time, site_send_time, site_iter_time)
+    print(total_time)
+    print(coord_send_time)
+    print(cloud_time)
+    print(site_send_time)
+    print(site_iter_time)
+    plot(total_time, coord_send_time, cloud_time, site_send_time, site_iter_time, validation_time)
 
 def get_time_spent_on_sites(requests, req_id):
     logs = requests[req_id]
@@ -45,6 +51,8 @@ def parse_coord(file, requests):
                                                       "endsend-coord": [],
                                                       "startiter-cloud": [],
                                                       "enditer-cloud": [],
+                                                      "valstart-cloud": [],
+                                                      "valend-cloud": [],
                                                       "sites": {},
                                                       "acc": []}
         elif line_json["msg"] == "EndTiming":
@@ -70,6 +78,10 @@ def parse_cloudalgo(file, requests):
         elif line_json["message"] == "Acc":
             req_id = str(line_json["request-id"])
             requests[req_id]["acc"].append(line_json["accuracy"])
+        elif line_json["message"] == "ValStart":
+            requests[req_id]["valstart-cloud"].append(line_json["unix-nano"])
+        elif line_json["message"] == "ValEnd":
+            requests[req_id]["valend-cloud"].append(line_json["unix-nano"])
 
 
 def parse_sites(files, requests):
@@ -100,16 +112,16 @@ def parse_sites(files, requests):
                 requests[req_id]["sites"][site_id]["endsend-site"].append(line_json["unix-nano"])
 
 
-def plot(total_time, coord_send_time, cloud_time, site_send_time, site_iter_time):
+def plot(total_time, coord_send_time, cloud_time, site_send_time, site_iter_time, validation_time):
     coord_send_time = coord_send_time * 1e-9
     site_send_time = site_send_time * 1e-9
     total_time = total_time * 1e-9
     site_iter_time = site_iter_time * 1e-9
-    print(site_send_time)
+    validation_time = validation_time * 1e-9
     labels = ["Leap"]
     width = 0.1
     fig, ax = plt.subplots()
-    ax.bar(labels, [total_time], width, label="Cloud Computation Time")
+    ax.bar(labels, [total_time - validation_time], width, label="Cloud Computation Time")
     ax.bar(labels, [site_send_time + site_iter_time + coord_send_time], width, label="Coord Send Time")
     ax.bar(labels, [site_send_time + site_iter_time], width, label="Site Computation Time")
     ax.bar(labels, [site_send_time], width, label="Site Send Time")

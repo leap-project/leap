@@ -19,7 +19,7 @@ for ip in $(cat $cloud_ip_path);do
     bash $leap_dir/run-cloud.sh $ip
 done
 
-sleep 5
+sleep 15
 
 i=0
 for ip in $(cat $site_ip_path);do

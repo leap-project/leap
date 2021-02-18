@@ -2,11 +2,11 @@ echo "IPs for testing machines:"
 for i in {1..15}
 do
     echo "site.${i}:"
-    ./get-vm-ip.sh leap-image_group site.${i}
+    bash get-vm-ip.sh Leap site.${i}
 done
 
 echo "client"
-./get-vm-ip.sh leap-image_group client
+bash get-vm-ip.sh Leap client
 
 echo "cloud"
-./get-vm-ip.sh leap-image_group cloud
+bash get-vm-ip.sh Leap cloud

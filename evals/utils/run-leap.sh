@@ -23,7 +23,7 @@ sleep 5
 
 i=0
 for ip in $(cat $site_ip_path);do
-    bash $leap_dir/run-site.sh $ip
+    bash $leap_dir/run-site.sh $ip $i
     i=$((i + 1))
     if [[ n -eq i ]]; then
         break

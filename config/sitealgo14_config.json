@@ -1,8 +1,8 @@
 {
-  "ip_port": "40.78.97.152:60001",
-  "connector_ip_port": "40.78.97.152:50001",
+  "ip_port": "40.78.101.23760001",
+  "connector_ip_port": "40.78.101.237:50001",
   "csv_true": "0",
-  "site_id": 0,
+  "site_id": 14,
   "secure_with_tls": "n",
   "cert": "../certs/sitealgo.crt",
   "key": "../certs/sitealgo.key",

@@ -1,6 +1,6 @@
 {
-  "ip_port": "127.0.0.1:60002",
-  "connector_ip_port": "127.0.0.1:50002",
+  "ip_port": "40.78.97.88:60002",
+  "connector_ip_port": "40.78.97.88:50002",
   "csv_true": "0",
   "site_id": 1,
   "secure_with_tls": "n",

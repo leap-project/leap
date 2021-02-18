@@ -1,2 +1,2 @@
 echo "Starting cloud..."
-./start-vm.sh Leap cloud
+bash start-vm.sh Leap cloud

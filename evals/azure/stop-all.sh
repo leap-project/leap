@@ -1,3 +1,3 @@
-./stop-client.sh
-./stop-cloud.sh
-./stop-sites.sh
+bash stop-client.sh
+bash stop-cloud.sh
+bash stop-sites.sh

@@ -1,2 +1,2 @@
 echo "Starting client..."
-./start-vm.sh Leap client
+bash start-vm.sh Leap client

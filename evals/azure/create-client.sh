@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-bash create-vm.sh Leap client leap.image 'eastus' &
+bash create-vm.sh Leap client leap.image 'westus' &
 
 # wait for all the above to complete
 

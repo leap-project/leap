@@ -4,7 +4,7 @@
 #     ./create-vm.sh t p${i} proj1full t1 getreadytoBl0ckDra@wP
 # done
 
-bash create-vm.sh Leap cloud leap.image 'eastus' &
+bash create-vm.sh Leap cloud leap.image 'westus' &
 
 # wait for all the above to complete
 

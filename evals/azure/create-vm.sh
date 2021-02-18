@@ -15,7 +15,10 @@ location=$4
 az vm create --resource-group $rgroup --name $vm --image $imagename \
    --admin-username stolet \
    --ssh-key-value ~/.ssh/id_rsa.pub \
-   --location $location
+   --location $location \
+   --plan-name "5-6" \
+   --plan-publisher "bitnami" \
+   --plan-product  "lampstack"
 
 # Set the public IP address to static
 az network public-ip update --name ${vm}PublicIp --resource-group $rgroup --allocation-method Static
@@ -24,8 +27,8 @@ az network public-ip update --name ${vm}PublicIp --resource-group $rgroup --allo
 # group name: 'permissive-all-in-all-out'
 az network nic update \
 --resource-group $rgroup \
---name ${vm}VMNic \
---network-security-group permissive-all-in-all-out
+--name ${vm}VMNic
+#--network-security-group permissive-all-in-all-out
 
 # Show details about the newly created VM
 az vm show \

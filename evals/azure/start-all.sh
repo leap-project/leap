@@ -1,3 +1,3 @@
-./start-client.sh
-./start-sites.sh
-./start-cloud.sh
+bash start-client.sh
+bash start-sites.sh
+bash start-cloud.sh

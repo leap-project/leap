@@ -55,7 +55,10 @@ class CloudAlgo():
     def serve(self):
         cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config, self.log)
         maxMsgLength = 1024 * 1024 * 1024
-        opts = [("grpc.keepalive_time_ms", 10000), ("grpc.keepalive_timeout_ms", 5000), ("grpc.keepalive_permit_without_calls", True)]
+        opts = [("grpc.keepalive_time_ms", 10000), 
+                ("grpc.keepalive_timeout_ms", 5000), 
+                ("grpc.keepalive_permit_without_calls", True),
+                ("grpc.http2.max_pings_without_data", 0)]
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=opts)
 
         if self.config["secure_with_tls"] == "y":

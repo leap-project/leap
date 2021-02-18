@@ -17,6 +17,6 @@ command="export GOPATH=/home/stolet/gopath && cd $leap_dir && nohup /usr/local/g
 ssh stolet@$hostname $command &
 
 echo "Starting site algo"
-config_name="../config/sitealgo${site_id}-config.json"
+config_name="../config/sitealgo${site_id}_config.json"
 command="cd $leap_dir && nohup $python_path -m sitealgo_main -config=${config_name} </dev/null >/dev/null 2>&1 &"
 ssh stolet@$hostname $command &

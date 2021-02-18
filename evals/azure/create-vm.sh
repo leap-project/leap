@@ -27,8 +27,8 @@ az network public-ip update --name ${vm}PublicIp --resource-group $rgroup --allo
 # group name: 'permissive-all-in-all-out'
 az network nic update \
 --resource-group $rgroup \
---name ${vm}VMNic
-#--network-security-group permissive-all-in-all-out
+--name ${vm}VMNic \
+--network-security-group permissive-all-in-all-out
 
 # Show details about the newly created VM
 az vm show \

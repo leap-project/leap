@@ -1,6 +1,6 @@
 {
-  "ip_port": "40.118.160.186:60001",
-  "connector_ip_port": "40.118.160.186:50001",
+  "ip_port": "10.0.1.15:60001",
+  "connector_ip_port": "10.0.1.15:50001",
   "csv_true": "0",
   "site_id": 3,
   "secure_with_tls": "n",

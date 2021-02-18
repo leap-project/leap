@@ -1,6 +1,6 @@
 {
-  "IpPort": "40.118.242.6:50000",
-  "CloudAlgoIpPort": "40.118.242.6:7000",
+  "IpPort": "10.0.1.6:50000",
+  "CloudAlgoIpPort": "10.0.1.6:7000",
   "Secure": false,
   "Crt": "../coordinator/certs/coord.crt",
   "Key": "../coordinator/certs/coord.key",

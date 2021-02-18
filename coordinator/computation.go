@@ -43,6 +43,7 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	conn, err := c.Dial(c.Conf.CloudAlgoIpPort, c.Conf.CloudAlgoCN)
 
 	checkErr(c, err)
+
 	defer conn.Close()
 
 	client := pb.NewCloudAlgoClient(conn)
@@ -51,9 +52,8 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	checkErr(c, err)
 	if err == nil {
 		c.Log.Info("Successfully returned compute.")
-	} else {
-		c.Log.Error(err)
 	}
+
 	currentTime = time.Now().UnixNano()
 	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndTiming")
 	return response, err
@@ -81,8 +81,8 @@ func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
 	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("StartSend")
 	err = sendMapResponseStream(&results, stream)
 	currentTime = time.Now().UnixNano()
-	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndSend")
 	checkErr(c, err)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndSend")
 
 	return err
 }

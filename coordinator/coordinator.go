@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
+	"time"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/rifflock/lfshook"
@@ -20,6 +21,7 @@ import (
 	pb "leap/proto"
 	"leap/sqlite"
 	"leap/utils"
+	"google.golang.org/grpc/keepalive"
 	"net"
 	"os"
 	"sync"
@@ -143,6 +145,10 @@ func (c *Coordinator) Serve() {
 	checkErr(c, err)
 	c.Log.WithFields(logrus.Fields{"ip-port": c.Conf.IpPort}).Info("Listening for requests.")
 
+	ka_params := keepalive.ServerParameters{
+			Time: 10 * time.Second,
+			Timeout: 5 * time.Second,}
+
 	var s *grpc.Server
 	if c.Conf.Secure {
 		// Load coordinator certificates from disk
@@ -178,6 +184,7 @@ func (c *Coordinator) Serve() {
 			grpc.UnaryInterceptor(c.interceptor),
 			grpc.MaxRecvMsgSize(4000000000),
 			grpc.MaxSendMsgSize(4000000000),
+			grpc.KeepaliveParams(ka_params),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -186,6 +193,7 @@ func (c *Coordinator) Serve() {
 
 		opts := []grpc.ServerOption{
 			grpc.UnaryInterceptor(c.interceptor),
+			grpc.KeepaliveParams(ka_params),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -203,8 +211,14 @@ func (c *Coordinator) Serve() {
 // addr: The address where you want to establish a connection
 // serverName: The common name of the server to be contacted
 func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, error) {
+	ka_params := keepalive.ClientParameters{
+			Time: 10 * time.Second,
+			Timeout: 5 * time.Second,
+			PermitWithoutStream: true,}
+
 	opts := []grpc.DialOption{
 		grpc.WithMaxMsgSize(4000000000),
+		grpc.WithKeepaliveParams(ka_params),
 	}
 
 	if c.Conf.Secure {

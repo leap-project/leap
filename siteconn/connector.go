@@ -16,7 +16,7 @@ import (
 	"os"
 	"strconv"
 	"time"
-
+	"google.golang.org/grpc/keepalive"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
@@ -122,6 +122,10 @@ func (sc *SiteConnector) Serve() {
 	sc.Log.WithFields(logrus.Fields{"ip-port": sc.Conf.IpPort}).Info("Listening for requests.")
 	checkErr(sc, err)
 
+	ka_params := keepalive.ServerParameters{
+			Time: 10 * time.Second,
+			Timeout: 5 * time.Second,}
+
 	var s *grpc.Server
 	if sc.Conf.Secure {
 		// Load coordinator certificates from disk
@@ -152,10 +156,21 @@ func (sc *SiteConnector) Serve() {
 			ClientCAs:    certPool,
 		})
 
-		s = grpc.NewServer(grpc.Creds(creds))
+		opts := []grpc.ServerOption{
+			grpc.Creds(creds),
+			grpc.MaxRecvMsgSize(4000000000),
+			grpc.MaxSendMsgSize(4000000000),
+			grpc.KeepaliveParams(ka_params),
+		}
+
+		s = grpc.NewServer(opts...)
 
 	} else {
-		s = grpc.NewServer()
+		opts := []grpc.ServerOption{
+			grpc.KeepaliveParams(ka_params),
+		}
+
+		s = grpc.NewServer(opts...)
 	}
 
 	pb.RegisterSiteConnectorServer(s, sc)
@@ -194,6 +209,16 @@ func (sc *SiteConnector) Register() {
 // addr: The address where you want to establish a connection
 // serverName: The common name of the server to be contacted
 func (sc *SiteConnector) Dial(addr string, serverName string) (*grpc.ClientConn, error) {
+	ka_params := keepalive.ClientParameters{
+			Time: 10 * time.Second,
+			Timeout: 5 * time.Second,
+			PermitWithoutStream: true,}
+
+	opts := []grpc.DialOption{
+		grpc.WithMaxMsgSize(4000000000),
+		grpc.WithKeepaliveParams(ka_params),
+	}
+
 	if sc.Conf.Secure {
 		cert, err := tls.LoadX509KeyPair(sc.Conf.Crt, sc.Conf.Key)
 		checkErr(sc, err)
@@ -208,11 +233,12 @@ func (sc *SiteConnector) Dial(addr string, serverName string) (*grpc.ClientConn,
 			Certificates: []tls.Certificate{cert},
 			RootCAs:      certPool,
 		})
-
-		return grpc.Dial(addr, grpc.WithTransportCredentials(creds))
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+		return grpc.Dial(addr, opts...)
 
 	} else {
-		return grpc.Dial(addr, grpc.WithInsecure())
+		opts = append(opts, grpc.WithInsecure())
+		return grpc.Dial(addr, opts...)
 	}
 }
 

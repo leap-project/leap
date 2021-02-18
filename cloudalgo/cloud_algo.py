@@ -55,7 +55,8 @@ class CloudAlgo():
     def serve(self):
         cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config, self.log)
         maxMsgLength = 1024 * 1024 * 1024
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        opts = [("grpc.keepalive_time_ms", 10000), ("grpc.keepalive_timeout_ms", 5000)]
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=opts)
 
         if self.config["secure_with_tls"] == "y":
             fd = open(self.config["cert"], "rb")
@@ -179,15 +180,16 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
 
     # Gets the grpc stub to send a message to the coordinator.
     def _get_coord_stub(self):
-        channel = None
-
+        channel = None 
+        opts = [("grpc.keepalive_time_ms", 10000), ("grpc.keepalive_timeout_ms", 5000)]
         maxMsgLength = 271000000 
         if self.config["secure_with_tls"] == "y":
             creds = grpc.ssl_channel_credentials(root_certificates=self.ca, private_key=self.key, certificate_chain=self.cert)
+            opts.append(('grpc.ssl_target_name_override', self.config["coord_cn"]))
             channel = grpc.secure_channel(self.coordinator_ip_port, creds, 
-                    options=(('grpc.ssl_target_name_override', self.config["coord_cn"],)))
+                    options=opts)
         else:
-            channel = grpc.insecure_channel(self.coordinator_ip_port)
+            channel = grpc.insecure_channel(self.coordinator_ip_port, options=opts)
        
         coord_stub = coordinator_pb2_grpc.CoordinatorStub(channel)
         return coord_stub

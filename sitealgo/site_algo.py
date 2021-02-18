@@ -69,7 +69,8 @@ class SiteAlgo():
     #
     # No args
     def serve(self):
-        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        opts = [("grpc.keepalive_time_ms", 10000), ("grpc.keepalive_timeout_ms", 5000)]
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=opts)
         cert = None
         key = None
         ca = None

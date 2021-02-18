@@ -214,7 +214,7 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 	ka_params := keepalive.ClientParameters{
 			Time: 10 * time.Second,
 			Timeout: 5 * time.Second,
-			PermitWithoutStream: true,}
+			PermitWithoutStream: false,}
 
 	opts := []grpc.DialOption{
 		grpc.WithMaxMsgSize(4000000000),

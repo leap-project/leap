@@ -1,3 +1,3 @@
 #!/bin/bash -x
 
-./stop-vm.sh leap client
+./stop-vm.sh Leap client

@@ -1,22 +1,21 @@
 #!/bin/bash -x
 
-if [ "$#" -ne 3 ]; then
-    echo "Illegal number of parameters (expecting 5):"
-    echo "[r-group, vm-name, image-name, user-name, password]"
+if [ "$#" -ne 4 ]; then
+    echo "Illegal number of parameters (expecting 4):"
+    echo "[r-group, vm-name, image-name, location]"
     exit
 fi
-
-# NOTE: hardcoded cs416 as username
-#       hardcoded key for cs416
 
 rgroup=$1    # resource group in which to find the image/create VM
 vm=$2        # the name of the newly created VM
 imagename=$3 # imagename from which to create the VM
+location=$4
 
 # Create the VM
 az vm create --resource-group $rgroup --name $vm --image $imagename \
    --admin-username stolet \
-   --ssh-key-value ~/.ssh/id_rsa.pub
+   --ssh-key-value ~/.ssh/id_rsa.pub \
+   --location $location
 
 # Set the public IP address to static
 az network public-ip update --name ${vm}PublicIp --resource-group $rgroup --allocation-method Static

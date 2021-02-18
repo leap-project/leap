@@ -19,7 +19,12 @@ case "$response" in
 
         az vm deallocate --resource-group $rgroup --name $vm
         az vm generalize --resource-group $rgroup --name $vm
-        az image create --resource-group $rgroup --source $vm --name $imagename
+        az image create --resource-group $rgroup --source $vm --name $imagename --location eastus
+        az image create --resource-group $rgroup --source $vm --name $imagename --location westus
+        az image create --resource-group $rgroup --source $vm --name $imagename --location centralindia
+        az image create --resource-group $rgroup --source $vm --name $imagename --location japaneast
+        az image create --resource-group $rgroup --source $vm --name $imagename --location australiaeast
+        az image create --resource-group $rgroup --source $vm --name $imagename --location westeurope
 
         ;;
     *)

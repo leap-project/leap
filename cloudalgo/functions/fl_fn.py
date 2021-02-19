@@ -103,11 +103,14 @@ def agg_fns():
             grad_result = map_result['grads']
             
             for j in range(len(agg_grad)):
-                agg_grad[j] = (agg_grad[j] +  
-                        unquantize(map_result["min_max"][j]["min"], map_result["min_max"][j]["max"], grad_result[j])).cpu().tolist()
+                unquantized = unquantize(map_result["min_max"][j]["min"], map_result["min_max"][j]["max"], grad_result[j]) 
+                agg_grad[j] = (agg_grad[j] + unquantized)
+
+        for j in range(len(agg_grad)):
+            agg_grad[j] = agg_grad[j].cpu().tolist()
 
             
-            loss_meter.update(map_result['loss'])
+        loss_meter.update(map_result['loss'])
         result = {
             "grad":agg_grad,
             "loss":loss_meter.avg

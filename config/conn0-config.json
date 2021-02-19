@@ -1,6 +1,6 @@
 {
   "IpPort": "10.0.1.8:50001",
-  "CoordinatorIpPort": "10.0.1.6:50000",
+  "CoordinatorIpPort": "10.0.1.21:50000",
   "AlgoIpPort": "10.0.1.8:60001",
   "SiteId": 0,
   "Secure": false,

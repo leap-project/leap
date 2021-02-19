@@ -1,6 +1,6 @@
 {
-  "ip_port": "10.0.1.6:7000",
-  "coordinator_ip_port": "10.0.1.6:50000",
+  "ip_port": "10.0.1.21:7000",
+  "coordinator_ip_port": "10.0.1.21:50000",
   "secure_with_tls": "n",
   "cert": "../certs/cloudalgo.crt",
   "key": "../certs/cloudalgo.key",

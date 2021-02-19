@@ -1,7 +1,7 @@
 {
-  "IpPort": "10.0.1.13:50003",
-  "CoordinatorIpPort": "10.0.1.6:50000",
-  "AlgoIpPort": "10.0.1.13:60003",
+  "IpPort": "10.0.1.18:50003",
+  "CoordinatorIpPort": "10.0.1.21:50000",
+  "AlgoIpPort": "10.0.1.18:60003",
   "SiteId": 7,
   "Secure": false,
   "Crt": "../siteconn/certs/siteconn.crt",

@@ -4,9 +4,9 @@
 #     ./create-vm.sh t p${i} proj1full t1 getreadytoBl0ckDra@wP
 # done
 
-./create-sites.sh
-./create-client.sh
-./create-cloud.sh
+bash create-sites.sh
+bash create-client.sh
+bash create-cloud.sh
 
 # wait for all the above to complete
 

@@ -18,7 +18,8 @@ az vm create --resource-group $rgroup --name $vm --image $imagename \
    --location $location \
    --plan-name "5-6" \
    --plan-publisher "bitnami" \
-   --plan-product  "lampstack"
+   --plan-product  "lampstack" \
+   --size "Standard_D4s_v3"
 
 # Set the public IP address to static
 az network public-ip update --name ${vm}PublicIp --resource-group $rgroup --allocation-method Static

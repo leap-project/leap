@@ -41,16 +41,16 @@ if __name__ == "__main__":
         "d_x": 224, # input dimension
         "d_y": 2, # output dimension
         "batch_size": 16,
-        "max_iters": 20,
-        "iters_per_epoch": 1,
+        "max_iters": 50,
+        "iters_per_epoch": 10,
         "train_ids": train_ids,
         "val_ids": val_ids,
         "num_sites": len(sites)
     }
     leap_fed_learn.hyperparams = hyperparams
 
-    user_reg.register_user("TestUser", "123456", "10.0.1.6:50000")
-    auth_res = user_reg.authenticate_user("TestUser", "123456", "10.0.1.6:50000")
-    leap = leap.DistributedLeap(leap_fed_learn, "10.0.1.6:50000", auth_res.token)
+    #user_reg.register_user("TestUser", "123456", "10.0.1.21:50000")
+    auth_res = user_reg.authenticate_user("TestUser", "123456", "10.0.1.21:50000")
+    leap = leap.DistributedLeap(leap_fed_learn, "10.0.1.21:50000", auth_res.token)
     result = leap.get_result(sites)
     print(result)

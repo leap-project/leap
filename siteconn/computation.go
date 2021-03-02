@@ -31,7 +31,7 @@ func (sc *SiteConnector) Map(connectorStream pb.SiteConnector_MapServer) (error)
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*1000)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10000)
 	//ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	siteAlgoStream, err := client.Map(ctx)

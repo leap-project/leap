@@ -69,7 +69,7 @@ class SiteAlgo():
     #
     # No args
     def serve(self):
-        opts = [("grpc.keepalive_time_ms", 10000), ("grpc.keepalive_timeout_ms", 5000), ("grpc.keepalive_permit_without_calls", True)]
+        opts = [("grpc.keepalive_time_ms", 5000), ("grpc.keepalive_timeout_ms", 1000), ("grpc.keepalive_permit_without_calls", True), ("grpc.http2.max_ping_strikes", 0)]
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=opts)
         cert = None
         key = None
@@ -117,6 +117,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #          of the RPC."""
     def Map(self, chunks, context):
         try:
+            print("Got a map requeste")
             request = self._extract_chunks(chunks)
             self.live_requests[request.id] = None
             log.withFields({"request-id": request.id}).info("Got map request")
@@ -139,14 +140,20 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             log.withFields({"request-id": request.id}).info("Loaded all necessary environment")
             start = time.time()
             map_result = self.map_logic(request)
+            print("Got map result")
             end = time.time()
             print("Time to compute: " + str(end - start))
             res = self._get_response_obj()
+            log.withFields({"request-id": request.id}).info("Get response object") 
             res.response = map_result
             self.live_requests.pop(request.id)
             chunks = self._get_chunks_to_send(res)
+            print("Got chunks to send")
+            log.withFields({"request-id": request.id}).info("Get chunks to send") 
             for chunk in chunks:
                 yield chunk
+            print("Sent chunks")
+            log.withFields({"request-id": request.id}).info("Send chunks") 
         except BaseException as e:
             log.withFields({"request-id": request.id}).error(e)
             raise e
@@ -223,6 +230,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     #
     # request: Request containing the functions to be run.
     def map_logic(self, request):
+        print("Inside map logic")
         req_id = request.id
         req = json.loads(request.req)
         
@@ -249,8 +257,12 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             target_attribute = req["target_attribute"]
             map_result = leap_privacy.exponential(epsilon, delta, target_attribute, score_fn[choice], data, state)
         else:
+            print("Applying map func")
             log.withFields({"request-id": req_id}).info("Applying map func")
+            print(map_fn[choice])
             map_result = map_fn[choice](data, state)
+            print("Applied map")
+            log.withFields({"request-id": req_id}).info("Got map result")
         return map_result
 
 

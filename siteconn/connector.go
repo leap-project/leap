@@ -123,9 +123,13 @@ func (sc *SiteConnector) Serve() {
 	checkErr(sc, err)
 
 	ka_params := keepalive.ServerParameters{
-			Time: 10 * time.Second,
-			Timeout: 20 * time.Second,}
+			Time: 5 * time.Second,
+			Timeout: 1 * time.Second,}
 
+	kaep := keepalive.EnforcementPolicy{
+		MinTime: 1 * time.Second,
+		PermitWithoutStream: true,
+	}
 	var s *grpc.Server
 	if sc.Conf.Secure {
 		// Load coordinator certificates from disk
@@ -161,6 +165,7 @@ func (sc *SiteConnector) Serve() {
 			grpc.MaxRecvMsgSize(4000000000),
 			grpc.MaxSendMsgSize(4000000000),
 			grpc.KeepaliveParams(ka_params),
+			grpc.KeepaliveEnforcementPolicy(kaep),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -168,6 +173,7 @@ func (sc *SiteConnector) Serve() {
 	} else {
 		opts := []grpc.ServerOption{
 			grpc.KeepaliveParams(ka_params),
+			grpc.KeepaliveEnforcementPolicy(kaep),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -211,8 +217,8 @@ func (sc *SiteConnector) Register() {
 func (sc *SiteConnector) Dial(addr string, serverName string) (*grpc.ClientConn, error) {
 	ka_params := keepalive.ClientParameters{
 			Time: 10 * time.Second,
-			Timeout: 5 * time.Second,
-			PermitWithoutStream: false,}
+			Timeout: time.Second,
+			PermitWithoutStream: true,}
 
 	opts := []grpc.DialOption{
 		grpc.WithMaxMsgSize(4000000000),

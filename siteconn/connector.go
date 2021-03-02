@@ -124,7 +124,7 @@ func (sc *SiteConnector) Serve() {
 
 	ka_params := keepalive.ServerParameters{
 			Time: 10 * time.Second,
-			Timeout: 5 * time.Second,}
+			Timeout: 20 * time.Second,}
 
 	var s *grpc.Server
 	if sc.Conf.Secure {

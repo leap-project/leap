@@ -146,8 +146,13 @@ func (c *Coordinator) Serve() {
 	c.Log.WithFields(logrus.Fields{"ip-port": c.Conf.IpPort}).Info("Listening for requests.")
 
 	ka_params := keepalive.ServerParameters{
-			Time: 10 * time.Second,
-			Timeout: 5 * time.Second,}
+			Time: 5 * time.Second,
+			Timeout: 1 * time.Second,}
+
+	kaep := keepalive.EnforcementPolicy{
+		MinTime: 1 * time.Second,
+		PermitWithoutStream: true,
+	}
 
 	var s *grpc.Server
 	if c.Conf.Secure {
@@ -185,6 +190,7 @@ func (c *Coordinator) Serve() {
 			grpc.MaxRecvMsgSize(4000000000),
 			grpc.MaxSendMsgSize(4000000000),
 			grpc.KeepaliveParams(ka_params),
+			grpc.KeepaliveEnforcementPolicy(kaep),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -194,6 +200,7 @@ func (c *Coordinator) Serve() {
 		opts := []grpc.ServerOption{
 			grpc.UnaryInterceptor(c.interceptor),
 			grpc.KeepaliveParams(ka_params),
+			grpc.KeepaliveEnforcementPolicy(kaep),
 		}
 
 		s = grpc.NewServer(opts...)
@@ -213,8 +220,8 @@ func (c *Coordinator) Serve() {
 func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, error) {
 	ka_params := keepalive.ClientParameters{
 			Time: 10 * time.Second,
-			Timeout: 5 * time.Second,
-			PermitWithoutStream: false,}
+			Timeout: time.Second,
+			PermitWithoutStream: true,}
 
 	opts := []grpc.DialOption{
 		grpc.WithMaxMsgSize(4000000000),

@@ -49,14 +49,20 @@ def map_fns():
         # Accumulate gradients
         loss_meter = AverageMeter()
         for i, (X, Y) in enumerate(dataloader):
+            print("After dataloader")
             X = X
             Y = Y
+            print("Before output")
             output = model(X)
+            print("After output")
             loss = criterion(output, Y)
             loss_meter.update(loss.item())
+            print("Before backward")
             loss.backward()
+            print("After backward")
             if i == hyperparams["iters_per_epoch"]:
                 break
+            print("Before dataloader")
         
         def quantize(min_val, max_val, gradients):
             interval = (max_val - min_val) / 2**8

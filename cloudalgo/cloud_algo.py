@@ -308,6 +308,8 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 correct_sum, total = self.acc_sum(output, target)
                 val_sum += correct_sum
                 val_total += total
+                if i == 8:
+                    break
             print("Acc: " + str(val_sum / val_total))
             return val_sum / val_total
     

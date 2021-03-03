@@ -110,7 +110,7 @@ def agg_fns():
             agg_grad[j] = agg_grad[j].cpu().tolist()
 
             
-        loss_meter.update(map_result['loss'])
+        loss_meter.update(first_result['loss'])
         result = {
             "grad":agg_grad,
             "loss":loss_meter.avg

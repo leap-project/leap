@@ -42,7 +42,7 @@ if __name__ == "__main__":
         "d_y": 2, # output dimension
         "batch_size": 16,
         "max_iters": 50,
-        "iters_per_epoch": 10,
+        "iters_per_epoch": 100,
         "train_ids": train_ids,
         "val_ids": val_ids,
         "num_sites": len(sites)

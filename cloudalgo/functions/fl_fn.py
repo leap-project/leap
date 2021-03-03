@@ -25,12 +25,10 @@ class AverageMeter(object):
 def map_fns():
     # Expects model, dataloader, optimizer, criterion to be predefined
     def map_fn1(data, state):
-        print("Here1")
         hyperparams["site_id"] = state["site_id"]
         dataloader, dataloader_val = get_dataloader(hyperparams, data)
         if 'loss_history' in state:
             print("loss: {}".format(state["loss_history"][-1]))
-        print("Here2")
 
         def unquantize(min_val, max_val, gradients):
             interval = (max_val - min_val) / 2**8
@@ -45,31 +43,23 @@ def map_fns():
                 unquantized_weights = unquantize(min_max_list[i]["min"], min_max_list[i]["max"], model_weights[i])
                 params.data = unquantized_weights
         
-        print("Here3")
         # Accumulate gradients
         loss_meter = AverageMeter()
         for i, (X, Y) in enumerate(dataloader):
-            print("After dataloader")
             X = X
             Y = Y
-            print("Before output")
             output = model(X)
-            print("After output")
             loss = criterion(output, Y)
             loss_meter.update(loss.item())
-            print("Before backward")
             loss.backward()
-            print("After backward")
             if i == hyperparams["iters_per_epoch"]:
                 break
-            print("Before dataloader")
         
         def quantize(min_val, max_val, gradients):
             interval = (max_val - min_val) / 2**8
             quantized_grads = torch.round((gradients - min_val) / interval).type(torch.uint8)
             return quantized_grads
         
-        print("Here4")
         # Store gradient as list
         client_grad = []
         min_max_list = []
@@ -82,7 +72,6 @@ def map_fns():
                 client_grad.append(grad)
                 min_max_list.append(min_max)
         
-        print("Here5")
         result = {
             "grads": client_grad,
             "min_max": min_max_list,

@@ -1,8 +1,7 @@
 import torch # Assume torch is loaded in cloud/sites
 import torchvision
-import requests
 import io
-from redcap import Project
+import utils.redcap as redcap
 from PIL import Image
 
 def get_model(hyperparams):
@@ -29,9 +28,9 @@ def get_dataloader(hyperparams, data):
         def __init__(self, ids, transform=None):
             self.url = "http://localhost/redcap/api/"
             self.token = "936AF3AE86AEB1FDD2CA231EDE7D2D2D"
-            self.project = Project(self.url, self.token) 
             
-            records = self.project.export_records(records=ids)
+            records = redcap.export_records(ids, ["id", "lesion_type", "image"], 
+                                            self.token, self.url) 
     
             self.records = {int(record["record_id"]): record for record in records}
             self.ids = ids
@@ -45,7 +44,7 @@ def get_dataloader(hyperparams, data):
             record_id = int(self.ids[idx])
             
             record = self.records[record_id]
-            content, headers = self.export_file(record_id)
+            content, headers = redcap.export_file(record_id, self.url, "image")
             
             image = Image.open(io.BytesIO(content))
             sample = {"id": record_id, 
@@ -56,19 +55,7 @@ def get_dataloader(hyperparams, data):
                 sample["image"] = self.transform(sample["image"])
     
             return (sample["image"], torch.tensor(sample["lesion_type"]))
-        
-        def export_file(self, record_id):
-            data = {'token': self.token,
-                    'content': 'file',
-                    'action': 'export',
-                    'record': record_id,
-                    'field': 'image',
-                    'event': '',
-                    'returnFormat': 'json'}
-            r = requests.post(self.url, data=data)
-    
-            return r.content, r.headers
-    
+         
         def lesion_to_int(self, lesion_type):
             if lesion_type == "akiec":
                 return 0

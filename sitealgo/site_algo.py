@@ -19,6 +19,7 @@ import cloudalgo.functions.privacy as leap_privacy
 import csv
 import requests
 import numpy as np
+import utils.redcap as redcap
 
 import proto as pb
 from proto import site_algos_pb2_grpc

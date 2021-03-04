@@ -169,8 +169,6 @@ class SiteFederatedLearningEnvironment(SitePredefinedEnvironment):
         context["requests"] = requests
         import io
         context["io"] = io
-        from redcap import Project
-        context["Project"] = Project
         from PIL import Image
         context["Image"] = Image
         
@@ -318,8 +316,6 @@ class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
         context["requests"] = requests
         import io
         context["io"] = io
-        from redcap import Project
-        context["Project"] = Project
         from PIL import Image
         context["Image"] = Image
         

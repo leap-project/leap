@@ -55,7 +55,6 @@ class CloudAlgo():
     # No args
     def serve(self):
         cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config, self.log)
-        maxMsgLength = 1024 * 1024 * 1024
         opts = [("grpc.keepalive_time_ms", 5000), 
                 ("grpc.keepalive_timeout_ms", 1000), 
                 ("grpc.keepalive_permit_without_calls", True),
@@ -186,7 +185,6 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     def _get_coord_stub(self):
         channel = None 
         opts = [("grpc.keepalive_time_ms", 10000), ("grpc.keepalive_timeout_ms", 1000), ("grpc.keepalive_permit_without_calls", True)]
-        maxMsgLength = 271000000 
         if self.config["secure_with_tls"] == "y":
             creds = grpc.ssl_channel_credentials(root_certificates=self.ca, private_key=self.key, certificate_chain=self.cert)
             opts.append(('grpc.ssl_target_name_override', self.config["coord_cn"]))
@@ -271,10 +269,10 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             # Decide to stop or continue
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("ValStart")
-            acc = self.get_validation_loss()
+            #acc = self.get_validation_loss()
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("ValEnd")
-            self.log.withFields({"request-id": req.id, "accuracy": float(acc)}).info("Acc")
+            #self.log.withFields({"request-id": req.id, "accuracy": float(acc)}).info("Acc")
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("EndIter")
             stop = stop_fn(agg_result, state)
@@ -302,11 +300,14 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             val_sum = 0
             val_total = 0
             for i, (X, Y) in enumerate(dataloader, 0):
+                self.log.withFields({"i": i}).info("Val evaluation iteration")
                 target = Y
                 image = X
         
                 output = ml_model(image)
+                self.log.withFields({"i": i}).info("Got output")
                 correct_sum, total = self.acc_sum(output, target)
+                self.log.withFields({"i": i}).info("Got acc sum")
                 val_sum += correct_sum
                 val_total += total
                 if i == 8:

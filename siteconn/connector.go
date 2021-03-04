@@ -217,7 +217,7 @@ func (sc *SiteConnector) Register() {
 func (sc *SiteConnector) Dial(addr string, serverName string) (*grpc.ClientConn, error) {
 	ka_params := keepalive.ClientParameters{
 			Time: 10 * time.Second,
-			Timeout: time.Second,
+			Timeout: 5 * time.Second,
 			PermitWithoutStream: true,}
 
 	opts := []grpc.DialOption{

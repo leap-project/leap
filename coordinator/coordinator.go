@@ -220,7 +220,7 @@ func (c *Coordinator) Serve() {
 func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, error) {
 	ka_params := keepalive.ClientParameters{
 			Time: 10 * time.Second,
-			Timeout: time.Second,
+			Timeout: 5 * time.Second,
 			PermitWithoutStream: true,}
 
 	opts := []grpc.DialOption{

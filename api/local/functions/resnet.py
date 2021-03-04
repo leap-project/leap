@@ -30,7 +30,7 @@ def get_dataloader(hyperparams, data):
             self.token = "936AF3AE86AEB1FDD2CA231EDE7D2D2D"
             
             records = redcap.export_records(ids, ["id", "lesion_type", "image"], 
-                                            self.token, self.url) 
+                                            self.url, self.token) 
     
             self.records = {int(record["record_id"]): record for record in records}
             self.ids = ids
@@ -44,7 +44,7 @@ def get_dataloader(hyperparams, data):
             record_id = int(self.ids[idx])
             
             record = self.records[record_id]
-            content, headers = redcap.export_file(record_id, self.url, "image")
+            content, headers = redcap.export_file(record_id, "image", self.url, self.token)
             
             image = Image.open(io.BytesIO(content))
             sample = {"id": record_id, 

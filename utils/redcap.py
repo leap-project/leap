@@ -1,6 +1,6 @@
 import requests
 
-def export_records(ids, fields, token, url):
+def export_records(ids, fields, url, token):
     data = {
         'token': token,
         'content': 'record',
@@ -32,8 +32,8 @@ def export_records(ids, fields, token, url):
 
 
 
-def export_file(record_id, url, field):
-   data = {'token': self.token,
+def export_file(record_id, field, url, token) :
+   data = {'token': token,
            'content': 'file',
            'action': 'export',
            'record': record_id,

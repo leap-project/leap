@@ -70,7 +70,7 @@ class SiteAlgo():
     #
     # No args
     def serve(self):
-        opts = [("grpc.keepalive_time_ms", 5000), ("grpc.keepalive_timeout_ms", 1000), ("grpc.keepalive_permit_without_calls", True), ("grpc.http2.max_ping_strikes", 0)]
+        opts = [("grpc.keepalive_time_ms", 7.2e6), ("grpc.keepalive_timeout_ms", 20000), ("grpc.keepalive_permit_without_calls", False), ("grpc.http2.max_ping_strikes", 0)]
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=2), options=opts)
         cert = None
         key = None

@@ -146,12 +146,13 @@ func (c *Coordinator) Serve() {
 	c.Log.WithFields(logrus.Fields{"ip-port": c.Conf.IpPort}).Info("Listening for requests.")
 
 	ka_params := keepalive.ServerParameters{
-			Time: 5 * time.Second,
-			Timeout: 1 * time.Second,}
+ 	//	        Time: 5 * time.Second,
+	//		Timeout: 1 * time.Second,
+	}
 
 	kaep := keepalive.EnforcementPolicy{
-		MinTime: 1 * time.Second,
-		PermitWithoutStream: true,
+	//	MinTime: 1 * time.Second,
+	//	PermitWithoutStream: true,
 	}
 
 	var s *grpc.Server
@@ -219,9 +220,9 @@ func (c *Coordinator) Serve() {
 // serverName: The common name of the server to be contacted
 func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, error) {
 	ka_params := keepalive.ClientParameters{
-			Time: 10 * time.Second,
-			Timeout: 5 * time.Second,
-			PermitWithoutStream: true,}
+			//Time: 10 * time.Second,
+			//Timeout: 5 * time.Second,
+			PermitWithoutStream: false,}
 
 	opts := []grpc.DialOption{
 		grpc.WithMaxMsgSize(4000000000),

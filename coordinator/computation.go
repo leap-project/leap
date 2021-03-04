@@ -49,7 +49,6 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	client := pb.NewCloudAlgoClient(conn)
 	response, err := client.Compute(context.Background(), req)
 
-	c.Log.Info("Error in COMPUTE")
 	checkErr(c, err)
 	if err == nil {
 		c.Log.Info("Successfully returned compute.")

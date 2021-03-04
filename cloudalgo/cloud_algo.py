@@ -55,9 +55,9 @@ class CloudAlgo():
     # No args
     def serve(self):
         cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config, self.log)
-        opts = [("grpc.keepalive_time_ms", 5000), 
-                ("grpc.keepalive_timeout_ms", 1000), 
-                ("grpc.keepalive_permit_without_calls", True),
+        opts = [("grpc.keepalive_time_ms", 7.2e6), 
+                ("grpc.keepalive_timeout_ms", 20000), 
+                ("grpc.keepalive_permit_without_calls", False),
                 ("grpc.http2.max_ping_strikes", 0)]
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=opts)
 
@@ -184,7 +184,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
     # Gets the grpc stub to send a message to the coordinator.
     def _get_coord_stub(self):
         channel = None 
-        opts = [("grpc.keepalive_time_ms", 10000), ("grpc.keepalive_timeout_ms", 1000), ("grpc.keepalive_permit_without_calls", True)]
+        opts = [("grpc.keepalive_time_ms", 0), ("grpc.keepalive_timeout_ms", 20000), ("grpc.keepalive_permit_without_calls", False)]
         if self.config["secure_with_tls"] == "y":
             creds = grpc.ssl_channel_credentials(root_certificates=self.ca, private_key=self.key, certificate_chain=self.cert)
             opts.append(('grpc.ssl_target_name_override', self.config["coord_cn"]))

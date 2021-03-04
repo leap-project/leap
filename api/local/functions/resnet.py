@@ -87,6 +87,6 @@ def get_dataloader(hyperparams, data):
         train_ids = train_ids[first_id:last_id]
     dataset_train = HAMDataset(train_ids, transform=transforms_train)
     dataset_val = HAMDataset(hyperparams["val_ids"], transform=transforms_val)
-    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
-    dataloader_val = torch.utils.data.DataLoader(dataset_val, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
+    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=hyperparams["batch_size"], shuffle=True)
+    dataloader_val = torch.utils.data.DataLoader(dataset_val, batch_size=hyperparams["batch_size"], shuffle=True)
     return dataloader_train, dataloader_val

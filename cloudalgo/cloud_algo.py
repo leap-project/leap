@@ -3,6 +3,7 @@
 
 import time
 import grpc
+import utils.redcap as redcap
 import concurrent.futures as futures
 import json
 import logging

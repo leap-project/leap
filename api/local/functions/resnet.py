@@ -29,10 +29,9 @@ def get_dataloader(hyperparams, data):
             self.url = "http://localhost/redcap/api/"
             self.token = "936AF3AE86AEB1FDD2CA231EDE7D2D2D"
             
-            records = redcap.export_records(ids, ["id", "lesion_type", "image"], 
+            records = redcap.export_records(ids, ["record_id", "dx", "image"], 
                                             self.url, self.token) 
-    
-            self.records = {int(record["record_id"]): record for record in records}
+            self.records = {record["record_id"]: record for record in records}
             self.ids = ids
             self.transform = transform
         
@@ -40,12 +39,9 @@ def get_dataloader(hyperparams, data):
             return len(self.ids)
     
         def __getitem__(self, idx): 
-           
             record_id = int(self.ids[idx])
-            
-            record = self.records[record_id]
+            record = self.records[str(record_id)]
             content, headers = redcap.export_file(record_id, "image", self.url, self.token)
-            
             image = Image.open(io.BytesIO(content))
             sample = {"id": record_id, 
                       "lesion_type": self.lesion_to_int(record["dx"]), 
@@ -79,11 +75,9 @@ def get_dataloader(hyperparams, data):
                                           torchvision.transforms.ColorJitter(brightness=0.1, contrast=0.1, hue=0.1),
                                           torchvision.transforms.ToTensor(),
                                           torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    print("Transform 1")
     transforms_val = torchvision.transforms.Compose([torchvision.transforms.Resize((224,224)), 
                                           torchvision.transforms.ToTensor(),
                                           torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    print("Transform 2")
     
     site_id = hyperparams.get("site_id")
     train_ids = hyperparams["train_ids"]
@@ -91,13 +85,8 @@ def get_dataloader(hyperparams, data):
         first_id = int(site_id * len(train_ids) / hyperparams["num_sites"])
         last_id = int((site_id * len(train_ids) / hyperparams["num_sites"]) + (len(train_ids) / hyperparams["num_sites"]))
         train_ids = train_ids[first_id:last_id]
-    print("Got ids") 
     dataset_train = HAMDataset(train_ids, transform=transforms_train)
-    print("Train dataset")
     dataset_val = HAMDataset(hyperparams["val_ids"], transform=transforms_val)
-    print("Val dataset")
     dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
-    print("Train dataloader")
     dataloader_val = torch.utils.data.DataLoader(dataset_val, batch_size=hyperparams["batch_size"], shuffle=True, num_workers=4)
-    print("Val dataloader")
     return dataloader_train, dataloader_val

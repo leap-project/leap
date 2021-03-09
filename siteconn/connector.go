@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"time"
 	"encoding/json"
 	"flag"
 	"google.golang.org/grpc/credentials"
@@ -15,7 +16,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"time"
 	"google.golang.org/grpc/keepalive"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
@@ -123,13 +123,13 @@ func (sc *SiteConnector) Serve() {
 	checkErr(sc, err)
 
 	ka_params := keepalive.ServerParameters{
-		//	Time: 5 * time.Second,
-		//	Timeout: 1 * time.Second,
+			Time: 60 * time.Second,
+			Timeout: 30 * time.Second,
 		}
 
 	kaep := keepalive.EnforcementPolicy{
-		//MinTime: 1 * time.Second,
-		//PermitWithoutStream: true,
+		MinTime: 1 * time.Nanosecond,
+		PermitWithoutStream: true,
 	}
 	var s *grpc.Server
 	if sc.Conf.Secure {
@@ -196,7 +196,8 @@ func (sc *SiteConnector) Register() {
 	defer conn.Close()
 
 	client := pb.NewCoordinatorClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*150)
+	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*150)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	siteRegReq := pb.SiteRegReq{SiteId: sc.Conf.SiteId, SiteIpPort: sc.Conf.IpPort}

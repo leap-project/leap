@@ -31,8 +31,8 @@ func (sc *SiteConnector) Map(connectorStream pb.SiteConnector_MapServer) (error)
 	defer conn.Close()
 
 	client := pb.NewSiteAlgoClient(conn)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10000)
-	//ctx, cancel := context.WithCancel(context.Background())
+	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*10000)
+	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	siteAlgoStream, err := client.Map(ctx)
 
@@ -52,9 +52,9 @@ func (sc *SiteConnector) Map(connectorStream pb.SiteConnector_MapServer) (error)
 
 	currentTime = time.Now().UnixNano()
 	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("BeginSend")
-	
+
 	err = sendMapResponseStream(res, connectorStream)
-	
+
 	currentTime = time.Now().UnixNano()
 	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndSend")
 

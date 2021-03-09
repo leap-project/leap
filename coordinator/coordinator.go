@@ -10,6 +10,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"time"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
@@ -145,13 +146,13 @@ func (c *Coordinator) Serve() {
 	c.Log.WithFields(logrus.Fields{"ip-port": c.Conf.IpPort}).Info("Listening for requests.")
 
 	ka_params := keepalive.ServerParameters{
- 	//	        Time: 5 * time.Second,
-	//		Timeout: 1 * time.Second,
+		        Time: 60 * time.Second,
+			Timeout: 30 * time.Second,
 	}
 
 	kaep := keepalive.EnforcementPolicy{
-	//	MinTime: 1 * time.Second,
-	//	PermitWithoutStream: true,
+		MinTime: 1 * time.Nanosecond,
+		PermitWithoutStream: true,
 	}
 
 	var s *grpc.Server

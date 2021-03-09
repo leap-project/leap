@@ -55,7 +55,7 @@ class CloudAlgo():
     # No args
     def serve(self):
         cloudAlgoServicer = CloudAlgoServicer(self.config['ip_port'], self.config['coordinator_ip_port'], self.config, self.log)
-        opts = [("grpc.keepalive_time_ms", 7.2e6), 
+        opts = [("grpc.keepalive_time_ms", 7200000), 
                 ("grpc.keepalive_timeout_ms", 20000), 
                 ("grpc.keepalive_permit_without_calls", False),
                 ("grpc.http2.max_ping_strikes", 0)]

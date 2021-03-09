@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"flag"
-	"time"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/rifflock/lfshook"

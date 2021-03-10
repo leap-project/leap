@@ -269,10 +269,10 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             # Decide to stop or continue
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("ValStart")
-            #acc = self.get_validation_loss()
+            acc = self.get_validation_loss()
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("ValEnd")
-            #self.log.withFields({"request-id": req.id, "accuracy": float(acc)}).info("Acc")
+            self.log.withFields({"request-id": req.id, "accuracy": float(acc)}).info("Acc")
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("EndIter")
             stop = stop_fn(agg_result, state)
@@ -310,8 +310,6 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 self.log.withFields({"i": i}).info("Got acc sum")
                 val_sum += correct_sum
                 val_total += total
-                if i == 8:
-                    break
             print("Acc: " + str(val_sum / val_total))
             return val_sum / val_total
     

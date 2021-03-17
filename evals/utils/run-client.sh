@@ -13,4 +13,4 @@ python_path='/home/stolet/anaconda3/envs/leap/bin/python'
 
 echo "Running resnet"
 command="cd $leap_dir && $python_path -m resnet_example $n"
-ssh stolet@$hostname screen -d -m $command &
+ssh stolet@$hostname $command

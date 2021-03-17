@@ -2,15 +2,14 @@
 #!/bin/bash
 
 if [ "$#" -ne 4 ]; then
-    echo "Illegal number of parameters (expecting 4):"
-    echo "[n_sites, site_ip_path, cloud_ip_path, client_ip_path]"
+    echo "Illegal number of parameters (expecting):"
+    echo "[n_sites, site_ip_path, cloud_ip_path]"
     exit
 fi
 
 n=$1
 site_ip_path=$2
 cloud_ip_path=$3
-client_ip_path=$4
 
 leap_dir="/home/stolet/Documents/MSC/leap/evals/utils"
 

@@ -41,8 +41,8 @@ if __name__ == "__main__":
         "d_x": 224, # input dimension
         "d_y": 2, # output dimension
         "batch_size": 16,
-        "max_iters": 50,
-        "iters_per_epoch": 10,
+        "max_iters": 3,
+        "iters_per_epoch": 3,
         "train_ids": train_ids,
         "val_ids": val_ids,
         "num_sites": len(sites)

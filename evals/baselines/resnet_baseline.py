@@ -3,6 +3,8 @@ import random
 import torchvision
 import requests
 import io
+import logging
+from pylogrus import PyLogrus, TextFormatter, JsonFormatter
 import time
 from redcap import Project
 from PIL import Image
@@ -94,6 +96,11 @@ class HAMDataset(torch.utils.data.Dataset):
             return 0
 
 if __name__ == "__main__":
+    max_iters = 20
+    iters_per_epoch = 167 
+    learning_rate = 1e-4
+    batch_size = 16
+    
     logging.setLoggerClass(PyLogrus)
     logger = logging.getLogger(__name__)  # type: PyLogrus
     logger.setLevel(logging.DEBUG)
@@ -110,13 +117,13 @@ if __name__ == "__main__":
     
     logger.addHandler(ch)
     logger.addHandler(fh)
-    self.log = logger.withFields({"node": "baseline"})
+    log = logger.withFields({"node": "baseline"})
     
     model = torchvision.models.resnet18(pretrained=True)
     in_features = model.fc.in_features
     model.fc = torch.nn.Linear(in_features, 2)
 
-    optimizer = torch.optim.Adam(model.parameters(), 1e-2)
+    optimizer = torch.optim.Adam(model.parameters(), learning_rate)
     
     criterion = torch.nn.CrossEntropyLoss()
     transforms_train = torchvision.transforms.Compose([torchvision.transforms.Resize((224,224)), 
@@ -138,36 +145,32 @@ if __name__ == "__main__":
     dataset_val = HAMDataset(val_ids, transform=transforms_val)
 
     dataloader_train = torch.utils.data.DataLoader(dataset_train, 
-                                                   batch_size=16,
-                                                   shuffle=True, 
-                                                   num_workers=4)
+                                                   batch_size=batch_size,
+                                                   shuffle=True)
     dataloader_val = torch.utils.data.DataLoader(dataset_val,
-                                                 batch_size=16,
-                                                 shuffle=True, 
-                                                 num_workers=4)
-    max_iters = 50
-    iters_per_epoch = 100
+                                                 batch_size=batch_size,
+                                                 shuffle=True)
 
     start = time.time_ns()
-    self.log.withFields({"unix-nano": start}).info("Start")
+    log.withFields({"unix-nano": start}).info("Start")
     for e in range(max_iters):
         for i, (X, Y) in enumerate(dataloader_train):
             output = model(X)
             loss = criterion(output, Y)
-            print("i: ", loss)    
             loss.backward()
             optimizer.step()
             optimizer.zero_grad()
-            
-            if i == iters_per_epoch:
+            print(str(i) + ": " + str(loss))
+
+            if i == iters_per_epoch - 1:
                 val_start = time.time_ns()
-                self.log.withFields({"unix-nano": val_start}).info("ValStart")
+                log.withFields({"unix-nano": val_start}).info("ValStart")
                 accuracy = measure_acc(dataloader_val, model)
-                self.log.withFields({"accuracy": accuracy}).info("Acc")
+                log.withFields({"accuracy": str(accuracy.cpu().detach().numpy())}).info("Acc")
                 val_end = time.time_ns()
-                self.log.withFields({"unix-nano": val_end}).info("ValEnd")
+                log.withFields({"unix-nano": val_end}).info("ValEnd")
                 break
 
     end = time.time_ns()
-    self.log.withFields({"unix-nano": end}).info("End")
+    log.withFields({"unix-nano": end}).info("End")
     print(end - start)

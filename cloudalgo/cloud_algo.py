@@ -15,6 +15,8 @@ from proto import cloud_algos_pb2_grpc
 from proto import computation_msgs_pb2
 from proto import coordinator_pb2_grpc
 
+
+# TODO: Remove pycap package and references to it
 class CloudAlgo():
     def __init__(self, config_path):
         self.config = self.get_config(config_path)

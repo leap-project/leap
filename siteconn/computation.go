@@ -22,7 +22,7 @@ func (sc *SiteConnector) Map(connectorStream pb.SiteConnector_MapServer) (error)
 	req, err := receiveMapRequestStream(connectorStream)
 	checkErr(sc, err)
 	currentTime := time.Now().UnixNano()
-	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("StartIter")
+	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("Start iteration")
 	sc.Log.WithFields(logrus.Fields{"request-id": req.Id}).Info("Received map request.")
 	sc.PendingRequests.Set(req.Id, req.Id)
 	conn, err := sc.Dial(sc.Conf.AlgoIpPort, sc.Conf.SiteAlgoCN)
@@ -51,15 +51,15 @@ func (sc *SiteConnector) Map(connectorStream pb.SiteConnector_MapServer) (error)
 	}
 
 	currentTime = time.Now().UnixNano()
-	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("BeginSend")
+	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("Begin send to coordinator")
 
 	err = sendMapResponseStream(res, connectorStream)
 
 	currentTime = time.Now().UnixNano()
-	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndSend")
+	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("End send to coordinator")
 
 	currentTime = time.Now().UnixNano()
-	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndIter")
+	sc.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("End iteration")
 	return err
 }
 

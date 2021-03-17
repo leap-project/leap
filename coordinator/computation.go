@@ -29,7 +29,7 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	c.ReqCounterMux.Lock()
 	req.Id = c.ReqCounter
 	currentTime := time.Now().UnixNano()
-	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("StartTiming")
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("Start timing")
 	c.ReqCounter++
 	c.ReqCounterMux.Unlock()
 	err := c.checkSiteBudget(ctx, req)
@@ -55,7 +55,7 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 	}
 
 	currentTime = time.Now().UnixNano()
-	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndTiming")
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("End timing")
 	return response, err
 }
 
@@ -66,8 +66,12 @@ func (c *Coordinator) Compute(ctx context.Context, req *pb.ComputeRequest) (*pb.
 // stream: Stream used to receive and send bytes to cloud algo.
 func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
 	// Receive request in chunks
+	currentTime := time.Now().UnixNano()
 	req, err := receiveMapRequestStream(stream)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("Start receive from cloud algo")
+	currentTime = time.Now().UnixNano()
 	checkErr(c, err)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("End receive from cloud algo")
 
 	if c.SiteConnectors.Length() == 0 {
 		c.Log.WithFields(logrus.Fields{"request-id": req.Id}).Warn("No sites have been registered.")
@@ -77,12 +81,12 @@ func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
 	results, err := c.getResultsFromSites(req)
 
 	// Send response in chunks
-	currentTime := time.Now().UnixNano()
-	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("StartSend")
+	currentTime = time.Now().UnixNano()
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("Start send to cloud algo")
 	err = sendMapResponseStream(&results, stream)
 	currentTime = time.Now().UnixNano()
 	checkErr(c, err)
-	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("EndSend")
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("End send to cloud algo")
 
 	return err
 }
@@ -154,8 +158,12 @@ func (c *Coordinator) getResultFromSite(req *pb.MapRequest, site SiteConnector, 
 	defer cancel()
 
 	stream, err := client.Map(ctx)
+	currentTime := time.Now().UnixNano()
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("Start send to site connector")
 	err = sendMapRequestStream(req, stream)
+	currentTime = time.Now().UnixNano()
 	checkErr(c, err)
+	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("End send to site connector")
 	response, err := receiveMapResponseStream(stream)
 	checkErr(c, err)
 

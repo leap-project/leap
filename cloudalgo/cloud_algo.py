@@ -249,7 +249,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         
         while not stop:
             currTime = time.time_ns()
-            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("StartIter")
+            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("Start iteration")
             map_results = []
             # Choose which map/agg/update_fn to use
             choice = choice_fn(state)
@@ -268,13 +268,13 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             state = update_fn[choice](agg_result, state)
             # Decide to stop or continue
             currTime = time.time_ns()
-            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("ValStart")
+            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("Start validation")
             acc = self.get_validation_loss()
             currTime = time.time_ns()
-            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("ValEnd")
+            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("End validation")
             self.log.withFields({"request-id": req.id, "accuracy": float(acc)}).info("Acc")
             currTime = time.time_ns()
-            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("EndIter")
+            self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("End iteration")
             stop = stop_fn(agg_result, state)
          
         post_result = postprocessing_fn(agg_result, state)
@@ -310,6 +310,8 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 self.log.withFields({"i": i}).info("Got acc sum")
                 val_sum += correct_sum
                 val_total += total
+                if i == 5:
+                    break
             print("Acc: " + str(val_sum / val_total))
             return val_sum / val_total
     

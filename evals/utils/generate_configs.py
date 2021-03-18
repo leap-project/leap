@@ -40,7 +40,7 @@ def generate_site_conn_config(private_ip_file, cloud_ip):
         site_config["SiteId"] = i
         site_config["Crt"] = "../certs/siteconn" + str(i) + ".crt"
         site_config["Key"] = "../certs/siteconn" + str(i) + ".key"
-        with open('../../config/siteconn' + str(i) + "-config.json", 'w') as outfile:
+        with open('../../config/conn' + str(i) + "-config.json", 'w') as outfile:
             json.dump(site_config, outfile)
         i += 1
 
@@ -78,7 +78,7 @@ def generate_coord_config(coord_ip):
     config = {
         "IpPort": coord_ip[0] + ":50000",
         "CloudAlgoIpPort": coord_ip[0] + ":7000",
-        "Secure": False,
+        "Secure": True,
         "Crt": "../certs/coord.crt",
         "Key": "../certs/coord.key",
         "CertAuth": "../certs/myCA.crt",

@@ -16,7 +16,7 @@ mkdir -p $leap_dir/certs
 cat "${leap_dir}/evals/utils/create-ca-input" | bash $leap_dir/evals/utils/create-ca.sh
 echo "Created certificate authority"
 
-cat "${leap_dir}/evals/utils/create-certificate-cloud-input" | bash $leap_dir/evals/utils/create-certificate-coord.sh
+cat "${leap_dir}/evals/utils/create-certificate-coord-input" | bash $leap_dir/evals/utils/create-certificate-coord.sh
 echo "Created certificates for coordinator"
 
 cat "${leap_dir}/evals/utils/create-certificate-cloud-input" | bash $leap_dir/evals/utils/create-certificate-cloud.sh

@@ -9,11 +9,6 @@
 .vscode/
 ProtoBuf/src/
 *sitealgo/src/
-*.key
-*.pem
-*.crt
-*.csr
-*.srl
 *leap-db*
 exe/data.csv
 sitealgo/bleh.py

@@ -1,13 +1,1 @@
-{
-  "ip_port": "10.0.1.10:60001",
-  "connector_ip_port": "10.0.1.10:50001",
-  "csv_true": "0",
-  "site_id": 6,
-  "secure_with_tls": "n",
-  "cert": "../certs/sitealgo.crt",
-  "key": "../certs/sitealgo.key",
-  "certificate_authority": "../certs/myCA.crt",
-  "redcap_url": "http://localhost/redcap/api", 
-  "redcap_auth": "fa2901c70d5ee07e0eacc9068f46431e",
-  "redcap_pid": 15
-}
+{"ip_port": "10.0.1.10:60001", "connector_ip_port": "10.0.1.10:50001", "csv_true": "0", "site_id": 6, "secure_with_tls": "y", "cert": "../certs/sitealgo6.crt", "key": "../certs/sitealgo6.key", "certificate_authority": "../certs/myCA.crt", "redcap_url": "http://localhost/redcap/api", "redcap_auth": "fa2901c70d5ee07e0eacc9068f46431e", "redcap_pid": 15}

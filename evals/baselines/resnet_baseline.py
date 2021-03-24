@@ -88,8 +88,8 @@ class HAMDataset(torch.utils.data.Dataset):
             return 0
 
 if __name__ == "__main__":
-    max_iters = 20
-    iters_per_epoch = 167 
+    max_iters = 200
+    iters_per_epoch = 34 
     learning_rate = 1e-4
     batch_size = 16
     

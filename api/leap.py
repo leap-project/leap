@@ -88,17 +88,25 @@ class DistributedLeap(Leap):
     # Constructor
     #
     # leap_function: An algorithm to be run in Leap.
-    def __init__(self, leap_function, coord_ip_port, auth_token):
+    def __init__(self, leap_function, coord_ip_port, auth_token, 
+                 secure=True, root_cert=None, priv_key=None, cert_chain=None):
         super().__init__(leap_function)
         self.coord_ip_port = coord_ip_port
         self.auth_token = auth_token
+        self.secure = secure
+        self.root_cert = root_cert
+        self.priv_key = priv_key
+        self.cert_chain = cert_chain
 
     # Gets the result of performing the selected algorithm
     # on the filtered data.
     def get_result(self, sites):
         request = self._create_computation_request(sites)
 
-        compute_stub = self._get_compute_stub()
+        compute_stub = self._get_compute_stub(self.secure, 
+                                              self.root_cert, 
+                                              self.priv_key, 
+                                              self.cert_chain)
 
         # Computed remotely
         metadata = []
@@ -130,11 +138,20 @@ class DistributedLeap(Leap):
 
     # Gets the stub from the cloud grpc service. This stub
     # is used to send messages to the cloud algos.
-    def _get_compute_stub(self):
-        # TODO: Don't harcode ip address
-        channel = grpc.insecure_channel(self.coord_ip_port)
-        stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
-        return stub
+    def _get_compute_stub(self, secure, root_cert, priv_key, cert_chain):
+        if secure:
+            creds = grpc.ssl_channel_credentials(root_certificates=root_cert,
+                                                 private_key=priv_key,
+                                                 certificate_chain=cert_chain)
+            opts = []
+            opts.append(('grpc.ssl_target_name_override', "Coord"))
+            channel = grpc.secure_channel(self.coord_ip_port, creds, options=opts)
+            stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
+            return stub
+        else:
+            channel = grpc.insecure_channel(self.coord_ip_port)
+            stub = pb.coordinator_pb2_grpc.CoordinatorStub(channel)
+            return stub
 
     # Creates a protobuf request object for a Leap computation
     def _create_request_obj(self):

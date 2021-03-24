@@ -41,16 +41,27 @@ if __name__ == "__main__":
         "d_x": 224, # input dimension
         "d_y": 2, # output dimension
         "batch_size": 16,
-        "max_iters": 3,
-        "iters_per_epoch": 3,
+        "max_iters": 20,
+        "iters_per_epoch": 167,
         "train_ids": train_ids,
         "val_ids": val_ids,
         "num_sites": len(sites)
     }
     leap_fed_learn.hyperparams = hyperparams
+    fd = open("../certs/myCA.crt", "rb")
+    root_cert = fd.read()
+    fd = open("../certs/cloudalgo.key", "rb")
+    priv_key = fd.read()
+    fd = open("../certs/cloudalgo.crt", "rb")
+    cert_chain = fd.read()
 
-    #user_reg.register_user("TestUser", "123456", "10.0.1.21:50000")
-    auth_res = user_reg.authenticate_user("TestUser", "123456", "10.0.1.21:50000")
-    leap = leap.DistributedLeap(leap_fed_learn, "10.0.1.21:50000", auth_res.token)
+    #user_reg.register_user("TestUser", "123456", "10.0.1.21:50000", True, priv_key, cert_chain, root_cert, "Coord")
+    auth_res = user_reg.authenticate_user("TestUser", "123456", "10.0.1.21:50000",
+                                          True, priv_key, cert_chain, root_cert, "Coord")
+    leap = leap.DistributedLeap(leap_fed_learn, "10.0.1.21:50000", auth_res.token, 
+                                True, root_cert, priv_key, cert_chain)
+    
+
     result = leap.get_result(sites)
     print(result)
+

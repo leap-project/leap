@@ -1,6 +1,7 @@
 import torch # Assume torch is loaded in cloud/sites
 import torchvision
 import io
+import pandas as pd
 import utils.redcap as redcap
 from PIL import Image
 
@@ -24,34 +25,36 @@ def get_dataloader(hyperparams, data):
         return batch
 
     class HAMDataset(torch.utils.data.Dataset):
-    
-        def __init__(self, ids, transform=None):
-            self.url = "http://localhost/redcap/api/"
-            self.token = "936AF3AE86AEB1FDD2CA231EDE7D2D2D"
-            
-            records = redcap.export_records(ids, ["record_id", "dx", "image"], 
-                                            self.url, self.token) 
-            self.records = {record["record_id"]: record for record in records}
+        def __init__(self, ids, csv_file, root_dir, transform=None):
             self.ids = ids
+            self.records = pd.read_csv(csv_file)
+            self.records = self.records.iloc[self.ids]
+            self.root_dir = root_dir
             self.transform = transform
-        
+
+
         def __len__(self):
-            return len(self.ids)
-    
-        def __getitem__(self, idx): 
-            record_id = int(self.ids[idx])
-            record = self.records[str(record_id)]
-            content, headers = redcap.export_file(record_id, "image", self.url, self.token)
-            image = Image.open(io.BytesIO(content))
-            sample = {"id": record_id, 
-                      "lesion_type": self.lesion_to_int(record["dx"]), 
-                      "image": image}
+            return len(self.records)
+
+
+        def __getitem__(self, idx):
+            if torch.is_tensor(idx):
+                idx = idx.tolist()
+
+            img_name = os.path.join(self.root_dir,
+                                    self.records.iloc[idx, 1] + ".jpg")
             
+            image = Image.open(img_name)
+            rec_id = self.records.iloc[idx, 0]
+            lesion_type = self.lesion_to_int(self.records.iloc[idx, 3])
+            sample = {"id": rec_id, "lesion_type": lesion_type, "image": image}
+
             if self.transform:
                 sample["image"] = self.transform(sample["image"])
-    
+
             return (sample["image"], torch.tensor(sample["lesion_type"]))
-         
+   
+
         def lesion_to_int(self, lesion_type):
             if lesion_type == "akiec":
                 return 0
@@ -68,16 +71,17 @@ def get_dataloader(hyperparams, data):
             elif lesion_type == "vasc":
                 return 0
      
-    transforms_train = torchvision.transforms.Compose([torchvision.transforms.Resize((224,224)), 
-                                          torchvision.transforms.RandomHorizontalFlip(),
-                                          torchvision.transforms.RandomVerticalFlip(),
-                                          torchvision.transforms.RandomRotation(20),
-                                          torchvision.transforms.ColorJitter(brightness=0.1, contrast=0.1, hue=0.1),
-                                          torchvision.transforms.ToTensor(),
-                                          torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-    transforms_val = torchvision.transforms.Compose([torchvision.transforms.Resize((224,224)), 
-                                          torchvision.transforms.ToTensor(),
-                                          torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+      
+    transforms_train = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),
+                                                       torchvision.transforms.Resize((224,224)), 
+                                                       torchvision.transforms.RandomHorizontalFlip(),
+                                                       torchvision.transforms.RandomVerticalFlip(),
+                                                       torchvision.transforms.RandomRotation(20),
+                                                       torchvision.transforms.ColorJitter(brightness=0.1, contrast=0.1, hue=0.1),
+                                                       torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+    transforms_val = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),
+                                                     torchvision.transforms.Resize((224,224)),  
+                                                     torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     
     site_id = hyperparams.get("site_id")
     train_ids = hyperparams["train_ids"]
@@ -85,8 +89,21 @@ def get_dataloader(hyperparams, data):
         first_id = int(site_id * len(train_ids) / hyperparams["num_sites"])
         last_id = int((site_id * len(train_ids) / hyperparams["num_sites"]) + (len(train_ids) / hyperparams["num_sites"]))
         train_ids = train_ids[first_id:last_id]
-    dataset_train = HAMDataset(train_ids, transform=transforms_train)
-    dataset_val = HAMDataset(hyperparams["val_ids"], transform=transforms_val)
-    dataloader_train = torch.utils.data.DataLoader(dataset_train, batch_size=hyperparams["batch_size"], shuffle=True)
-    dataloader_val = torch.utils.data.DataLoader(dataset_val, batch_size=hyperparams["batch_size"], shuffle=True)
+    
+    dataset_train = HAMDataset(ids=train_ids,
+                               csv_file="/home/stolet/ham10000/HAM10000_metadata.csv",
+                               root_dir="/home/stolet/ham10000/HAM10000_images_part_1",
+                               transform=transforms_train) 
+    dataset_val = HAMDataset(ids=hyperparams["val_ids"],
+                             csv_file="/home/stolet/ham10000/HAM10000_metadata.csv",
+                             root_dir="/home/stolet/ham10000/HAM10000_images_part_1",
+                             transform=transforms_val)
+    
+    dataloader_train = torch.utils.data.DataLoader(dataset_train, 
+                                                   batch_size=hyperparams["batch_size"],
+                                                   shuffle=True)
+    dataloader_val = torch.utils.data.DataLoader(dataset_val,
+                                                 batch_size=hyperparams["batch_size"],
+                                                 shuffle=True)
+     
     return dataloader_train, dataloader_val

@@ -207,6 +207,8 @@ class CloudEnvironment(Environment):
         context["json"] = json
         import numpy as np
         context["np"] = np
+        import pandas as pd
+        context["pd"] = pd
         self.logger.withFields({"request-id": req_id}).info("Loaded base cloud environment variables.")
 
 

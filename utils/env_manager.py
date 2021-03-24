@@ -171,7 +171,9 @@ class SiteFederatedLearningEnvironment(SitePredefinedEnvironment):
         context["io"] = io
         from PIL import Image
         context["Image"] = Image
-        
+        import os
+        context["os"] = os
+
         hyperparams = json.loads(req_body["hyperparams"])
         context["hyperparams"] = hyperparams
 
@@ -318,6 +320,8 @@ class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
         context["io"] = io
         from PIL import Image
         context["Image"] = Image
+        import os
+        context["os"] = os
         
         # pass in context as second argument so that get_model has access to context variables
         env_utils.load_from_fn_generator("get_model", "model", req_body, context, gen_fn_args=[hyperparams])

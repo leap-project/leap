@@ -12,5 +12,5 @@ leap_dir='/home/stolet/gopath/src/leap/api'
 python_path='/home/stolet/anaconda3/envs/leap/bin/python'
 
 echo "Running resnet"
-command="cd $leap_dir && $python_path -m resnet_example $n"
+command="export GODEBUG=x509ignoreCN=0 && cd $leap_dir && $python_path -m resnet_example $n"
 ssh stolet@$hostname $command

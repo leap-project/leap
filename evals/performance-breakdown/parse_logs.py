@@ -2,16 +2,23 @@ import json
 import numpy as np
 import glob
 import matplotlib.pyplot as plt
+import os
 
 
-def parse(coord_file, cloudalgo_file, sites_files, baseline_files):
+def get_time_baseline(baseline_files):
+    baseline = parse_baseline(baseline_files)
+    baseline_total_time = baseline["end"] - baseline["start"]
+    baseline_validation_time = (np.array(baseline["val_end"]) - np.array(baseline["val_start"])).sum()
+    baseline_total_time = baseline_total_time - baseline_validation_time
+    return baseline_total_time, baseline["acc"]
+
+
+def get_time_leap(coord_file, cloudalgo_file, sites_files):
     requests = {}
     parse_coord(coord_file, requests)
     parse_cloudalgo(cloudalgo_file, requests)
     parse_sites(sites_files, requests)
-    baseline = parse_baseline(baseline_files)
     total_time = requests["0"]["end-time"] - requests["0"]["start-time"]
-
     coord_site_send = (np.array(requests["0"]["endsend-tosite-fromcoord"]) - np.array(requests["0"]["startsend-tosite-fromcoord"])).sum()
     coord_cloud_send = (np.array(requests["0"]["endsend-tocloud-fromcoord"]) - np.array(requests["0"]["startsend-tocloud-fromcoord"])).sum()
     coord_cloud_rcv = (np.array(requests["0"]["endrcv-fromcloud-tocoord"]) - np.array(requests["0"]["startrcv-fromcloud-tocoord"])).sum()
@@ -20,22 +27,18 @@ def parse(coord_file, cloudalgo_file, sites_files, baseline_files):
     validation_time = (np.array(requests["0"]["valend-cloud"]) - np.array(requests["0"]["valstart-cloud"])).sum()
     site_to_coord_send, site_iter_time = get_time_spent_on_sites(requests, "0")
 
+    accuracies = requests["0"]["acc"]
 
     coord_site_io = coord_site_send + site_to_coord_send
     coord_cloud_io = coord_cloud_send + coord_cloud_rcv
+    return {"total_time": total_time,
+            "coord_cloud_io": coord_cloud_io,
+            "cloud_time": cloud_time,
+            "coord_site_io": coord_site_io,
+            "site_iter_time": site_iter_time,
+            "validation_time": validation_time,
+            "acc": accuracies}
 
-    baseline_total_time = baseline["end"] - baseline["start"]
-    baseline_validation_time = (np.array(baseline["val_end"]) - np.array(baseline["val_start"])).sum()
-    baseline_total_time = baseline_total_time - baseline_validation_time
-    baseline_total_time = 10
-
-    print(total_time)
-    print(coord_cloud_io)
-    print(cloud_time)
-    print(coord_site_io)
-    print(site_iter_time)
-    print(baseline_total_time)
-    plot(total_time, coord_cloud_io, cloud_time, coord_site_io, site_iter_time, validation_time, baseline_total_time)
 
 def get_time_spent_on_sites(requests, req_id):
     logs = requests[req_id]
@@ -65,18 +68,18 @@ def parse_coord(file, requests):
         if line_json["msg"] == "Start timing":
             req_id = str(line_json["request-id"])
             requests[req_id] = {"start-time": line_json["unix-nano"],
-                                                      "startsend-tocloud-fromcoord": [],
-                                                      "endsend-tocloud-fromcoord": [],
-                                                      "startsend-tosite-fromcoord": [],
-                                                      "endsend-tosite-fromcoord": [],
-                                                      "startrcv-fromcloud-tocoord": [],
-                                                      "endrcv-fromcloud-tocoord": [],
-                                                      "startiter-cloud": [],
-                                                      "enditer-cloud": [],
-                                                      "valstart-cloud": [],
-                                                      "valend-cloud": [],
-                                                      "sites": {},
-                                                      "acc": []}
+                                "startsend-tocloud-fromcoord": [],
+                                "endsend-tocloud-fromcoord": [],
+                                "startsend-tosite-fromcoord": [],
+                                "endsend-tosite-fromcoord": [],
+                                "startrcv-fromcloud-tocoord": [],
+                                "endrcv-fromcloud-tocoord": [],
+                                "startiter-cloud": [],
+                                "enditer-cloud": [],
+                                "valstart-cloud": [],
+                                "valend-cloud": [],
+                                "sites": {},
+                                "acc": []}
         elif line_json["msg"] == "End timing":
             req_id = str(line_json["request-id"])
             requests[req_id]["end-time"] = line_json["unix-nano"]
@@ -112,7 +115,6 @@ def parse_coord(file, requests):
         elif line_json["msg"] == "End receive from cloud algo":
             req_id = str(line_json["request-id"])
             requests[req_id]["endrcv-fromcloud-tocoord"].append(line_json["unix-nano"])
-
 
 
 def parse_cloudalgo(file, requests):
@@ -187,21 +189,37 @@ def parse_baseline(file):
     return baseline
 
 
-def plot(total_time, coord_cloud_io, cloud_time, coord_site_io, site_iter_time, validation_time, baseline_time):
-    coord_cloud_io = coord_cloud_io * 1e-9
-    coord_site_io = coord_site_io * 1e-9
-    total_time = total_time * 1e-9
-    site_iter_time = site_iter_time * 1e-9
-    validation_time = validation_time * 1e-9
+def plot_bar_charts(baseline_time, measurements_list):
     baseline_time = baseline_time * 1e-9
-    labels = ["Baseline", "Leap"]
-    width = 0.1
+    labels = ["Baseline"]
+    width = 0.3
     fig, ax = plt.subplots()
-    ax.bar(labels, [0, total_time - validation_time], width, label="Cloud Compute")
-    ax.bar(labels, [0, coord_site_io + site_iter_time + coord_cloud_io], width, label="Coord-Cloud IO")
-    ax.bar(labels, [0, coord_site_io + site_iter_time], width, label="Site Compute")
-    ax.bar(labels, [0, coord_site_io], width, label="Coord-Site IO")
-    ax.bar(labels, [baseline_time, 0], width, label="Baseline")
+
+    cloud_compute_all = [0]
+    coord_cloud_io_all = [0]
+    site_compute_all = [0]
+    coord_site_io_all = [0]
+    baseline_time_all = [baseline_time]
+
+    for measurement in measurements_list:
+        labels.append(str(measurement["n_sites"]))
+        coord_cloud_io = measurement["coord_cloud_io"] * 1e-9
+        coord_site_io = measurement["coord_site_io"] * 1e-9
+        total_time = measurement["total_time"] * 1e-9
+        site_iter_time = measurement["site_iter_time"] * 1e-9
+        validation_time = measurement["validation_time"] * 1e-9
+
+        cloud_compute_all.append(total_time - validation_time)
+        coord_cloud_io_all.append(coord_site_io + site_iter_time + coord_cloud_io)
+        site_compute_all.append(coord_site_io + site_iter_time)
+        coord_site_io_all.append(coord_site_io)
+        baseline_time_all.append(0)
+
+    ax.bar(labels, cloud_compute_all, width, label="Cloud Compute")
+    ax.bar(labels, coord_cloud_io_all, width, label="Coord-Cloud IO")
+    ax.bar(labels, site_compute_all, width, label="Site Compute")
+    ax.bar(labels, coord_site_io_all, width, label="Coord-Site IO")
+    ax.bar(labels, baseline_time_all, width, label="Baseline")
 
     ax.set_ylabel("Time (seconds)")
     ax.set_title("Training Time Resnet 18")
@@ -209,16 +227,76 @@ def plot(total_time, coord_cloud_io, cloud_time, coord_site_io, site_iter_time, 
     plt.show()
 
 
-def open_site_files():
+def plot_accuracies(baseline_accuracy, measurements):
+    iters = range(1, len(baseline_accuracy) + 1)
+    plt.plot(iters, baseline_accuracy, label="Baseline")
+    for measurement in measurements:
+        accuracies = measurement["acc"]
+        plt.plot(iters, accuracies, label=str(measurement["n_sites"]))
+
+    title = "Validation Accuracy During Training"
+    plt.title(title)
+    plt.xlabel("Iterations")
+    plt.ylabel("Classification Accuracy")
+    plt.ylim(0, 1)
+    plt.legend()
+    plt.show()
+
+
+def open_site_files(logs_path):
     files = []
-    for filename in glob.glob("logs/site[0-9]*.log"):
+    for filename in glob.glob(logs_path + "/site[0-9]*.log"):
         files.append(open(filename, "r"))
     return files
 
 
+def get_avg_measurements(n_sites, measurements):
+    # TODO: Find best way to deal with multiple runs and val accuracy
+    avg_measurements = {
+        "n_sites": n_sites,
+        "total_time": 0,
+        "coord_cloud_io": 0,
+        "cloud_time": 0,
+        "coord_site_io": 0,
+        "site_iter_time": 0,
+        "validation_time": 0,
+        "acc": measurements[0]["acc"]}
+
+    for measurement in measurements:
+        avg_measurements["total_time"] = measurement["total_time"] / len(measurements)
+        avg_measurements["coord_cloud_io"] = measurement["coord_cloud_io"] / len(measurements)
+        avg_measurements["cloud_time"] = measurement["cloud_time"] / len(measurements)
+        avg_measurements["coord_site_io"] = measurement["coord_site_io"] / len(measurements)
+        avg_measurements["site_iter_time"] = measurement["site_iter_time"] / len(measurements)
+        avg_measurements["validation_time"] = measurement["validation_time"] / len(measurements)
+
+    return avg_measurements
+
+
+def main():
+    scalability = [1, 5]
+    measurements_list = []
+    for n_sites in scalability:
+        exp_path = "logs/sites" + str(n_sites) + "/"
+        trials_paths = os.listdir(exp_path)
+        measurements = []
+        for trial_path in trials_paths:
+            trial_path = exp_path + trial_path
+            site_files = open_site_files(trial_path)
+            coord_file = open(trial_path + "/coordinator.log", "r")
+            cloudalgo_file = open(trial_path + "/cloudalgo.log", "r")
+            measurement = get_time_leap(coord_file, cloudalgo_file, site_files)
+            measurements.append(measurement)
+
+        avg_measurements = get_avg_measurements(n_sites, measurements)
+        measurements_list.append(avg_measurements)
+
+    baseline_file = open("../baselines/logs/resnet_baseline.log")
+    baseline_time, baseline_accuracies = get_time_baseline(baseline_file)
+    plot_bar_charts(baseline_time, measurements_list)
+    plot_accuracies(baseline_accuracies, measurements_list)
+
+
 if __name__ == "__main__":
-    site_files = open_site_files()
-    coord_file = open("logs/coordinator.log", "r")
-    cloudalgo_file = open("logs/cloudalgo.log", "r")
-    baseline_files = open("logs/resnet_baseline.log", "r")
-    parse(coord_file, cloudalgo_file, site_files, baseline_files)
+    main()
+

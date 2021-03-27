@@ -8,7 +8,7 @@ if [ "$#" -ne 3 ]; then
     echo "[number_of_sites, site_increment_step, number_of_runs]"
     exit
 fi
-mkdir -p $log_dir
+
 n_sites=$1
 sites_increment=$2
 n_runs=$3

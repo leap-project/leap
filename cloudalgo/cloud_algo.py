@@ -322,8 +322,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
                 self.log.withFields({"i": i}).info("Got acc sum")
                 val_sum += correct_sum
                 val_total += total
-                if i == 5:
-                    break
+            
             print("Acc: " + str(val_sum / val_total))
             return val_sum / val_total
     

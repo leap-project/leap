@@ -155,6 +155,16 @@ func (c *Coordinator) Serve() {
 		PermitWithoutStream: true,
 	}
 
+	maxMsgLength := 1000000000
+	opts := []grpc.ServerOption{
+		grpc.UnaryInterceptor(c.interceptor),
+		grpc.KeepaliveParams(ka_params),
+		grpc.KeepaliveEnforcementPolicy(kaep),
+		grpc.MaxRecvMsgSize(maxMsgLength),
+		grpc.MaxSendMsgSize(maxMsgLength),
+		grpc.MaxMsgSize(maxMsgLength),
+	}
+
 	var s *grpc.Server
 	if c.Conf.Secure {
 		// Load coordinator certificates from disk
@@ -185,25 +195,10 @@ func (c *Coordinator) Serve() {
 			ClientCAs:    certPool,
 		})
 
-		opts := []grpc.ServerOption{
-			grpc.Creds(creds),
-			grpc.UnaryInterceptor(c.interceptor),
-			grpc.MaxRecvMsgSize(4000000000),
-			grpc.MaxSendMsgSize(4000000000),
-			grpc.KeepaliveParams(ka_params),
-			grpc.KeepaliveEnforcementPolicy(kaep),
-		}
-
+		opts = append(opts, grpc.Creds(creds))
 		s = grpc.NewServer(opts...)
 
 	} else {
-
-		opts := []grpc.ServerOption{
-			grpc.UnaryInterceptor(c.interceptor),
-			grpc.KeepaliveParams(ka_params),
-			grpc.KeepaliveEnforcementPolicy(kaep),
-		}
-
 		s = grpc.NewServer(opts...)
 	}
 
@@ -224,8 +219,9 @@ func (c *Coordinator) Dial(addr string, servername string) (*grpc.ClientConn, er
 			//Timeout: 5 * time.Second,
 			PermitWithoutStream: false,}
 
+	maxMsgLength := 1000000000
 	opts := []grpc.DialOption{
-		grpc.WithMaxMsgSize(4000000000),
+		grpc.WithMaxMsgSize(maxMsgLength),
 		grpc.WithKeepaliveParams(ka_params),
 	}
 

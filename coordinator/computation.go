@@ -81,6 +81,7 @@ func (c *Coordinator) Map(stream pb.Coordinator_MapServer) (err error) {
 	results, err := c.getResultsFromSites(req)
 
 	// Send response in chunks
+	startTime := time.Now()
 	currentTime = time.Now().UnixNano()
 	c.Log.WithFields(logrus.Fields{"request-id": req.Id, "unix-nano": currentTime}).Info("Start send to cloud algo")
 	err = sendMapResponseStream(&results, stream)
@@ -241,9 +242,11 @@ func receiveMapRequestStream(stream pb.Coordinator_MapServer) (*pb.MapRequest, e
 // results: List of map responses to turn into a bytes stream
 // stream:  Grpc stream where the bytes are sent
 func sendMapResponseStream(results *pb.MapResponses, stream pb.Coordinator_MapServer) error {
+	startTime := time.Now()
 	sendBuf, _ := proto.Marshal(results)
-	chunkSize := 64 * 1024
+	chunkSize := 900000000
 	for currByte := 0; currByte < len(sendBuf); currByte += chunkSize {
+	    startTime = time.Now()
 	    chunk := &pb.MapResponsesChunk{}
 	    if currByte + chunkSize > len(sendBuf) {
 	        chunk.Chunk = sendBuf[currByte:len(sendBuf)]

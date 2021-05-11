@@ -6,8 +6,18 @@ import logging
 from pylogrus import PyLogrus, TextFormatter
 import ujson as json
 from cloudalgo.functions import *
+import cloudalgo.functions.privacy as leap_privacy
 import cloudalgo.functions as leap_fn
 import utils.env_utils as env_utils
+import random
+import numpy as np
+import pandas as pd
+import torch
+import torchvision
+import requests
+import io
+from PIL import Image
+import os
 
 # Setup logging tool
 logging.setLoggerClass(PyLogrus)
@@ -41,11 +51,8 @@ class SiteEnvironment(Environment):
     # req: The request containing the functions to be loaded.
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
-        import random
         context["random"] = random
-        import numpy as np
         context["np"] = np
-        import pandas as pd
         context["pd"] = pd
         self.logger.withFields({"request-id": req_id}).info("Loaded base site environment variables")
 
@@ -129,7 +136,6 @@ class SitePrivatePredefinedEnvironment(SitePredefinedEnvironment):
     # req: The request containing the functions to be loaded.
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
-        import cloudalgo.functions.privacy as leap_privacy
         context["leap_privacy"] = leap_privacy
         epsilon = req_body["epsilon"]
         delta = req_body["delta"]
@@ -156,22 +162,15 @@ class SiteFederatedLearningEnvironment(SitePredefinedEnvironment):
         algo_code = req.algo_code
         module = getattr(leap_fn, env_utils.convert_algo_code(algo_code))
 
-        import torch
         globals()["torch"] = torch
         context["torch"] = torch
-        import pandas as pd
         context["pd"] = pd        
         context["AverageMeter"] = leap_fn.fl_fn.AverageMeter
 
-        import torchvision
         context["torchvision"] = torchvision
-        import requests
         context["requests"] = requests
-        import io
         context["io"] = io
-        from PIL import Image
         context["Image"] = Image
-        import os
         context["os"] = os
 
         hyperparams = json.loads(req_body["hyperparams"])
@@ -201,13 +200,9 @@ class CloudEnvironment(Environment):
     # req: The request containing the functions to be loaded.
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
-        import random
         context["random"] = random
-        import ujson as json
         context["json"] = json
-        import numpy as np
         context["np"] = np
-        import pandas as pd
         context["pd"] = pd
         self.logger.withFields({"request-id": req_id}).info("Loaded base cloud environment variables.")
 
@@ -307,22 +302,16 @@ class CloudFedereatedLearningEnvironment(CloudPredefinedEnvironment):
     # req_id: The id of this request. Used for logging.
     def set_env(self, context, req_body, req_id, req):
         super().set_env(context, req_body, req_id, req)
-        import torch
         globals()["torch"] = torch
         context["torch"] = torch
         context["AverageMeter"] = leap_fn.fl_fn.AverageMeter
         hyperparams = json.loads(req_body["hyperparams"])
         context["hyperparams"] = hyperparams
 
-        import torchvision
         context["torchvision"] = torchvision
-        import requests
         context["requests"] = requests
-        import io
         context["io"] = io
-        from PIL import Image
         context["Image"] = Image
-        import os
         context["os"] = os
         
         # pass in context as second argument so that get_model has access to context variables

@@ -62,6 +62,7 @@ pip install numpy
 pip install pylogrus
 pip install torch
 pip install torchvision
+pip install ujson
 ```
 
 ### Installing MySQL

@@ -11,7 +11,7 @@ import time
 import pandas
 import concurrent.futures as futures
 import redcap
-import json
+import ujson as json
 import logging
 from pylogrus import PyLogrus, TextFormatter, JsonFormatter
 import utils.env_manager as env_manager

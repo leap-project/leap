@@ -3,7 +3,9 @@
 import json
 import pandas as pd
 import torch
+import ujson as json
 import torch.utils.data
+import time
 
 class AverageMeter(object):
     """Computes and stores the average and current value"""
@@ -92,9 +94,10 @@ def agg_fns():
 
         first_result = json.loads(map_results[0])
         agg_grad = first_result["grads"]
+        
         for j in range(len(agg_grad)):
             agg_grad[j] = unquantize(first_result["min_max"][j]["min"], first_result["min_max"][j]["max"], agg_grad[j])
-        
+
         loss_meter = AverageMeter()
         loss_meter.update(first_result['loss'])
         
@@ -104,17 +107,18 @@ def agg_fns():
             
             for j in range(len(agg_grad)):
                 unquantized = unquantize(map_result["min_max"][j]["min"], map_result["min_max"][j]["max"], grad_result[j]) 
+
                 agg_grad[j] = (agg_grad[j] + unquantized)
 
         for j in range(len(agg_grad)):
             agg_grad[j] = agg_grad[j].cpu().tolist()
-
             
         loss_meter.update(first_result['loss'])
         result = {
             "grad":agg_grad,
             "loss":loss_meter.avg
         }
+        
         return result
 
     return [agg_fn1]

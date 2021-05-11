@@ -4,7 +4,7 @@
 import pdb
 import logging
 from pylogrus import PyLogrus, TextFormatter
-import json
+import ujson as json
 from cloudalgo.functions import *
 import cloudalgo.functions as leap_fn
 import utils.env_utils as env_utils
@@ -203,7 +203,7 @@ class CloudEnvironment(Environment):
     def set_env(self, context, req_body, req_id, req):
         import random
         context["random"] = random
-        import json
+        import ujson as json
         context["json"] = json
         import numpy as np
         context["np"] = np

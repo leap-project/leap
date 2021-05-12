@@ -3,12 +3,8 @@
 *.log
 *.pyc
 .Rproj.user
-*pb.go
-*pb2.py
-*pb2_grpc.py
 .vscode/
 ProtoBuf/src/
 *sitealgo/src/
 *leap-db*
 exe/data.csv
-sitealgo/bleh.py

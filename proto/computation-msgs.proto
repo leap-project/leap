@@ -34,6 +34,7 @@ message MapRequest {
     LeapTypes leap_type = 3;
     AlgoCodes algo_code = 4;
     repeated int64 sites = 7;
+    bytes model_weights = 8;
 }
 
 // Chunked compute response so we can transmit large files
@@ -44,6 +45,7 @@ message MapResponseChunk {
 // A response from a map computation
 message MapResponse {
     string response = 1;
+    bytes grad = 2;
 }
 
 // Chunked compute response so we can transmit large files

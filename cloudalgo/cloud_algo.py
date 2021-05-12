@@ -184,7 +184,6 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         request.leap_type = req.leap_type
         request.algo_code = req.algo_code
         request.sites.extend(sites)
-
         return request
 
     # Gets the grpc stub to send a message to the coordinator.
@@ -257,8 +256,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
         stop = False
         eps = 0
         delt = 0
-    
-        
+
         while not stop:
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("Start iteration")
@@ -273,7 +271,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             results = coord_stub.Map(chunk_iterator)
             results = self._extract_chunks(results)
             eps, delt = self.accumulate_priv_values(req_body, eps, delt, len(results.responses))
-            extracted_responses = self._extract_map_responses(results.responses)
+            extracted_responses = results.responses
             # Aggregate results from each site
             agg_result = agg_fn[choice](extracted_responses)
             # Update the state

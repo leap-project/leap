@@ -68,7 +68,7 @@ def map_fns():
         buff = io.BytesIO()
         torch.save(client_grad, buff)
         buff.seek(0)
-        result.grad = buff
+        result.grad = buff.getvalue()
         return result
 
     return [map_fn1]
@@ -77,7 +77,7 @@ def map_fns():
 def agg_fns():
     def agg_fn1(map_results):
         first_result = json.loads(map_results[0].response)
-        agg_grad = torch.load(map_results[0].grad)
+        agg_grad = torch.load(io.BytesIO(map_results[0].grad))
 
         loss_meter = AverageMeter()
         loss_meter.update(first_result['loss'])
@@ -131,7 +131,7 @@ def update_fns():
         buff = io.BytesIO()
         torch.save(model_weights, buff)
         buff.seek(0)
-        request.model_weights = buff
+        request.model_weights = buff.get_value()
         return state
 
     return [update_fn1]

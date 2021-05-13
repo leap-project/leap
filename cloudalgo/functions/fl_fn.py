@@ -90,7 +90,7 @@ def agg_fns():
                 agg_grad[j] = (agg_grad[j] + grad_result[j])
 
         for j in range(len(agg_grad)):
-            agg_grad[j] = agg_grad[j].cpu().tolist()
+            agg_grad[j] = agg_grad[j]
             
         loss_meter.update(first_result['loss'])
         result = {

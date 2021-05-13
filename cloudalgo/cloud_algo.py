@@ -310,14 +310,11 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             val_sum = 0
             val_total = 0
             for i, (X, Y) in enumerate(dataloader, 0):
-                self.log.withFields({"i": i}).info("Val evaluation iteration")
                 target = Y
                 image = X
         
                 output = ml_model(image)
-                self.log.withFields({"i": i}).info("Got output")
                 correct_sum, total = self.acc_sum(output, target)
-                self.log.withFields({"i": i}).info("Got acc sum")
                 val_sum += correct_sum
                 val_total += total
             

@@ -125,13 +125,13 @@ def update_fns():
             model_weights.append(params)
 
         request = computation_msgs_pb2.MapRequest()
-        req_body = req_body.copy()
+        req_body = {} 
         req_body["state"] = state
         request.req = json.dumps(req_body)
         buff = io.BytesIO()
         torch.save(model_weights, buff)
         buff.seek(0)
-        request.model_weights = buff.get_value()
+        request.model_weights = buff.getvalue()
         return state
 
     return [update_fn1]

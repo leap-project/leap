@@ -83,7 +83,7 @@ def agg_fns():
         loss_meter.update(first_result['loss'])
         
         for i in range(1, len(map_results)):
-            grad_result = torch.load(map_results[i].grad)
+            grad_result = torch.load(io.BytesIO(map_results[i].grad))
             
             for j in range(len(agg_grad)):
 

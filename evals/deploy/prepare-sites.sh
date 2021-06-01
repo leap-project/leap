@@ -8,15 +8,16 @@ if [ "$#" -ne 1 ]; then
 fi
 
 leap_dir=$1
+deploy_dir=$leap_dir/evals/deploy
 
 prepare_site() {
-  scp prepare-vm.sh $(user)@$(hostname):
-  scp install-lamp.sh $(user)@$(hostname):
-  scp install-redcap.sh $(user)@$(hostname):
-  scp install-leap.sh $(user)@$(hostname):
-  scp redcap.sql $(user)@$(hostname):
-  scp create-project.py $(user)@$(hostname):
-  scp create-project.sh $(user)@$(hostname):
+  scp ${deploy_dir}/prepare-vm.sh $(user)@$(hostname):
+  scp ${deploy_dir}/install-lamp.sh $(user)@$(hostname):
+  scp ${deploy_dir}/install-redcap.sh $(user)@$(hostname):
+  scp ${deploy_dir}/install-leap.sh $(user)@$(hostname):
+  scp ${deploy_dir}/redcap.sql $(user)@$(hostname):
+  scp ${deploy_dir}/create-project.py $(user)@$(hostname):
+  scp ${deploy_dir}/create-project.sh $(user)@$(hostname):
   scp ~/Desktop/ham10000.zip $(user)@$(hostname):
 
   ssh $(user)@$(ip) 'bash prepare-vm.sh'
@@ -34,4 +35,5 @@ for line in $(cat ${leap_dir}/evals/ips/site-ips);do
   i=$((i + 1))
 done
 
+# Wait for all sites to finish before exiting script
 wait

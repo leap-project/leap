@@ -1,12 +1,16 @@
 #!/bin/bash -x
-# for i in {1..11}
-# do
-#     ./create-vm.sh t p${i} proj1full t1 getreadytoBl0ckDra@wP
-# done
+if [ "$#" -ne 1 ]; then
+    echo "Illegal number of parameters"
+    echo "usage:"
+    echo "[leap_dir]"
+    exit
+fi
 
-bash create-sites.sh
-bash create-client.sh
-bash create-cloud.sh
+leap_dir=$1
+
+bash ${leap_dir}/evals/azure/create-sites.sh $leap_dir
+bash ${leap_dir}/evals/azure/create-client.sh $leap_dir
+bash ${leap_dir}/evals/azure/create-cloud.sh $leap_dir
 
 # wait for all the above to complete
 

@@ -5,7 +5,8 @@ if [ "$#" -ne 1 ]; then
     exit
 fi
 
-path_ip_dir=$1
+leap_dir=$1
+path_ip_dir=${leap_dir}/evals/ips
 
 resource_group=""
 
@@ -34,7 +35,7 @@ for i in {1..15}
 do
     echo "site.${i}:"
     get_resource_group_name $i
-    result=$(bash get-vm-ip.sh $resource_group site.${i})
+    result=$(bash ${leap_dir}/evals/azure/get-vm-ip.sh $resource_group site.${i})
     i=0
     for line in $result;do
         echo $line
@@ -49,7 +50,7 @@ do
 done
 
 echo "client"
-result=$(bash get-vm-ip.sh leap_westus client)
+result=$(bash ${leap_dir}/evals/azure/get-vm-ip.sh leap_westus client)
 i=0
 for line in $result;do
     hostname=`echo $line | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'`
@@ -62,7 +63,7 @@ for line in $result;do
 done
 
 echo "cloud"
-result=$(bash get-vm-ip.sh leap_westus cloud)
+result=$(bash ${leap_dir}/evals/azure/get-vm-ip.sh leap_westus cloud)
 i=0
 for line in $result;do
     hostname=`echo $line | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'`

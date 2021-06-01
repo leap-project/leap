@@ -1,5 +1,7 @@
 import json
 
+leap_dir = "/home/stolet/Documents/MSC/leap"
+
 
 def create_sitealgo_config():
     config = {"ip_port": "",
@@ -14,7 +16,7 @@ def create_sitealgo_config():
               "redcap_auth": "fa2901c70d5ee07e0eacc9068f46431e",
               "redcap_pid": 15}
 
-    with open("../ips-local/site-private-ips") as f:
+    with open(leap_dir + "/ips/site-private-ips") as f:
         i = 0
         for line in f.readlines():
             private_ip = line.split()[0]
@@ -22,7 +24,7 @@ def create_sitealgo_config():
             config["connector_ip_port"] = private_ip + ":50001"
             config["site_id"] = i
 
-            with open("../../config/sitealgo" + str(i) + "-config.json", 'w') as config_file:
+            with open(leap_dir + "/config/sitealgo" + str(i) + "-config.json", 'w') as config_file:
                 json.dump(config, config_file)
 
             i += 1
@@ -40,12 +42,12 @@ def create_connector_config():
               "CoordCN": "Coord",
               "SiteAlgoCN": "SiteAlgo"}
 
-    with open("../ips-local/cloud-private-ips") as f:
+    with open(leap_dir + "/ips/cloud-private-ips") as f:
         for line in f.readlines():
             private_ip = line.split()[0]
             config["CoordinatorIpPort"] = private_ip + ":50000"
 
-    with open("../ips-local/site-private-ips") as f:
+    with open(leap_dir + "/ips/site-private-ips") as f:
         i = 0
         for line in f.readlines():
             private_ip = line.split()[0]
@@ -53,7 +55,7 @@ def create_connector_config():
             config["AlgoIpPort"] = private_ip + ":60001"
             config["SiteId"] = i
 
-            with open("../../config/conn" + str(i) + "-config.json", 'w') as config_file:
+            with open(leap_dir + "/config/conn" + str(i) + "-config.json", 'w') as config_file:
                 json.dump(config, config_file)
 
             i += 1

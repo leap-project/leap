@@ -20,7 +20,7 @@ for line in $(cat ${leap_dir}/evals/ips/client-ips);do
   scp redcap.sql $(user)@$(hostname):
   scp create-project.py $(user)@$(hostname):
   scp create-project.sh $(user)@$(hostname):
-  scp ~/Desktop/ham10000.zip $(user)@$(hostname): # TODO: Don't hardcode this value
+  scp ~/Desktop/ham10000.zip $(user)@$(hostname):
 
   ssh $(user)@$(ip) 'bash prepare-vm.sh'
 

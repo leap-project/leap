@@ -18,9 +18,9 @@ bash get-vms-ips.sh ${leap_dir}/evals/ips
 
 # For each VM prepare the environment
 
+bash prepare-client.sh ${leap_dir} &
+bash prepare-cloud.sh ${leap_dir} &
 bash prepare-sites.sh ${leap_dir}
-bash prepare-client.sh ${leap_dir}
-bash prepare-cloud.sh ${leap_dir}
 
 # Create ssl certs
 bash create-all-certificates.sh 15

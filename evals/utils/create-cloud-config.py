@@ -10,7 +10,7 @@ def create_cloudalgo_config():
               "certificate_authority": "../certs/myCA.crt",
               "coord_cn": "Coord"}
 
-    with open("../ips/cloud-private-ips") as f:
+    with open("../ips-local/cloud-private-ips") as f:
         for line in f.readlines():
             private_ip = line.split()[0]
             config["ip_port"] = private_ip + ":7000"
@@ -32,7 +32,7 @@ def create_coord_config():
         "CloudAlgoCN": "CloudAlgo"
     }
 
-    with open("../ips/cloud-private-ips") as f:
+    with open("../ips-local/cloud-private-ips") as f:
         for line in f.readlines():
             private_ip = line.split()[0]
             config["IpPort"] = private_ip + ":50000"

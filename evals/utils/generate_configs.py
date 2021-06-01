@@ -99,10 +99,10 @@ def get_cloud_ip(file):
     return ips
 
 def main():
-    cloud_ip_file = open("../ips/cloud-ips", "r")
-    cloud_ip_private_file = open("../ips/cloud-private-ips", "r")
-    site_ip_file = open("../ips/site-ips", "r")
-    site_ip_private_file = open("../ips/site-private-ips", "r")
+    cloud_ip_file = open("../ips-local/cloud-ips", "r")
+    cloud_ip_private_file = open("../ips-local/cloud-private-ips", "r")
+    site_ip_file = open("../ips-local/site-ips", "r")
+    site_ip_private_file = open("../ips-local/site-private-ips", "r")
 
     cloud_ip = get_cloud_ip(cloud_ip_file)
     cloud_private_ip = get_cloud_ip(cloud_ip_private_file)

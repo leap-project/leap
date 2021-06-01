@@ -14,7 +14,7 @@ def create_sitealgo_config():
               "redcap_auth": "fa2901c70d5ee07e0eacc9068f46431e",
               "redcap_pid": 15}
 
-    with open("../ips/site-private-ips") as f:
+    with open("../ips-local/site-private-ips") as f:
         i = 0
         for line in f.readlines():
             private_ip = line.split()[0]
@@ -40,12 +40,12 @@ def create_connector_config():
               "CoordCN": "Coord",
               "SiteAlgoCN": "SiteAlgo"}
 
-    with open("../ips/cloud-private-ips") as f:
+    with open("../ips-local/cloud-private-ips") as f:
         for line in f.readlines():
             private_ip = line.split()[0]
             config["CoordinatorIpPort"] = private_ip + ":50000"
 
-    with open("../ips/site-private-ips") as f:
+    with open("../ips-local/site-private-ips") as f:
         i = 0
         for line in f.readlines():
             private_ip = line.split()[0]

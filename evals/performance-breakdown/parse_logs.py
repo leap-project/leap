@@ -284,7 +284,7 @@ def get_avg_measurements(n_sites, measurements):
 
 
 def main():
-    scalability = [1]
+    scalability = [1, 5, 10, 15]
     measurements_list = []
     for n_sites in scalability:
         exp_path = "logs/sites" + str(n_sites) + "/"

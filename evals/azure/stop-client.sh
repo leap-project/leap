@@ -1,3 +1,3 @@
 #!/bin/bash -x
 
-bash stop-vm.sh Leap client
+bash stop-vm.sh leap_westus client

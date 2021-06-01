@@ -4,22 +4,21 @@
 #     ./create-vm.sh t p${i} proj1full t1 getreadytoBl0ckDra@wP
 # done
 
-bash create-vm.sh Leap site.1 leap.image 'westus'&
-bash create-vm.sh Leap site.2 leap.image 'westus' &
-bash create-vm.sh Leap site.3 leap.image 'westus' &
-bash create-vm.sh Leap site.4 leap.image 'westus' &
-bash create-vm.sh Leap site.5 leap.image 'westus' &
-bash create-vm.sh Leap site.6 leap.image 'westus' &
-bash create-vm.sh Leap site.7 leap.image 'westus' &
-bash create-vm.sh Leap site.8 leap.image 'westus' &
-bash create-vm.sh Leap site.9 leap.image 'westus' &
-bash create-vm.sh Leap site.10 leap.image 'westus' &
-bash create-vm.sh Leap site.11 leap.image 'westus' &
-bash create-vm.sh Leap site.12 leap.image 'westus' &
-bash create-vm.sh Leap site.13 leap.image 'westus' &
-bash create-vm.sh Leap site.14 leap.image 'westus' &
-bash create-vm.sh Leap site.15 leap.image 'westus' &
-
+bash create-vm.sh leap_westus site.1 'westus'&
+bash create-vm.sh leap_eastus site.2 'eastus' &
+bash create-vm.sh leap_westeurope site.3 'westeurope' &
+bash create-vm.sh leap_eastasia site.4 'eastasia' &
+bash create-vm.sh leap_australiaeast site.5 'australiaeast' &
+bash create-vm.sh leap_westus site.6 'westus' &
+bash create-vm.sh leap_eastus site.7 'eastus' &
+bash create-vm.sh leap_westeurope site.8 'westeurope' &
+bash create-vm.sh leap_eastasia site.9 'eastasia' &
+bash create-vm.sh leap_australiaeast site.10 'australiaeast' &
+bash create-vm.sh leap_westus site.11 'westus' &
+bash create-vm.sh leap_eastus site.12 'eastus' &
+bash create-vm.sh leap_westeurope site.13 'westeurope' &
+bash create-vm.sh leap_eastasia site.14 'eastasia' &
+bash create-vm.sh leap_australiaeast site.15 'australiaeast' &
 
 # wait for all the above to complete
 

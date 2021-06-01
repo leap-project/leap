@@ -1,24 +1,20 @@
 #!/bin/bash -x
 
-if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 3 ]; then
     echo "Illegal number of parameters (expecting 4):"
-    echo "[r-group, vm-name, image-name, location]"
+    echo "[r-group, vm-name, location]"
     exit
 fi
 
-rgroup=$1    # resource group in which to find the image/create VM
+rgroup=$1    # resource group in which to create VM
 vm=$2        # the name of the newly created VM
-imagename=$3 # imagename from which to create the VM
-location=$4
+location=$3
 
 # Create the VM
-az vm create --resource-group $rgroup --name $vm --image $imagename \
+az vm create --resource-group $rgroup --name $vm \
    --admin-username stolet \
    --ssh-key-value ~/.ssh/id_rsa.pub \
    --location $location \
-   --plan-name "5-6" \
-   --plan-publisher "bitnami" \
-   --plan-product  "lampstack" \
    --size "Standard_D4s_v3"
 
 # Set the public IP address to static

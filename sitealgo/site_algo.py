@@ -10,7 +10,6 @@ import grpc
 import time
 import pandas
 import concurrent.futures as futures
-import redcap
 import ujson as json
 import logging
 from pylogrus import PyLogrus, TextFormatter, JsonFormatter

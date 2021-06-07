@@ -1,39 +1,40 @@
 echo "Starting sites..."
-if [ "$#" -ne 1 ]; then
-    echo "Illegal number of parameters (expecting 1):"
-    echo "[num_sites]"
+if [ "$#" -ne 2 ]; then
+    echo "Illegal number of parameters (expecting 2):"
+    echo "[num_sites, leap_dir]"
     exit
 fi
 
 n_sites=$1
+leap_dir=$2
 
-resource_group=""
+resource_group="leap_westus"
 
 get_resource_group_name() {
-  case $1 in
-    (($1 == 0)) | (($1 == 5)) | (($1 == 10)))
+  case $((($1 - 1) % 5)) in
+    0)
       resource_group=leap_westus
       ;;
-    (($1 == 1)) | (($1 == 6)) | (($1 == 11)))
-      resource_group=east_us
+    1)
+      resource_group=leap_eastus
       ;;
-    (($1 == 2)) | (($1 == 7)) | (($1 == 12)))
-      resource_group=west_europe
+    2)
+      resource_group=leap_westeurope
       ;;
-    (($1 == 3)) | (($1 == 8)) | (($1 == 13)))
-      resource_group=east_asia
+    3)
+      resource_group=leap_eastasia
       ;;
-    (($1 == 4)) | (($1 == 9)) | (($1 == 14)))
-      resource_group=australia_east
+    4)
+      resource_group=leap_australiaeast
       ;;
-  esac
+    esac
 }
 
 for i in {1..15}
 do
     echo "Starting site.${i}:"
-    get_resource_group_name $i
-    bash start-vm.sh $resource_group site.${i}
+#    get_resource_group_name $i
+    bash ${leap_dir}/evals/azure/start-vm.sh $resource_group site.${i}
 
     if [ $i -eq $n_sites ]; then
       break

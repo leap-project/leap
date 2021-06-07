@@ -8,7 +8,7 @@ fi
 
 leap_dir=$1
 
-bash $leap_dir/evals/azure/create-vm.sh leap_westus cloud 'westus' &
+bash $leap_dir/evals/azure/create-vm.sh leap_westus cloud 'westus' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120" &
 
 # wait for all the above to complete
 

@@ -1,32 +1,35 @@
 #!/bin/bash -x
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -ne 2 ]; then
     echo "Illegal number of parameters"
     echo "usage:"
-    echo "[leap_dir]"
+    echo "[leap_dir, user]"
     exit
 fi
 
 leap_dir=$1
+user=$2
 deploy_dir=$leap_dir/evals/deploy
 
 i=1
 for line in $(cat ${leap_dir}/evals/ips/client-ips);do
 	hostname=`echo $line | grep -E -o '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'`
 
-  scp ${deploy_dir}/prepare-vm.sh $(user)@$(hostname):
-  scp ${deploy_dir}/install-lamp.sh $(user)@$(hostname):
-  scp ${deploy_dir}/install-redcap.sh $(user)@$(hostname):
-  scp ${deploy_dir}/install-leap.sh $(user)@$(hostname):
-  scp ${deploy_dir}/redcap.sql $(user)@$(hostname):
-  scp ${deploy_dir}/create-project.py $(user)@$(hostname):
-  scp ${deploy_dir}/create-project.sh $(user)@$(hostname):
-  scp ~/Desktop/ham10000.zip $(user)@$(hostname):
+  scp -oStrictHostKeyChecking=no ${deploy_dir}/prepare-vm.sh $user@$hostname:
+  scp -oStrictHostKeyChecking=no ${deploy_dir}/install-lamp.sh $user@$hostname:
+  scp -oStrictHostKeyChecking=no ${deploy_dir}/install-redcap.sh $user@$hostname:
+  scp -oStrictHostKeyChecking=no ${deploy_dir}/install-leap.sh $user@$hostname:
+  scp -oStrictHostKeyChecking=no ${deploy_dir}/redcap.sql $user@$hostname:
+  scp -oStrictHostKeyChecking=no ${deploy_dir}/create-project.py $user@$hostname:
+  scp -oStrictHostKeyChecking=no ${deploy_dir}/create-project.sh $user@$hostname:
+  scp -oStrictHostKeyChecking=no ~/Downloads/redcap11.0.5.zip $user@$hostname:
+  scp -oStrictHostKeyChecking=no ~/Desktop/ham10000.zip $user@$hostname:
 
-  ssh $(user)@$(ip) 'bash prepare-vm.sh'
+  # Delete line from bashrc that prevents ssh commands from executing using non interactive shell
+  ssh ${user}@${hostname} "sed -i '/case \$- in/,+3d' ~/.bashrc"
 
-  if [ $i -eq $n_sites ]; then
-    break
-  fi
+  # Run script to prepare vm
+  ssh ${user}@${hostname} "bash prepare-vm.sh"
+
   i=$((i + 1))
 done

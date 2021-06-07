@@ -9,21 +9,21 @@ fi
 
 leap_dir=$1
 
-bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.1 'westus'&
-bash ${leap_dir}/evals/azure/create-vm.sh leap_eastus site.2 'eastus' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_westeurope site.3 'westeurope' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_eastasia site.4 'eastasia' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_australiaeast site.5 'australiaeast' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.6 'westus' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_eastus site.7 'eastus' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_westeurope site.8 'westeurope' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_eastasia site.9 'eastasia' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_australiaeast site.10 'australiaeast' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.11 'westus' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_eastus site.12 'eastus' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_westeurope site.13 'westeurope' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_eastasia site.14 'eastasia' &
-bash ${leap_dir}/evals/azure/create-vm.sh leap_australiaeast site.15 'australiaeast' &
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.1 'westus' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.2 'eastus' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.3 'westeurope' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.4 'eastasia' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.5 'australiaeast' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.6 'westus' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.7 'eastus' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.8 'westeurope' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.9 'eastasia' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.10 'australiaeast' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.11 'westus' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.12 'eastus' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.13 'westeurope' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.14 'eastasia' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
+bash ${leap_dir}/evals/azure/create-vm.sh leap_westus site.15 'australiaeast' "Canonical:UbuntuServer:18.04-LTS:18.04.202105120"&
 
 # wait for all the above to complete
 

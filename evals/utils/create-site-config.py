@@ -16,12 +16,14 @@ def create_sitealgo_config():
               "redcap_auth": "fa2901c70d5ee07e0eacc9068f46431e",
               "redcap_pid": 15}
 
-    with open(leap_dir + "/ips/site-private-ips") as f:
+    with open(leap_dir + "/evals/ips/site-private-ips") as f:
         i = 0
         for line in f.readlines():
             private_ip = line.split()[0]
-            config["ip_port"] = private_ip + ":60001"
-            config["connector_ip_port"] = private_ip + ":50001"
+            port_number_conn = 50001 + i
+            port_number_algo = 60001 + i
+            config["ip_port"] = private_ip + ":" + str(port_number_algo)
+            config["connector_ip_port"] = private_ip + ":" + str(port_number_conn)
             config["site_id"] = i
 
             with open(leap_dir + "/config/sitealgo" + str(i) + "-config.json", 'w') as config_file:
@@ -42,17 +44,19 @@ def create_connector_config():
               "CoordCN": "Coord",
               "SiteAlgoCN": "SiteAlgo"}
 
-    with open(leap_dir + "/ips/cloud-private-ips") as f:
+    with open(leap_dir + "/evals/ips/cloud-private-ips") as f:
         for line in f.readlines():
             private_ip = line.split()[0]
             config["CoordinatorIpPort"] = private_ip + ":50000"
 
-    with open(leap_dir + "/ips/site-private-ips") as f:
+    with open(leap_dir + "/evals/ips/site-private-ips") as f:
         i = 0
         for line in f.readlines():
             private_ip = line.split()[0]
-            config["IpPort"] = private_ip + ":50001"
-            config["AlgoIpPort"] = private_ip + ":60001"
+            port_number_conn = 50001 + i
+            port_number_algo = 60001 + i
+            config["IpPort"] = private_ip + ":" + str(port_number_conn)
+            config["AlgoIpPort"] = private_ip + ":" + str(port_number_algo)
             config["SiteId"] = i
 
             with open(leap_dir + "/config/conn" + str(i) + "-config.json", 'w') as config_file:

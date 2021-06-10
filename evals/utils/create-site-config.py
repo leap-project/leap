@@ -26,7 +26,7 @@ def create_sitealgo_config():
             config["connector_ip_port"] = private_ip + ":" + str(port_number_conn)
             config["site_id"] = i
 
-            with open(leap_dir + "/config/sitealgo" + str(i) + "-config.json", 'w') as config_file:
+            with open(leap_dir + "/config/sitealgo" + str(i) + "_config.json", 'w') as config_file:
                 json.dump(config, config_file)
 
             i += 1

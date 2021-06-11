@@ -14,6 +14,8 @@ image=$4
 # Create the VM
 az vm create --resource-group $rgroup --name $vm --image $image\
    --admin-username stolet \
+   --vnet-name ${location}VNET \
+   --subnet Subnet1 \
    --ssh-key-value ~/.ssh/id_rsa.pub \
    --location $location \
    --size "Standard_D4s_v3"

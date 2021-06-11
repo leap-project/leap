@@ -13,11 +13,11 @@ bash ${leap_dir}/evals/azure/create-nsg.sh "leap_westus" "westeurope"
 bash ${leap_dir}/evals/azure/create-nsg.sh "leap_westus" "eastasia"
 bash ${leap_dir}/evals/azure/create-nsg.sh "leap_westus" "australiaeast"
 
-# Deploy VMs in each region
-bash ${leap_dir}/evals/azure/create-all.sh $leap_dir
-
 # Create vnets that communicate with each other on each resource group
 bash ${leap_dir}/evals/azure/create-vnets.sh "leap_westus"
+
+# Deploy VMs in each region
+bash ${leap_dir}/evals/azure/create-all.sh $leap_dir
 
 ## Get ips
 bash ${leap_dir}/evals/azure/get-vms-ips.sh ${leap_dir}

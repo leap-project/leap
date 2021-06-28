@@ -1,1 +1,0 @@
-{"IpPort": "10.0.1.4:50022", "CoordinatorIpPort": "10.0.0.6:50000", "AlgoIpPort": "10.0.1.4:60022", "SiteId": 21, "Secure": true, "Crt": "../certs/siteconn0.crt", "Key": "../certs/siteconn0.key", "CertAuth": "../certs/myCA.crt", "CoordCN": "Coord", "SiteAlgoCN": "SiteAlgo"}

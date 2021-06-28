@@ -1,1 +1,0 @@
-{"ip_port": "10.0.1.5:60027", "connector_ip_port": "10.0.1.5:50027", "csv_true": "0", "site_id": 26, "secure_with_tls": "y", "cert": "../certs/sitealgo0.crt", "key": "../certs/sitealgo0.key", "certificate_authority": "../certs/myCA.crt", "redcap_url": "http://localhost/redcap/api", "redcap_auth": "fa2901c70d5ee07e0eacc9068f46431e", "redcap_pid": 15}

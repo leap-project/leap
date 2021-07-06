@@ -10,7 +10,7 @@ mkdir gopath
 mkdir gopath/bin gopath/pkg gopath/src
 echo 'export GOPATH=$HOME/gopath' | sudo tee -a ~/.bashrc
 echo | sudo tee -a ~/.bashrc
-
+echo 'export GODEBUG=x509ignoreCN=0' | sudo tee -a ~/.bashrc
 source ~/.bashrc
 go version
 

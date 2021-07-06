@@ -22,10 +22,10 @@ for line in $(cat ${leap_dir}/evals/ips/cloud-ips);do
   scp -oStrictHostKeyChecking=no ${deploy_dir}/redcap.sql $user@$hostname:
   scp -oStrictHostKeyChecking=no ${deploy_dir}/create-project.py $user@$hostname:
   scp -oStrictHostKeyChecking=no ${deploy_dir}/create-project.sh $user@$hostname:
-  scp -oStrictHostKeyChecking=no ~/Downloads/redcap11.0.5.zip $user@$hostname:
-  scp -oStrictHostKeyChecking=no ~/Desktop/ham10000.zip $user@$hostname: # TODO: Don't zip file path
+#  scp -oStrictHostKeyChecking=no ~/Downloads/redcap11.0.5.zip $user@$hostname:
+#  scp -oStrictHostKeyChecking=no ~/Desktop/ham10000.zip $user@$hostname: #
 
-    # Delete line from bashrc that prevents ssh commands from executing using non interactive shell
+  # Delete line from bashrc that prevents ssh commands from executing using non interactive shell
   ssh ${user}@${hostname} "sed -i '/case \$- in/,+3d' ~/.bashrc"
 
   # Run script to prepare vm

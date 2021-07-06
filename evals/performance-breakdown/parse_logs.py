@@ -4,8 +4,6 @@ import glob
 import matplotlib.pyplot as plt
 import os
 
-# TODO: Fix problem with some sites not having 15 sends to coordinator (they have only 14 instead)
-
 
 def get_time_baseline(baseline_files):
     baseline = parse_baseline(baseline_files)
@@ -33,13 +31,15 @@ def get_time_leap(coord_file_path, cloudalgo_file_path, sites_files):
 
     coord_site_io = coord_site_send + site_to_coord_send
     coord_cloud_io = coord_cloud_send + coord_cloud_rcv
+    cloud_compute_time = cloud_time - coord_cloud_io - coord_site_io - site_iter_time - validation_time
     return {"total_time": total_time,
             "coord_cloud_io": coord_cloud_io,
             "cloud_time": cloud_time,
             "coord_site_io": coord_site_io,
             "site_iter_time": site_iter_time,
             "validation_time": validation_time,
-            "acc": accuracies}
+            "acc": accuracies,
+            "cloud_compute": cloud_compute_time}
 
 
 def get_time_spent_on_sites(requests, req_id):
@@ -200,14 +200,24 @@ def parse_baseline(file):
 def plot_bar_charts(baseline_time, measurements_list):
     baseline_time = baseline_time * 1e-9
     labels = ["Baseline"]
-    width = 0.3
+    width = 0.1
     fig, ax = plt.subplots()
 
     cloud_compute_all = [0]
     coord_cloud_io_all = [0]
     site_compute_all = [0]
     coord_site_io_all = [0]
+    total_all = [0]
     baseline_time_all = [baseline_time]
+
+    cloud_compute_std = [0]
+    coord_cloud_io_std = [0]
+    site_compute_std = [0]
+    coord_site_io_std = [0]
+    total_std = [0]
+    baseline_time_std = [0]
+
+    ind = np.arange(1 + len(measurements_list))
 
     for measurement in measurements_list:
         labels.append(str(measurement["n_sites"]))
@@ -217,22 +227,87 @@ def plot_bar_charts(baseline_time, measurements_list):
         site_iter_time = measurement["site_iter_time"] * 1e-9
         validation_time = measurement["validation_time"] * 1e-9
 
-        cloud_compute_all.append(total_time - validation_time)
-        coord_cloud_io_all.append(coord_site_io + site_iter_time + coord_cloud_io)
-        site_compute_all.append(coord_site_io + site_iter_time)
+        coord_cloud_io_std.append(measurement["coord_cloud_io_std"] * 1e-9)
+        coord_site_io_std.append(measurement["coord_site_io_std"] * 1e-9)
+        total_std.append(measurement["total_time_std"] * 1e-9)
+        site_compute_std.append(measurement["site_iter_time_std"] * 1e-9)
+        cloud_compute_std.append(measurement["cloud_compute_std"] * 1e-9)
+
+        cloud_compute_all.append(total_time - validation_time - site_iter_time - coord_site_io - coord_cloud_io)
+        coord_cloud_io_all.append(coord_cloud_io)
+        site_compute_all.append(site_iter_time - coord_site_io)
         coord_site_io_all.append(coord_site_io)
+        total_all.append(total_time - validation_time)
         baseline_time_all.append(0)
 
-    ax.bar(labels, cloud_compute_all, width, label="Cloud Compute")
-    ax.bar(labels, coord_cloud_io_all, width, label="Coord-Cloud IO")
-    ax.bar(labels, site_compute_all, width, label="Site Compute")
-    ax.bar(labels, coord_site_io_all, width, label="Coord-Site IO")
-    ax.bar(labels, baseline_time_all, width, label="Baseline")
+    baseline_rects = ax.bar(ind + width, baseline_time_all, width)
+    cloud_compute_rects = ax.bar(ind + width, cloud_compute_all, width, yerr=cloud_compute_std)
+    coord_cloud_io_rects = ax.bar(ind + 2 * width, coord_cloud_io_all, width, yerr=coord_cloud_io_std)
+    site_compute_rects = ax.bar(ind + 3 * width, site_compute_all, width, yerr=site_compute_std)
+    coord_site_io_rects = ax.bar(ind + 4 * width, coord_site_io_all, width, yerr=coord_site_io_std)
+    total_time_rects = ax.bar(ind + 5 * width, total_all, width, yerr=total_std)
+
+    # ax.bar(labels, cloud_compute_all, width, label="Cloud Compute")
+    # ax.bar(labels, coord_cloud_io_all, width, label="Coord-Cloud IO")
+    # ax.bar(labels, site_compute_all, width, label="Site Compute")
+    # ax.bar(labels, coord_site_io_all, width, label="Coord-Site IO")
+    # ax.bar(labels, baseline_time_all, width, label="Baseline")
 
     ax.set_ylabel("Time (seconds)")
-    ax.set_title("Training Time Resnet 18")
-    ax.legend()
+    ax.set_title("Training Time Resnet 18 (1000 iterations)")
+    ax.set_xticklabels(tuple(labels))
+    ax.set_xticks(ind + width / 2)
+    ax.legend((baseline_rects[0],
+               cloud_compute_rects[0],
+               coord_cloud_io_rects[0],
+               site_compute_rects[0],
+               coord_site_io_rects[0],
+               total_time_rects[0]),
+              ("Baseline",
+               "Cloud Compute",
+               "Coord-Cloud IO",
+               "Site Coompute",
+               "Coord-Site IO",
+               "Total"))
     plt.show()
+
+
+# def plot_bar_charts(baseline_time, measurements_list):
+#     baseline_time = baseline_time * 1e-9
+#     labels = ["Baseline"]
+#     width = 0.3
+#     fig, ax = plt.subplots()
+#
+#     cloud_compute_all = [0]
+#     coord_cloud_io_all = [0]
+#     site_compute_all = [0]
+#     coord_site_io_all = [0]
+#     baseline_time_all = [baseline_time]
+#
+#     for measurement in measurements_list:
+#         labels.append(str(measurement["n_sites"]))
+#         coord_cloud_io = measurement["coord_cloud_io"] * 1e-9
+#         coord_site_io = measurement["coord_site_io"] * 1e-9
+#         total_time = measurement["total_time"] * 1e-9
+#         site_iter_time = measurement["site_iter_time"] * 1e-9
+#         validation_time = measurement["validation_time"] * 1e-9
+#
+#         cloud_compute_all.append(total_time - validation_time)
+#         coord_cloud_io_all.append(coord_site_io + site_iter_time + coord_cloud_io)
+#         site_compute_all.append(coord_site_io + site_iter_time)
+#         coord_site_io_all.append(coord_site_io)
+#         baseline_time_all.append(0)
+#
+#     ax.bar(labels, cloud_compute_all, width, label="Cloud Compute")
+#     ax.bar(labels, coord_cloud_io_all, width, label="Coord-Cloud IO")
+#     ax.bar(labels, site_compute_all, width, label="Site Compute")
+#     ax.bar(labels, coord_site_io_all, width, label="Coord-Site IO")
+#     ax.bar(labels, baseline_time_all, width, label="Baseline")
+#
+#     ax.set_ylabel("Time (seconds)")
+#     ax.set_title("Training Time Resnet 18 (1000 iterations)")
+#     ax.legend()
+#     plt.show()
 
 
 def plot_accuracies(baseline_accuracy, measurements):
@@ -260,14 +335,19 @@ def open_site_files(logs_path):
 
 
 def get_avg_measurements(n_sites, measurements):
-    # TODO: Find best way to deal with multiple runs and val accuracy
     avg_measurements = {
         "n_sites": n_sites,
         "total_time": 0,
+        "total_time_std": 0,
         "coord_cloud_io": 0,
+        "coord_cloud_io_std": 0,
         "cloud_time": 0,
+        "cloud_compute": 0,
+        "cloud_compute_std": 0,
         "coord_site_io": 0,
+        "coord_site_io_std": 0,
         "site_iter_time": 0,
+        "site_iter_time_std": 0,
         "validation_time": 0,
         "acc": np.zeros(len(measurements[0]["acc"]))}
 
@@ -278,7 +358,21 @@ def get_avg_measurements(n_sites, measurements):
         avg_measurements["coord_site_io"] += measurement["coord_site_io"] / len(measurements)
         avg_measurements["site_iter_time"] += measurement["site_iter_time"] / len(measurements)
         avg_measurements["validation_time"] += measurement["validation_time"] / len(measurements)
+        avg_measurements["cloud_compute"] += (measurement["cloud_time"] - measurement["coord_cloud_io"] - measurement["coord_site_io"] - measurement["site_iter_time"] - measurement["validation_time"]) / len(measurements)
         avg_measurements["acc"] += np.array(measurement["acc"]) / len(measurements)
+
+    for measurement in measurements:
+        avg_measurements["total_time_std"] += (measurement["total_time"] - avg_measurements["total_time"])**2
+        avg_measurements["coord_cloud_io_std"] += (measurement["coord_cloud_io"] - avg_measurements["coord_cloud_io"])**2
+        avg_measurements["coord_site_io_std"] += (measurement["coord_site_io"] - avg_measurements["coord_site_io"])**2
+        avg_measurements["site_iter_time_std"] += (measurement["site_iter_time"] - avg_measurements["site_iter_time"])**2
+        avg_measurements["cloud_compute_std"] += (measurement["cloud_compute"] - avg_measurements["cloud_compute"])**2
+
+    avg_measurements["total_time_std"] = np.sqrt(avg_measurements["total_time_std"] / len(measurements))
+    avg_measurements["coord_cloud_io_std"] = np.sqrt(avg_measurements["coord_cloud_io_std"] / len(measurements))
+    avg_measurements["cloud_compute_std"] = np.sqrt(avg_measurements["cloud_compute_std"] / len(measurements))
+    avg_measurements["coord_site_io_std"] = np.sqrt(avg_measurements["coord_site_io_std"] / len(measurements))
+    avg_measurements["site_iter_time_std"] = np.sqrt(avg_measurements["site_iter_time_std"] / len(measurements))
 
     return avg_measurements
 

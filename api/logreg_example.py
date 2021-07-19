@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     leap_fed_learn.selector = selector
 
-    module = leap_functions.resnet
+    module = leap_functions.logreg
     leap_fed_learn.get_model = module.get_model
     leap_fed_learn.get_optimizer = module.get_optimizer
     leap_fed_learn.get_criterion = module.get_criterion
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     sites = np.arange(args.num_sites)
     hyperparams = {
         "lr": 1e-4,
-        "d_x": 224, # input dimension
+        "d_x": 28, # input dimension
         "d_y": 2, # output dimension
         "batch_size": 16,
         "max_iters": 100,

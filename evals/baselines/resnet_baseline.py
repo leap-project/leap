@@ -7,7 +7,6 @@ import os
 import logging
 from pylogrus import PyLogrus, TextFormatter, JsonFormatter
 import time
-from redcap import Project
 from PIL import Image
 import pandas
 import numpy
@@ -88,8 +87,8 @@ class HAMDataset(torch.utils.data.Dataset):
             return 0
 
 if __name__ == "__main__":
-    max_iters = 200
-    iters_per_epoch = 34 
+    max_iters = 100
+    iters_per_epoch = 10 
     learning_rate = 1e-4
     batch_size = 16
     

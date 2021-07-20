@@ -15,7 +15,7 @@ def get_model(hyperparams):
             outputs = self.linear(x)
             return outputs
 
-    model = LogisticRegression(hyperparams["dx"], hyperparams["dy"])
+    model = LogisticRegression(hyperparams["d_x"], hyperparams["d_y"])
     return model
 
 def get_optimizer(params, hyperparams):
@@ -174,8 +174,8 @@ def get_dataloader(hyperparams, data):
         train_ids = train_ids[first_id:last_id]
     
     token_path = '/home/stolet/gopath/src/leap/config/token' 
-    dataset_train = HAMDataset(ids=train_ids, token_path)
-    dataset_val = HAMDataset(ids=val_ids, token_path)
+    dataset_train = HAMDataset(train_ids, token_path)
+    dataset_val = HAMDataset(val_ids, token_path)
     
     dataloader_train = torch.utils.data.DataLoader(dataset_train, 
                                                    batch_size=batch_size,

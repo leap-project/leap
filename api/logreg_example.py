@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     leap_fed_learn.selector = selector
 
-    module = leap_functions.logreg
+    module = leap_functions.log_reg
     leap_fed_learn.get_model = module.get_model
     leap_fed_learn.get_optimizer = module.get_optimizer
     leap_fed_learn.get_criterion = module.get_criterion

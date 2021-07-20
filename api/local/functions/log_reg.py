@@ -12,6 +12,7 @@ def get_model(hyperparams):
             self.linear = torch.nn.Linear(input_dim, output_dim)
     
         def forward(self, x):
+            x = x.type(torch.float)
             outputs = self.linear(x)
             return outputs
 
@@ -31,8 +32,8 @@ def get_dataloader(hyperparams, data):
         def __init__(self, ids, token_path, transform=None):
             self.ids = ids
             self.transform = transform
-            self.token = self.get_token(token_path)
-    
+            self.token_path = token_path
+
         def get_token(self, token_path):
             with open(token_path, 'r') as f:
                 token = f.read().replace('\n', '')
@@ -46,11 +47,12 @@ def get_dataloader(hyperparams, data):
             if torch.is_tensor(idx):
                 idx = idx.tolist()
     
+            token = self.get_token(self.token_path)
             #TODO: Get proper redcap token for project
             idx = self.ids[idx]
             record_id_label = 'records[' + str(idx) + ']'
             data = {
-                'token': self.token,
+                'token': token,
                 'content': 'record',
                 'format': 'json',
                 'type': 'flat',
@@ -173,15 +175,15 @@ def get_dataloader(hyperparams, data):
         last_id = int((site_id * len(train_ids) / hyperparams["num_sites"]) + (len(train_ids) / hyperparams["num_sites"]))
         train_ids = train_ids[first_id:last_id]
     
-    token_path = '/home/stolet/gopath/src/leap/config/token' 
+    token_path = '/home/stolet/token' 
     dataset_train = HAMDataset(train_ids, token_path)
-    dataset_val = HAMDataset(ids=hyperparams["val_ids"], token_path)
+    dataset_val = HAMDataset(hyperparams["val_ids"], token_path)
     
     dataloader_train = torch.utils.data.DataLoader(dataset_train, 
-                                                   batch_size=batch_size,
+                                                   batch_size=hyperparams["batch_size"],
                                                    shuffle=True)
     dataloader_val = torch.utils.data.DataLoader(dataset_val,
-                                                 batch_size=batch_size,
+                                                 batch_size=hyperparams["batch_size"],
                                                  shuffle=True)
     
     return dataloader_train, dataloader_val

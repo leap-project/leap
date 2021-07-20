@@ -175,7 +175,7 @@ def get_dataloader(hyperparams, data):
     
     token_path = '/home/stolet/gopath/src/leap/config/token' 
     dataset_train = HAMDataset(train_ids, token_path)
-    dataset_val = HAMDataset(val_ids, token_path)
+    dataset_val = HAMDataset(ids=hyperparams["val_ids"], token_path)
     
     dataloader_train = torch.utils.data.DataLoader(dataset_train, 
                                                    batch_size=batch_size,

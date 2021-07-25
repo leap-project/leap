@@ -2,16 +2,17 @@
 
 leap_dir="/home/stolet/Documents/MSC/leap/evals"
 
-if [ "$#" -ne 3 ]; then
+if [ "$#" -ne 4 ]; then
     echo "Illegal number of parameters"
     echo "usage:"
-    echo "[number_of_sites, site_increment_step, number_of_runs]"
+    echo "[number_of_sites, site_increment_step, number_of_runs, model_type]"
     exit
 fi
 
 n_sites=$1
 sites_increment=$2
 n_runs=$3
+model_type=$4
 
 for i in $(seq 0 ${sites_increment} ${n_sites}); do
   for j in $(seq 1 1 ${n_runs}); do
@@ -22,7 +23,7 @@ for i in $(seq 0 ${sites_increment} ${n_sites}); do
     fi
 
     # Train resnet-18
-    bash $leap_dir/performance-breakdown/train-resnet.sh $sites
+    bash $leap_dir/performance-breakdown/train-model.sh $sites $model_type
 
     # Kill all running nodes
     bash $leap_dir/utils/kill-all.sh $sites

@@ -198,22 +198,36 @@ def parse_baseline(file):
 
 
 def plot_bar_charts(baseline_time, measurements_list):
+    SMALL_SIZE = 8
+    MEDIUM_SIZE = 16
+    BIGGER_SIZE = 16
+
+    plt.rc('font', size=MEDIUM_SIZE)          # controls default text sizes
+    plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
+    plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+    plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+    plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+    plt.rc('legend', fontsize=MEDIUM_SIZE)    # legend fontsize
+    plt.rc('figure', titlesize=BIGGER_SIZE)
+
     baseline_time = baseline_time * 1e-9
     labels = ["Baseline"]
     width = 0.1
     fig, ax = plt.subplots()
 
     cloud_compute_all = [0]
-    coord_cloud_io_all = [0]
     site_compute_all = [0]
-    coord_site_io_all = [0]
+    # coord_cloud_io_all = [0]
+    # coord_site_io_all = [0]
+    network_io_all = [0]
     total_all = [0]
     baseline_time_all = [baseline_time]
 
     cloud_compute_std = [0]
-    coord_cloud_io_std = [0]
     site_compute_std = [0]
-    coord_site_io_std = [0]
+    network_io_std = [0]
+    # coord_cloud_io_std = [0]
+    # coord_site_io_std = [0]
     total_std = [0]
     baseline_time_std = [0]
 
@@ -226,26 +240,29 @@ def plot_bar_charts(baseline_time, measurements_list):
         total_time = measurement["total_time"] * 1e-9
         site_iter_time = measurement["site_iter_time"] * 1e-9
         validation_time = measurement["validation_time"] * 1e-9
+        network_io = coord_cloud_io + coord_site_io
 
-        coord_cloud_io_std.append(measurement["coord_cloud_io_std"] * 1e-9)
-        coord_site_io_std.append(measurement["coord_site_io_std"] * 1e-9)
+        net_std = ((measurement["coord_cloud_io_std"] * 1e-9) + (measurement["coord_site_io_std"] * 1e-9) ) / 2
+        network_io_std.append(net_std)
         total_std.append(measurement["total_time_std"] * 1e-9)
         site_compute_std.append(measurement["site_iter_time_std"] * 1e-9)
         cloud_compute_std.append(measurement["cloud_compute_std"] * 1e-9)
 
         cloud_compute_all.append(total_time - validation_time - site_iter_time - coord_site_io - coord_cloud_io)
-        coord_cloud_io_all.append(coord_cloud_io)
+        # coord_cloud_io_all.append(coord_cloud_io)
+        network_io_all.append(network_io)
         site_compute_all.append(site_iter_time - coord_site_io)
-        coord_site_io_all.append(coord_site_io)
+        # coord_site_io_all.append(coord_site_io)
         total_all.append(total_time - validation_time)
         baseline_time_all.append(0)
 
     baseline_rects = ax.bar(ind + width, baseline_time_all, width)
-    cloud_compute_rects = ax.bar(ind + width, cloud_compute_all, width, yerr=cloud_compute_std)
-    coord_cloud_io_rects = ax.bar(ind + 2 * width, coord_cloud_io_all, width, yerr=coord_cloud_io_std)
+    net_io_rects = ax.bar(ind + width, network_io_all, width, yerr=network_io_std)
+    cloud_compute_rects = ax.bar(ind + 2 * width, cloud_compute_all, width, yerr=cloud_compute_std)
     site_compute_rects = ax.bar(ind + 3 * width, site_compute_all, width, yerr=site_compute_std)
-    coord_site_io_rects = ax.bar(ind + 4 * width, coord_site_io_all, width, yerr=coord_site_io_std)
-    total_time_rects = ax.bar(ind + 5 * width, total_all, width, yerr=total_std)
+    total_time_rects = ax.bar(ind + 4 * width, total_all, width, yerr=total_std)
+    # coord_cloud_io_rects = ax.bar(ind + 2 * width, coord_cloud_io_all, width, yerr=coord_cloud_io_std)
+    # coord_site_io_rects = ax.bar(ind + 4 * width, coord_site_io_all, width, yerr=coord_site_io_std)
 
     # ax.bar(labels, cloud_compute_all, width, label="Cloud Compute")
     # ax.bar(labels, coord_cloud_io_all, width, label="Coord-Cloud IO")
@@ -258,16 +275,14 @@ def plot_bar_charts(baseline_time, measurements_list):
     ax.set_xticklabels(tuple(labels))
     ax.set_xticks(ind + width / 2)
     ax.legend((baseline_rects[0],
+               net_io_rects[0],
                cloud_compute_rects[0],
-               coord_cloud_io_rects[0],
                site_compute_rects[0],
-               coord_site_io_rects[0],
                total_time_rects[0]),
               ("Baseline",
+               "Network IO",
                "Cloud Compute",
-               "Coord-Cloud IO",
                "Site Coompute",
-               "Coord-Site IO",
                "Total"))
     plt.show()
 

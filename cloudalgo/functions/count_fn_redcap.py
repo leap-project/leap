@@ -6,10 +6,12 @@ import json
 def map_fns():
     # Sum a particular column
     def map_fn1(data, state):
-        result = {
-            "count": data['record_id'].nunique()
+        res = {
+            "count": len(data)
         }
-        return json.dumps(result)
+        result = computation_msgs_pb2.MapResponse()
+        result.response = json.dumps(res)
+        return result
     return [map_fn1]
 
 def agg_fns():

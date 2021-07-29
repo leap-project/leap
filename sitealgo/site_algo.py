@@ -227,8 +227,8 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         state = req["state"]
         state["site_id"] = self.config["site_id"]
         choice = choice_fn(state)
-        #data = self.get_data(req_id, req)
-        data = []
+        data = self.get_data(req_id, req)
+        #data = []
         if 'dataprep_fn' in globals():
             log.withFields({"request-id": req_id}).info("Applying dataprep func")
             data = dataprep_fn(data)
@@ -259,20 +259,38 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # req: A leap request containing the selector to retrieve
     #      the data.
     def get_data(self, req_id, req):
-        selector = req["selector"]
+        #selector = req["selector"]
 
-        # Note: this is only for old examples
-        if (type(selector) == str):
-            return pandas.read_csv("data.csv")
+        ## Note: this is only for old examples
+        #if (type(selector) == str):
+        #    return pandas.read_csv("data.csv")
 
-        useLocalData = ("useLocalData" in selector.keys()) and (selector["useLocalData"])
-        if useLocalData and ("data"+str(req_id) in self.localDataCache.keys()):
-            data = self.localDataCache["data"+str(req_id)]
-        else:
-            data = self.get_data_from_src(selector)
-            if useLocalData:
-                self.localDataCache["data"+str(req_id)] = data
-        return data
+        #useLocalData = ("useLocalData" in selector.keys()) and (selector["useLocalData"])
+        #if useLocalData and ("data"+str(req_id) in self.localDataCache.keys()):
+        #    data = self.localDataCache["data"+str(req_id)]
+        #else:
+        #    data = self.get_data_from_src(selector)
+        #    if useLocalData:
+        #        self.localDataCache["data"+str(req_id)] = data
+        token_path = '/home/stolet/token'
+        token = None
+        with open(token_path, 'r') as f:
+                token = f.read().replace('\n', '') 
+        req = {
+            'token': token,
+            'content': 'record',
+            'format': 'json',
+            'type': 'flat',
+            'csvDelimiter': '',
+            'rawOrLabel': 'raw',
+            'rawOrLabelHeaders': 'raw',
+            'exportCheckboxLabel': 'false',
+            'exportSurveyFields': 'false',
+            'exportDataAccessGroups': 'false',
+            'returnFormat': 'json'
+        }
+        data = requests.post('http://localhost/redcap/api/',data=req)
+        return data.json()
 
 
     # Gets the data from a database or csv file and returns

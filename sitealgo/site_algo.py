@@ -227,7 +227,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         state = req["state"]
         state["site_id"] = self.config["site_id"]
         choice = choice_fn(state)
-        data = self.get_data(req_id, req)
+        data = self.get_data(req_id, req, request.sites)
         #data = []
         if 'dataprep_fn' in globals():
             log.withFields({"request-id": req_id}).info("Applying dataprep func")
@@ -258,7 +258,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
     # req_id: Request ID of leap request
     # req: A leap request containing the selector to retrieve
     #      the data.
-    def get_data(self, req_id, req):
+    def get_data(self, req_id, req, sites):
         #selector = req["selector"]
 
         ## Note: this is only for old examples
@@ -276,6 +276,13 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         token = None
         with open(token_path, 'r') as f:
                 token = f.read().replace('\n', '') 
+        
+        n_sites = int(9000 / len(sites))
+        
+        d = {}
+        for i in range(n_sites):
+            d["records[" + str(i) + "]"] = str(i + 1)
+ 
         req = {
             'token': token,
             'content': 'record',
@@ -289,6 +296,7 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
             'exportDataAccessGroups': 'false',
             'returnFormat': 'json'
         }
+        req = {**req, **d}
         data = requests.post('http://localhost/redcap/api/',data=req)
         return data.json()
 

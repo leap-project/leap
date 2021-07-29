@@ -14,9 +14,9 @@ def map_fns():
 
 def agg_fns():
     def agg_fn1(map_results):
-        s = 0   
+        s = 0
         for result in map_results:
-            result = json.loads(result)
+            result = json.loads(result.response)
             s += result["count"]       
         return s
 

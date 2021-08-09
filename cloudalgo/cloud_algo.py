@@ -279,7 +279,7 @@ class CloudAlgoServicer(cloud_algos_pb2_grpc.CloudAlgoServicer):
             # Decide to stop or continue
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("Start validation")
-            # acc = self.get_validation_loss()
+            acc = self.get_validation_loss()
             acc = 0
             currTime = time.time_ns()
             self.log.withFields({"request-id": req.id, "unix-nano": currTime}).info("End validation")

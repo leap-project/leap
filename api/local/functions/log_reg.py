@@ -48,7 +48,6 @@ def get_dataloader(hyperparams, data):
                 idx = idx.tolist()
     
             token = self.get_token(self.token_path)
-            #TODO: Get proper redcap token for project
             idx = self.ids[idx]
             record_id_label = 'records[' + str(idx) + ']'
             data = {

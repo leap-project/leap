@@ -227,8 +227,11 @@ class SiteAlgoServicer(site_algos_pb2_grpc.SiteAlgoServicer):
         state = req["state"]
         state["site_id"] = self.config["site_id"]
         choice = choice_fn(state)
-        data = self.get_data(req_id, req, request.sites)
-        #data = []
+        leap_type = request.leap_type
+        data = []
+        if leap_type != computation_msgs_pb2.LeapTypes.FEDERATED_LEARNING:
+            data = self.get_data(req_id, req, request.sites)
+        
         if 'dataprep_fn' in globals():
             log.withFields({"request-id": req_id}).info("Applying dataprep func")
             data = dataprep_fn(data)

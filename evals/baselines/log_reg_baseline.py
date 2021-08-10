@@ -248,9 +248,8 @@ if __name__ == "__main__":
             if i == iters_per_epoch - 1:
                 val_start = time.time_ns()
                 log.withFields({"unix-nano": val_start}).info("ValStart")
-                #accuracy = measure_acc(dataloader_val, model)
-                accuracy = 0
-                #log.withFields({"accuracy": str(accuracy.cpu().detach().numpy())}).info("Acc")
+                accuracy = measure_acc(dataloader_val, model)
+                log.withFields({"accuracy": str(accuracy.cpu().detach().numpy())}).info("Acc")
                 log.withFields({"accuracy": str(accuracy)}).info("Acc")
                 val_end = time.time_ns()
                 log.withFields({"unix-nano": val_end}).info("ValEnd")

@@ -48,7 +48,9 @@ def map_fns():
             output = model(X)
             loss = criterion(output, Y)
             loss_meter.update(loss.item())
+            optimizer.zero_grad()
             loss.backward()
+            optimizer.step()
             if i == hyperparams["iters_per_epoch"]:
                 break
         
@@ -77,7 +79,7 @@ def map_fns():
 def agg_fns():
     def agg_fn1(map_results):
         first_result = json.loads(map_results[0].response)
-        agg_grad = torch.load(io.BytesIO(map_results[0].grad))
+        agg_grad = torch.load(io.BytesIO(map_results[0].grad)) / len(map_results)
 
         loss_meter = AverageMeter()
         loss_meter.update(first_result['loss'])
@@ -87,7 +89,7 @@ def agg_fns():
             
             for j in range(len(agg_grad)):
 
-                agg_grad[j] = (agg_grad[j] + grad_result[j])
+                agg_grad[j] = (agg_grad[j] + (grad_result[j] / len(map_results)))
 
         for j in range(len(agg_grad)):
             agg_grad[j] = agg_grad[j]

@@ -114,7 +114,7 @@ if __name__ == "__main__":
     in_features = model.fc.in_features
     model.fc = torch.nn.Linear(in_features, 2)
 
-    optimizer = torch.optim.Adam(model.parameters(), learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), learning_rate)
     
     criterion = torch.nn.CrossEntropyLoss()
     transforms_train = torchvision.transforms.Compose([torchvision.transforms.ToTensor(),

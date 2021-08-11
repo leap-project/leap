@@ -43,12 +43,12 @@ def map_fns():
         # Accumulate gradients
         loss_meter = AverageMeter()
         for i, (X, Y) in enumerate(dataloader):
+            optimizer.zero_grad()
             X = X
             Y = Y
             output = model(X)
             loss = criterion(output, Y)
             loss_meter.update(loss.item())
-            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
             if i == hyperparams["iters_per_epoch"]:

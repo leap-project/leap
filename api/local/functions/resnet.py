@@ -86,8 +86,10 @@ def get_dataloader(hyperparams, data):
     site_id = hyperparams.get("site_id")
     train_ids = hyperparams["train_ids"]
     if site_id is not None:
-        first_id = int(site_id * len(train_ids) / hyperparams["num_sites"])
-        last_id = int((site_id * len(train_ids) / hyperparams["num_sites"]) + (len(train_ids) / hyperparams["num_sites"]))
+        #first_id = int(site_id * len(train_ids) / hyperparams["num_sites"])
+        #last_id = int((site_id * len(train_ids) / hyperparams["num_sites"]) + (len(train_ids) / hyperparams["num_sites"]))
+        first_id = int(site_id * len(train_ids) / 15)
+        last_id = int((site_id * len(train_ids) / 15) + (len(train_ids) / 15))
         train_ids = train_ids[first_id:last_id]
     
     dataset_train = HAMDataset(ids=train_ids,

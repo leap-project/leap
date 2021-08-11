@@ -30,6 +30,7 @@ if __name__ == "__main__":
     leap_fed_learn.get_criterion = module.get_criterion
     leap_fed_learn.get_dataloader = module.get_dataloader
 
+    random.seed(1)
     ids = list(range(1,10001))
     random_ids = random.sample(ids, 10000)
     train_ids = random_ids[:8000]

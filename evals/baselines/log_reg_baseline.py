@@ -68,7 +68,7 @@ class HAMDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-
+        
         idx = self.ids[idx]
         record_id_label = 'records[' + str(idx) + ']'
         data = {
@@ -215,11 +215,12 @@ if __name__ == "__main__":
     
     model = LogisticRegression(28, 2) 
 
-    optimizer = torch.optim.Adam(model.parameters(), learning_rate)
+    optimizer = torch.optim.SGD(model.parameters(), learning_rate)
     
     criterion = torch.nn.CrossEntropyLoss()
 
     ids = list(range(1, 10001))
+    random.seed(1)
     random_ids = random.sample(ids, 10000)
     train_ids = random_ids[:8000]
     val_ids = random_ids[8000:]

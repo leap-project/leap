@@ -129,6 +129,7 @@ if __name__ == "__main__":
                                                      torchvision.transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
     ids = list(range(1, 10001))
+    random.seed(1)
     random_ids = random.sample(ids, 10000)
     train_ids = random_ids[:8000]
     val_ids = random_ids[8000:]

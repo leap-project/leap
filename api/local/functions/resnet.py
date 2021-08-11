@@ -12,7 +12,7 @@ def get_model(hyperparams):
     return model
 
 def get_optimizer(params, hyperparams):
-    return torch.optim.Adam(params, hyperparams["lr"])
+    return torch.optim.SGD(params, hyperparams["lr"])
 
 def get_criterion(hyperparams):
     return torch.nn.CrossEntropyLoss()

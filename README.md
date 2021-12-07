@@ -5,18 +5,47 @@ Leap is a Large-scale federated and privacy preserving Evaluation & Analysis Pla
 
 Before getting Leap installed you need to have Python 3.7 and Golang 1.10 installed. A good guide on how to get Golang up and running can be found [here](https://golang.org/doc/code.html). For Python, you can use a distribution such as [Anaconda](https://www.anaconda.com/distribution/#download-section).
 
+### Go Installation
+```
+wget "https://golang.org/dl/go1.15.7.linux-amd64.tar.gz"
+sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf go1.15.7.linux-amd64.tar.gz
+echo | sudo tee -a ~/.bashrc
+echo 'export PATH=$PATH:/usr/local/go/bin' | sudo tee -a ~/.bashrc
+echo | sudo tee -a ~/.bashrc
+mkdir gopath
+mkdir gopath/bin gopath/pkg gopath/src
+echo 'export GOPATH=$HOME/gopath' | sudo tee -a ~/.bashrc
+echo | sudo tee -a ~/.bashrc
+echo 'export GODEBUG=x509ignoreCN=0' | sudo tee -a ~/.bashrc
+source ~/.bashrc
+go version
+```
+### Python Installation
+wget "https://repo.anaconda.com/archive/Anaconda3-2021.05-Linux-x86_64.sh"
+bash ~/Anaconda3-2021.05-Linux-x86_64.sh -b
+~/anaconda3/bin/conda init bash
+source ~/.bashrc
+conda create -y --name leap python=3.7.9
+echo | sudo tee -a ~/.bashrc
+echo "conda activate leap" | sudo tee -a ~/.bashrc
+echo | sudo tee -a ~/.bashrc
+source ~/.bashrc
+
+
+
 #### Protoc compiler and runtime
 First you need to install the protoc compiler and runtime. This is necessary to get protocol buffers to work. Protocol buffers are used to serialize and deserialize the data transmitted through Leap. The protoc compiler and runtime can be installed by executing the commands below in your terminal.
 
 Install some tools to build protobuf from source:
 ```
-sudo apt-get install autoconf automake libtool curl make g++ unzip
+sudo apt-get install -y autoconf automake libtool curl make g++ unzip
 ```
+
 
 Now clone the protobuf repository into a directory of your choice. In this example, the home directory is used. We will also clone the submodules and generate the configure script.
 ```
 cd
-git clone https://github.com/protocolbuffers/protobuf.git 
+git clone https://github.com/protocolbuffers/protobuf.git
 cd protobuf
 git submodule update --init --recursive
 ./autogen.sh
@@ -24,11 +53,16 @@ git submodule update --init --recursive
 
 The final step is to install the protocol buffer runtime and compiler. This may take a few minutes. If the make check fails, you can still install, but some features of the library may not work.
 ```
-./configure 
-make
+./configure
+make -j4
 make check
 sudo make install
-sudo ldconfig # refresh shared library cache.
+sudo ldconfig
+cd
+
+echo | sudo tee -a ~/.bashrc
+echo 'export PATH=$PATH:$GOPATH/bin' | sudo tee -a ~/.bashrc
+source ~/.bashrc
 ```
 The compiler plugin for Go will be installed in `$GOPATH/bin`. Unless you have already set your `$GOBIN`, you must add `$GOPATH/bin` to your `$PATH` for the protocol compiler to find it. To do this, open `~/.bashrc` and add the following line to your .bashrc:
 ```
@@ -37,6 +71,29 @@ export PATH=$PATH:$GOPATH/bin
 
 #### Cloning LEAP
 The next step is to clone the LEAP repository in your computer. You can do this by navigating to your GOPATH and running `git clone https://github.com/bestchai/leap.git`in the terminal.
+
+```
+cd gopath/src/
+git clone https://github.com/leap-project/leap.git
+```
+
+#### Python packages
+We also need to install the necessary python packages. The packages to be installed are below:
+
+```
+pip install pandas==1.2.1
+pip install protobuf==3.14.0
+pip install grpcio==1.35.0
+pip install grpcio-tools==1.35.0
+pip install requests==2.25.1
+pip install numpy==1.20.0
+pip install pylogrus==0.4.0
+pip install torch==1.7.1
+pip install torchvision==0.8.2
+pip install pillow==8.1.0
+pip install ujson==4.0.2
+```
+
 
 #### Go packages
 We need to install the packages used by our Go programs. To install the packages, run the following commands in your terminal:
@@ -47,22 +104,6 @@ go get -u github.com/sirupsen/logrus
 go get -u github.com/rifflock/lfshook
 go get -u golang.org/x/crypto/bcrypt
 go get -u github.com/dgrijalva/jwt-go
-```
-
-#### Python packages
-We also need to install the necessary python packages. The packages to be installed are below:
-```
-pip install pandas 
-pip install protobuf 
-pip install grpcio 
-pip install grpcio-tools
-pip install requests
-pip install -e git+https://github.com/sburns/PyCap.git#egg=PyCap
-pip install numpy
-pip install pylogrus
-pip install torch
-pip install torchvision
-pip install ujson
 ```
 
 ### Installing MySQL
